@@ -3,164 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garment Inventory Management System</title>
+    <title>QR Inventory System</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Garment Inventory Management System</h1>
-            <nav>
-                <button onclick="showSection('dashboard')" class="nav-btn">Dashboard</button>
-                <button onclick="showSection('add-product')" class="nav-btn">Add Product</button>
-                <button onclick="showSection('scan-qr')" class="nav-btn">Scan QR</button>
-                <button onclick="showSection('inventory')" class="nav-btn">Inventory</button>
-                <button onclick="showSection('transactions')" class="nav-btn">Transactions</button>
+            <h1>QR Inventory Management</h1>
+            <button class="mobile-menu-toggle" onclick="toggleMenu()" id="menu-toggle">☰</button>
+            <nav id="nav-menu">
+                <button class="nav-btn" onclick="showSection('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="showSection('create-product')">Create Product</button>
+                <button class="nav-btn" onclick="showSection('scan-qr')">Scan QR</button>
+                <button class="nav-btn" onclick="showSection('inventory')">Inventory</button>
+                <button class="nav-btn" onclick="showSection('transactions')">History</button>
             </nav>
         </header>
 
-        <section id="dashboard" class="section">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
             <h2>Dashboard</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Items</h3>
-                    <p id="total-items" class="stat-number">0</p>
+                    <div class="stat-number" id="total-items">0</div>
                 </div>
                 <div class="stat-card">
                     <h3>Product Types</h3>
-                    <p id="product-types" class="stat-number">0</p>
+                    <div class="stat-number" id="product-types">0</div>
                 </div>
                 <div class="stat-card">
                     <h3>Recent Transactions</h3>
-                    <p id="recent-transactions" class="stat-number">0</p>
+                    <div class="stat-number" id="recent-transactions">0</div>
                 </div>
             </div>
-            <div id="inventory-summary" class="summary-table"></div>
-        </section>
+            <div class="summary-table" id="inventory-summary"></div>
+        </div>
 
-        <section id="add-product" class="section" style="display: none;">
-            <h2>Add New Product</h2>
+        <!-- Create Product Section -->
+        <div id="create-product" class="section">
+            <h2>Create New Product</h2>
             <form id="product-form" class="form">
                 <div class="form-group">
-                    <label for="product-name">Product Name:</label>
-                    <input type="text" id="product-name" required placeholder="e.g., Premium Cotton Shirt">
+                    <label for="product-name">Product Name</label>
+                    <input type="text" id="product-name" required>
                 </div>
+                
                 <div class="form-group">
-                    <label for="product-type">Product Type:</label>
+                    <label for="product-type">Type</label>
                     <select id="product-type" required>
                         <option value="">Select Type</option>
                         <option value="Shirt">Shirt</option>
                         <option value="T-Shirt">T-Shirt</option>
                         <option value="Pants">Pants</option>
-                        <option value="Jeans">Jeans</option>
                         <option value="Jacket">Jacket</option>
-                        <option value="Dress">Dress</option>
-                        <option value="Skirt">Skirt</option>
-                        <option value="Sweater">Sweater</option>
+                        <option value="Other">Other</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label for="product-size">Size:</label>
+                    <label for="product-size">Size</label>
                     <select id="product-size" required>
                         <option value="">Select Size</option>
-                        <option value="XS">XS</option>
                         <option value="S">S</option>
                         <option value="M">M</option>
                         <option value="L">L</option>
                         <option value="XL">XL</option>
                         <option value="XXL">XXL</option>
-                        <option value="XXXL">XXXL</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
-                    <label for="product-color">Color:</label>
-                    <input type="text" id="product-color" placeholder="e.g., Blue">
+                    <label for="product-color">Color (Optional)</label>
+                    <input type="text" id="product-color">
                 </div>
+                
                 <div class="form-group">
-                    <label for="initial-quantity">Initial Quantity:</label>
-                    <input type="number" id="initial-quantity" min="0" value="0">
+                    <label for="initial-quantity">Initial Quantity</label>
+                    <input type="number" id="initial-quantity" value="0" min="0">
                 </div>
+                
                 <button type="submit" class="btn btn-primary">Create Product & Generate QR</button>
             </form>
+            
             <div id="qr-result" class="qr-result" style="display: none;">
-                <h3>Product Created Successfully!</h3>
+                <h3>✓ Product Created Successfully!</h3>
                 <div id="qr-display"></div>
-                <button id="download-qr" class="btn btn-secondary">Download QR Code</button>
+                <button id="download-qr" class="btn btn-success">Download QR Code</button>
             </div>
-        </section>
+        </div>
 
-        <section id="scan-qr" class="section" style="display: none;">
+        <!-- Scan QR Section -->
+        <div id="scan-qr" class="section">
             <h2>Scan QR Code</h2>
+            
             <div class="scan-options">
                 <button onclick="startScanner()" class="btn btn-primary">Start Camera Scanner</button>
                 <button onclick="showManualEntry()" class="btn btn-secondary">Manual Entry</button>
             </div>
             
             <div id="scanner-container" style="display: none;">
-                <div id="reader" style="width: 100%; max-width: 500px; margin: 20px auto;"></div>
-                <button onclick="stopScanner()" class="btn btn-danger">Stop Scanner</button>
-            </div>
-
-            <div id="manual-entry" style="display: none;" class="form">
-                <div class="form-group">
-                    <label for="manual-product-id">Product ID:</label>
-                    <input type="text" id="manual-product-id" placeholder="Enter Product ID">
+                <div class="scanner-wrapper">
+                    <p id="camera-info" style="text-align: center; color: #666; margin-bottom: 0.5rem;">
+                        Requesting camera permission...
+                    </p>
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <button onclick="switchCamera()" class="btn btn-secondary" id="switch-camera-btn" style="display: none;">
+                            Switch Camera
+                        </button>
+                    </div>
+                    <div class="reader-container">
+                        <div id="reader"></div>
+                    </div>
+                    <div id="camera-loading" style="text-align: center; padding: 2rem; display: none;">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p style="margin-top: 1rem;">Initializing camera...</p>
+                        </div>
+                    </div>
+                    <button onclick="stopScanner()" class="btn btn-danger" style="margin-top: 1rem; display: block; margin-left: auto; margin-right: auto;">Stop Scanner</button>
                 </div>
             </div>
-
-            <div id="scan-result" style="display: none;" class="scan-result">
-                <h3>Product Details</h3>
+            
+            <div id="manual-entry" style="display: none;">
+                <div class="form-group">
+                    <label for="manual-product-id">Enter Product ID</label>
+                    <input type="text" id="manual-product-id" placeholder="e.g., SHI-M-ABC123">
+                </div>
+            </div>
+            
+            <div id="scan-result" class="scan-result" style="display: none;">
                 <div id="product-details"></div>
+                
+                <h3>Update Inventory</h3>
                 <form id="inventory-action-form" class="form">
                     <div class="form-group">
-                        <label for="action">What do you want to do?</label>
+                        <label for="action">Action</label>
                         <select id="action" required>
-                            <option value="">-- Select Action --</option>
-                            <option value="IN">Add Items (Items arrived at warehouse)</option>
-                            <option value="OUT">Remove Items (Items sold or moved out)</option>
+                            <option value="">Select Action</option>
+                            <option value="IN">Add Items (Stock In)</option>
+                            <option value="OUT">Remove Items (Stock Out)</option>
                         </select>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="quantity">How many items?</label>
-                        <input type="number" id="quantity" min="1" value="1" required>
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" value="1" min="1" required>
                     </div>
+                    
                     <div class="form-group">
-                        <label for="performed-by">Your Name:</label>
-                        <input type="text" id="performed-by" placeholder="Enter your name" required>
+                        <label for="performed-by">Performed By</label>
+                        <input type="text" id="performed-by" placeholder="Enter your name">
                     </div>
+                    
                     <div class="form-group">
-                        <label for="location">Where? (Optional)</label>
-                        <input type="text" id="location" placeholder="e.g., Store Room A, Warehouse B, Counter 1">
+                        <label for="location">Location (Optional)</label>
+                        <input type="text" id="location" placeholder="e.g., Warehouse A">
                     </div>
+                    
                     <div class="form-group">
-                        <label for="notes">Additional Notes (Optional):</label>
-                        <textarea id="notes" rows="3" placeholder="Any additional information..."></textarea>
+                        <label for="notes">Notes (Optional)</label>
+                        <textarea id="notes" rows="2"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit Transaction</button>
+                    
+                    <button type="submit" class="btn btn-primary">Update Inventory</button>
                 </form>
             </div>
-        </section>
+        </div>
 
-        <section id="inventory" class="section" style="display: none;">
+        <!-- Inventory Section -->
+        <div id="inventory" class="section">
             <h2>Current Inventory</h2>
             <div class="filter-bar">
-                <input type="text" id="search-inventory" placeholder="Search products..." class="search-input">
-                <button onclick="loadInventory()" class="btn btn-secondary">Refresh</button>
+                <input type="text" id="search-inventory" class="search-input" placeholder="Search products...">
             </div>
-            <div id="inventory-table" class="table-container"></div>
-        </section>
+            <div class="table-container" id="inventory-table"></div>
+        </div>
 
-        <section id="transactions" class="section" style="display: none;">
+        <!-- Transactions Section -->
+        <div id="transactions" class="section">
             <h2>Transaction History</h2>
             <div class="filter-bar">
-                <input type="text" id="search-transactions" placeholder="Search by Product ID..." class="search-input">
-                <button onclick="loadTransactions()" class="btn btn-secondary">Refresh</button>
+                <input type="text" id="search-transactions" class="search-input" placeholder="Search transactions...">
             </div>
-            <div id="transactions-table" class="table-container"></div>
-        </section>
+            <div class="table-container" id="transactions-table"></div>
+        </div>
     </div>
 
+    <!-- QR Code Scanner Library (load before app.js) -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script>
+        // Check if library loaded
+        if (typeof Html5Qrcode === 'undefined') {
+            console.error('Html5Qrcode library failed to load from primary CDN, trying fallback...');
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            document.body.appendChild(script);
+        } else {
+            console.log('Html5Qrcode library loaded successfully');
+        }
+    </script>
+    
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>

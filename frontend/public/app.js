@@ -1,17 +1,48 @@
 // API_URL is now defined in config.js
 let html5QrcodeScanner = null;
 let scannedData = null;
+let availableCameras = [];
+let currentCameraIndex = 0;
+
+// Toggle mobile menu
+function toggleMenu() {
+    const nav = document.getElementById('nav-menu');
+    nav.classList.toggle('active');
+    const menuToggle = document.getElementById('menu-toggle');
+    menuToggle.textContent = nav.classList.contains('active') ? '✕' : '☰';
+}
 
 function showSection(sectionId) {
     // Stop camera scanner when switching sections
-    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
-        stopScanner();
+    if (html5QrcodeScanner) {
+        try {
+            const state = html5QrcodeScanner.getState();
+            if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+                stopScanner();
+            }
+        } catch (err) {
+            // If there's an error checking state, try to stop anyway
+            stopScanner();
+        }
     }
     
     document.querySelectorAll('.section').forEach(section => {
         section.style.display = 'none';
     });
     document.getElementById(sectionId).style.display = 'block';
+    
+    // Update active button
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Close mobile menu after selection
+    if (window.innerWidth <= 480) {
+        const nav = document.getElementById('nav-menu');
+        nav.classList.remove('active');
+        document.getElementById('menu-toggle').textContent = '☰';
+    }
     
     if (sectionId === 'dashboard') {
         loadDashboard();
@@ -187,47 +218,276 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     }
 });
 
-function startScanner() {
+async function startScanner() {
     document.getElementById('scanner-container').style.display = 'block';
     document.getElementById('manual-entry').style.display = 'none';
+    document.getElementById('camera-info').textContent = 'Requesting camera permission...';
+    document.getElementById('camera-loading').style.display = 'block';
+    document.getElementById('reader').style.display = 'none';
     
-    html5QrcodeScanner = new Html5Qrcode("reader");
-    
-    Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length) {
-            const cameraId = devices[0].id;
-            html5QrcodeScanner.start(
-                cameraId,
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 }
-                },
-                (decodedText) => {
-                    console.log('QR Code scanned:', decodedText);
-                    processScannedQR(decodedText);
-                    stopScanner();
-                },
-                (errorMessage) => {
-                    // Handle scan error silently
-                }
-            ).catch((err) => {
-                console.error('Unable to start scanner:', err);
-                alert('Unable to access camera. Please check permissions.');
-            });
+    try {
+        // Check if Html5Qrcode library is loaded
+        if (typeof Html5Qrcode === 'undefined') {
+            document.getElementById('camera-loading').style.display = 'none';
+            document.getElementById('camera-info').textContent = 'Scanner library not loaded';
+            alert('QR scanner library failed to load. Please refresh the page and try again.');
+            showManualEntry();
+            return;
         }
-    }).catch(err => {
-        console.error('Error getting cameras:', err);
-        alert('No camera found. Please use manual entry.');
+        
+        // Check if we're in a secure context (HTTPS or localhost)
+        if (!window.isSecureContext) {
+            document.getElementById('camera-loading').style.display = 'none';
+            document.getElementById('camera-info').textContent = 'Camera requires secure connection';
+            alert('Camera access requires HTTPS. Please access this site using https:// or from localhost.');
+            showManualEntry();
+            return;
+        }
+        
+        // First check if browser supports camera access
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            document.getElementById('camera-loading').style.display = 'none';
+            document.getElementById('camera-info').textContent = 'Camera not supported';
+            alert('Camera access is not supported in this browser. Please use Chrome, Firefox, or Safari.');
+            showManualEntry();
+            return;
+        }
+        
+        // Update status
+        document.getElementById('camera-info').textContent = 'Please allow camera access when prompted...';
+        
+        // Request camera permission explicitly
+        let permissionGranted = false;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            // Permission granted, stop the test stream
+            stream.getTracks().forEach(track => track.stop());
+            permissionGranted = true;
+        } catch (permissionError) {
+            // Try again without facingMode constraint
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream.getTracks().forEach(track => track.stop());
+                permissionGranted = true;
+            } catch (secondError) {
+                console.error('Camera permission error:', secondError);
+                document.getElementById('camera-loading').style.display = 'none';
+                
+                if (secondError.name === 'NotAllowedError' || secondError.name === 'PermissionDeniedError') {
+                    document.getElementById('camera-info').textContent = 'Camera permission denied';
+                    alert('Camera permission was denied. Please:\n1. Click the camera icon in your browser address bar\n2. Allow camera access\n3. Refresh the page and try again');
+                } else if (secondError.name === 'NotFoundError' || secondError.name === 'DevicesNotFoundError') {
+                    document.getElementById('camera-info').textContent = 'No camera found';
+                    alert('No camera found on this device. Please connect a camera or use manual entry.');
+                } else if (secondError.name === 'NotReadableError' || secondError.name === 'TrackStartError') {
+                    document.getElementById('camera-info').textContent = 'Camera is busy';
+                    alert('Camera is already in use by another application. Please close other apps using the camera and try again.');
+                } else if (secondError.name === 'OverconstrainedError') {
+                    document.getElementById('camera-info').textContent = 'Camera constraints error';
+                    alert('Camera constraints could not be satisfied. Please try again.');
+                } else {
+                    document.getElementById('camera-info').textContent = 'Camera error';
+                    alert('Unable to access camera: ' + secondError.message);
+                }
+                showManualEntry();
+                return;
+            }
+        }
+        
+        if (!permissionGranted) {
+            showManualEntry();
+            return;
+        }
+        
+        document.getElementById('camera-info').textContent = 'Camera permission granted, initializing...';
+        
+        // Get available cameras
+        try {
+            availableCameras = await Html5Qrcode.getCameras();
+        } catch (getCameraError) {
+            console.error('Error getting cameras list:', getCameraError);
+            document.getElementById('camera-loading').style.display = 'none';
+            document.getElementById('camera-info').textContent = 'Error getting cameras';
+            
+            // Try to proceed with default camera
+            availableCameras = [{ id: "default", label: "Default Camera" }];
+        }
+        
+        if (!availableCameras || availableCameras.length === 0) {
+            document.getElementById('camera-loading').style.display = 'none';
+            alert('No camera found. Please use manual entry.');
+            showManualEntry();
+            return;
+        }
+        
+        console.log('Found cameras:', availableCameras);
+        
+        // Show switch button if more than one camera
+        if (availableCameras.length > 1) {
+            document.getElementById('switch-camera-btn').style.display = 'inline-block';
+        }
+        
+        // Create scanner instance
+        html5QrcodeScanner = new Html5Qrcode("reader");
+        
+        // Try to find and use back camera first on mobile
+        currentCameraIndex = 0;
+        if (window.innerWidth <= 768) { // Mobile device
+            for (let i = 0; i < availableCameras.length; i++) {
+                const label = availableCameras[i].label ? availableCameras[i].label.toLowerCase() : '';
+                if (label.includes('back') || label.includes('rear') || label.includes('environment')) {
+                    currentCameraIndex = i;
+                    console.log('Selected back camera:', availableCameras[i]);
+                    break;
+                }
+            }
+        }
+        
+        // Show reader div before starting camera
+        document.getElementById('reader').style.display = 'block';
+        
+        startCameraAtIndex(currentCameraIndex);
+        
+    } catch (err) {
+        console.error('Error in startScanner:', err);
+        alert('Error initializing camera: ' + err.message);
         showManualEntry();
+    }
+}
+
+function startCameraAtIndex(index) {
+    if (!availableCameras || index >= availableCameras.length) {
+        return;
+    }
+    
+    const camera = availableCameras[index];
+    const cameraLabel = camera.label || `Camera ${index + 1}`;
+    
+    // Update camera info
+    document.getElementById('camera-info').textContent = `Starting: ${cameraLabel}`;
+    
+    // Simple configuration for scanning with smaller box
+    const config = {
+        fps: 10,
+        qrbox: { width: 200, height: 200 },
+        aspectRatio: 1.0,
+        // Additional config to control video size
+        videoConstraints: {
+            width: { ideal: 400 },
+            height: { ideal: 400 },
+            facingMode: { ideal: "environment" }
+        }
+    };
+    
+    console.log('Starting camera with ID:', camera.id);
+    console.log('Config:', config);
+    
+    // Start the scanner with selected camera
+    const startPromise = camera.id === "default" 
+        ? html5QrcodeScanner.start(
+            { facingMode: "environment" }, // Try environment facing first
+            config,
+            onScanSuccess,
+            onScanError
+          )
+        : html5QrcodeScanner.start(
+            camera.id,
+            config,
+            onScanSuccess,
+            onScanError
+          );
+    
+    startPromise.then(() => {
+        // Successfully started
+        console.log('Camera started successfully');
+        document.getElementById('camera-loading').style.display = 'none';
+        document.getElementById('reader').style.display = 'block';
+        document.getElementById('camera-info').textContent = `Scanning with: ${cameraLabel}`;
+    }).catch((err) => {
+        console.error('Error starting camera:', err);
+        document.getElementById('camera-loading').style.display = 'none';
+        document.getElementById('reader').style.display = 'block'; // Show reader anyway
+        
+        // If using default, try without facingMode
+        if (camera.id === "default") {
+            console.log('Trying without facingMode constraint...');
+            html5QrcodeScanner.start(
+                { facingMode: { exact: "environment" } },
+                config,
+                onScanSuccess,
+                onScanError
+            ).catch((err2) => {
+                // Try with any camera
+                html5QrcodeScanner.start(
+                    { facingMode: "user" },
+                    config,
+                    onScanSuccess,
+                    onScanError
+                ).catch((err3) => {
+                    document.getElementById('camera-info').textContent = 'Camera failed to start';
+                    alert('Unable to start camera. Please try refreshing the page or use manual entry.');
+                    showManualEntry();
+                });
+            });
+        } else if (availableCameras.length > 1 && index < availableCameras.length - 1) {
+            // Try next camera if available
+            currentCameraIndex = index + 1;
+            document.getElementById('camera-info').textContent = 'Trying next camera...';
+            startCameraAtIndex(currentCameraIndex);
+        } else {
+            document.getElementById('camera-info').textContent = 'Camera failed to start';
+            alert('Unable to start camera. Error: ' + err.message + '\n\nPlease try refreshing the page or use manual entry.');
+            showManualEntry();
+        }
     });
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    console.log('QR Code scanned:', decodedText);
+    processScannedQR(decodedText);
+    stopScanner();
+}
+
+function onScanError(errorMessage) {
+    // Scan error - ignore silently as this is called frequently when no QR code is visible
+}
+
+async function switchCamera() {
+    if (!availableCameras || availableCameras.length <= 1) {
+        return;
+    }
+    
+    // Stop current camera
+    if (html5QrcodeScanner) {
+        try {
+            await html5QrcodeScanner.stop();
+            
+            // Switch to next camera
+            currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
+            
+            // Start new camera
+            startCameraAtIndex(currentCameraIndex);
+        } catch (err) {
+            console.error('Error switching camera:', err);
+        }
+    }
 }
 
 function stopScanner() {
     if (html5QrcodeScanner) {
         html5QrcodeScanner.stop().then(() => {
             document.getElementById('scanner-container').style.display = 'none';
+            document.getElementById('switch-camera-btn').style.display = 'none';
+            html5QrcodeScanner = null;
+            availableCameras = [];
+            currentCameraIndex = 0;
         }).catch((err) => {
             console.error('Error stopping scanner:', err);
+            document.getElementById('scanner-container').style.display = 'none';
+            document.getElementById('switch-camera-btn').style.display = 'none';
+            html5QrcodeScanner = null;
+            availableCameras = [];
+            currentCameraIndex = 0;
         });
     }
 }
