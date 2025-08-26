@@ -5,7 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'No build needed for backend'"
+  },
+  "engines": {
+    "node": ">=14.x"
   },
   "dependencies": {
     "body-parser": "^2.2.0",

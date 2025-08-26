@@ -38,6 +38,7 @@ const initializeDatabase = () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         product_id TEXT UNIQUE NOT NULL,
         qr_data TEXT NOT NULL,
+        qr_image_base64 TEXT NOT NULL,
         qr_image_path TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (product_id) REFERENCES products (product_id)

@@ -1,8 +1,13 @@
-const API_URL = 'http://localhost:3000/api';
+// API_URL is now defined in config.js
 let html5QrcodeScanner = null;
 let scannedData = null;
 
 function showSection(sectionId) {
+    // Stop camera scanner when switching sections
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+        stopScanner();
+    }
+    
     document.querySelectorAll('.section').forEach(section => {
         section.style.display = 'none';
     });
@@ -96,11 +101,20 @@ async function loadTransactions() {
         transactions.forEach(trans => {
             const timestamp = new Date(trans.timestamp).toLocaleString();
             const actionClass = trans.action.includes('IN') ? 'view-btn' : 'btn-danger';
+            // Display user-friendly action names
+            let actionDisplay = trans.action;
+            if (trans.action === 'IN' || trans.action === 'STOCK_IN') {
+                actionDisplay = 'Added';
+            } else if (trans.action === 'OUT' || trans.action === 'STOCK_OUT' || trans.action === 'SALE') {
+                actionDisplay = 'Removed';
+            } else if (trans.action === 'INITIAL_STOCK') {
+                actionDisplay = 'Initial Stock';
+            }
             tableHTML += `<tr>
                 <td>${timestamp}</td>
                 <td>${trans.product_id}</td>
                 <td>${trans.name} (${trans.size})</td>
-                <td><span class="action-btn ${actionClass}" style="padding: 2px 8px;">${trans.action}</span></td>
+                <td><span class="action-btn ${actionClass}" style="padding: 2px 8px;">${actionDisplay}</span></td>
                 <td>${trans.quantity}</td>
                 <td>${trans.performed_by || '-'}</td>
                 <td>${trans.location || '-'}</td>
@@ -305,10 +319,12 @@ document.getElementById('inventory-action-form').addEventListener('submit', asyn
         const result = await response.json();
         
         if (result.success) {
-            alert(`Transaction successful!\n` +
+            const actionType = formData.action === 'IN' ? 'added to' : 'removed from';
+            alert(`✅ Success!\n\n` +
                   `Product: ${result.product.name}\n` +
-                  `Previous Quantity: ${result.product.previous_quantity}\n` +
-                  `New Quantity: ${result.product.new_quantity}`);
+                  `${formData.quantity} items ${actionType} inventory\n` +
+                  `Stock before: ${result.product.previous_quantity} items\n` +
+                  `Stock now: ${result.product.new_quantity} items`);
             
             document.getElementById('inventory-action-form').reset();
             document.getElementById('scan-result').style.display = 'none';

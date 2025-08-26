@@ -1,18 +1,8 @@
 const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs').promises;
-const path = require('path');
 
 const generateProductQR = async (productData) => {
   try {
-    const qrDir = path.join(__dirname, 'qr_codes');
-    
-    try {
-      await fs.access(qrDir);
-    } catch {
-      await fs.mkdir(qrDir, { recursive: true });
-    }
-
     const qrData = {
       product_id: productData.product_id,
       name: productData.name,
@@ -23,10 +13,9 @@ const generateProductQR = async (productData) => {
     };
 
     const qrString = JSON.stringify(qrData);
-    const fileName = `${productData.product_id}.png`;
-    const filePath = path.join(qrDir, fileName);
 
-    await QRCode.toFile(filePath, qrString, {
+    // Generate QR code as base64 data URL
+    const dataURL = await QRCode.toDataURL(qrString, {
       errorCorrectionLevel: 'H',
       type: 'png',
       width: 300,
@@ -37,12 +26,9 @@ const generateProductQR = async (productData) => {
       }
     });
 
-    const dataURL = await QRCode.toDataURL(qrString);
-
     return {
-      filePath: filePath,
-      fileName: fileName,
       dataURL: dataURL,
+      base64: dataURL.split(',')[1], // Extract just the base64 part
       qrData: qrString
     };
   } catch (error) {

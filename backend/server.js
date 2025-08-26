@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/qr_codes', express.static(path.join(__dirname, 'qr_codes')));
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
 
 initializeDatabase();
@@ -44,9 +43,9 @@ app.post('/api/products/create', async (req, res) => {
         }
 
         db.run(
-          `INSERT INTO qr_codes (product_id, qr_data, qr_image_path) 
-           VALUES (?, ?, ?)`,
-          [product_id, qrResult.qrData, qrResult.fileName],
+          `INSERT INTO qr_codes (product_id, qr_data, qr_image_base64, qr_image_path) 
+           VALUES (?, ?, ?, ?)`,
+          [product_id, qrResult.qrData, qrResult.dataURL, ''],
           (err) => {
             if (err) {
               return res.status(500).json({ error: err.message });
@@ -67,7 +66,6 @@ app.post('/api/products/create', async (req, res) => {
               success: true,
               product_id: product_id,
               qr_code: qrResult.dataURL,
-              qr_file: `/qr_codes/${qrResult.fileName}`,
               message: 'Product created successfully'
             });
           }
@@ -198,12 +196,28 @@ app.get('/api/products/:product_id', (req, res) => {
 
           res.json({
             product,
-            qr_code: qr ? `/qr_codes/${qr.qr_image_path}` : null,
+            qr_code: qr ? qr.qr_image_base64 : null,
             recent_transactions: transactions
           });
         }
       );
     });
+  });
+});
+
+app.get('/api/qr/:product_id', (req, res) => {
+  const { product_id } = req.params;
+  
+  db.get('SELECT qr_image_base64 FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (!qr) {
+      return res.status(404).json({ error: 'QR code not found' });
+    }
+    
+    res.json({ qr_code: qr.qr_image_base64 });
   });
 });
 

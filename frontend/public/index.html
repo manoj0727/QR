@@ -114,27 +114,28 @@
                 <div id="product-details"></div>
                 <form id="inventory-action-form" class="form">
                     <div class="form-group">
-                        <label for="action">Action:</label>
+                        <label for="action">What do you want to do?</label>
                         <select id="action" required>
-                            <option value="IN">Stock In (Add to Inventory)</option>
-                            <option value="OUT">Stock Out (Remove/Sale)</option>
+                            <option value="">-- Select Action --</option>
+                            <option value="IN">Add Items (Items arrived at warehouse)</option>
+                            <option value="OUT">Remove Items (Items sold or moved out)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="quantity">Quantity:</label>
+                        <label for="quantity">How many items?</label>
                         <input type="number" id="quantity" min="1" value="1" required>
                     </div>
                     <div class="form-group">
-                        <label for="performed-by">Performed By:</label>
-                        <input type="text" id="performed-by" placeholder="Enter name" required>
+                        <label for="performed-by">Your Name:</label>
+                        <input type="text" id="performed-by" placeholder="Enter your name" required>
                     </div>
                     <div class="form-group">
-                        <label for="location">Location:</label>
-                        <input type="text" id="location" placeholder="e.g., Store Room, Warehouse">
+                        <label for="location">Where? (Optional)</label>
+                        <input type="text" id="location" placeholder="e.g., Store Room A, Warehouse B, Counter 1">
                     </div>
                     <div class="form-group">
-                        <label for="notes">Notes:</label>
-                        <textarea id="notes" rows="3" placeholder="Optional notes"></textarea>
+                        <label for="notes">Additional Notes (Optional):</label>
+                        <textarea id="notes" rows="3" placeholder="Any additional information..."></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit Transaction</button>
                 </form>
@@ -160,6 +161,7 @@
         </section>
     </div>
 
+    <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
