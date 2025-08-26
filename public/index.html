@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garment Inventory Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Garment Inventory Management System</h1>
+            <nav>
+                <button onclick="showSection('dashboard')" class="nav-btn">Dashboard</button>
+                <button onclick="showSection('add-product')" class="nav-btn">Add Product</button>
+                <button onclick="showSection('scan-qr')" class="nav-btn">Scan QR</button>
+                <button onclick="showSection('inventory')" class="nav-btn">Inventory</button>
+                <button onclick="showSection('transactions')" class="nav-btn">Transactions</button>
+            </nav>
+        </header>
+
+        <section id="dashboard" class="section">
+            <h2>Dashboard</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Items</h3>
+                    <p id="total-items" class="stat-number">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Product Types</h3>
+                    <p id="product-types" class="stat-number">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Recent Transactions</h3>
+                    <p id="recent-transactions" class="stat-number">0</p>
+                </div>
+            </div>
+            <div id="inventory-summary" class="summary-table"></div>
+        </section>
+
+        <section id="add-product" class="section" style="display: none;">
+            <h2>Add New Product</h2>
+            <form id="product-form" class="form">
+                <div class="form-group">
+                    <label for="product-name">Product Name:</label>
+                    <input type="text" id="product-name" required placeholder="e.g., Premium Cotton Shirt">
+                </div>
+                <div class="form-group">
+                    <label for="product-type">Product Type:</label>
+                    <select id="product-type" required>
+                        <option value="">Select Type</option>
+                        <option value="Shirt">Shirt</option>
+                        <option value="T-Shirt">T-Shirt</option>
+                        <option value="Pants">Pants</option>
+                        <option value="Jeans">Jeans</option>
+                        <option value="Jacket">Jacket</option>
+                        <option value="Dress">Dress</option>
+                        <option value="Skirt">Skirt</option>
+                        <option value="Sweater">Sweater</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="product-size">Size:</label>
+                    <select id="product-size" required>
+                        <option value="">Select Size</option>
+                        <option value="XS">XS</option>
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                        <option value="XXXL">XXXL</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="product-color">Color:</label>
+                    <input type="text" id="product-color" placeholder="e.g., Blue">
+                </div>
+                <div class="form-group">
+                    <label for="initial-quantity">Initial Quantity:</label>
+                    <input type="number" id="initial-quantity" min="0" value="0">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Product & Generate QR</button>
+            </form>
+            <div id="qr-result" class="qr-result" style="display: none;">
+                <h3>Product Created Successfully!</h3>
+                <div id="qr-display"></div>
+                <button id="download-qr" class="btn btn-secondary">Download QR Code</button>
+            </div>
+        </section>
+
+        <section id="scan-qr" class="section" style="display: none;">
+            <h2>Scan QR Code</h2>
+            <div class="scan-options">
+                <button onclick="startScanner()" class="btn btn-primary">Start Camera Scanner</button>
+                <button onclick="showManualEntry()" class="btn btn-secondary">Manual Entry</button>
+            </div>
+            
+            <div id="scanner-container" style="display: none;">
+                <div id="reader" style="width: 100%; max-width: 500px; margin: 20px auto;"></div>
+                <button onclick="stopScanner()" class="btn btn-danger">Stop Scanner</button>
+            </div>
+
+            <div id="manual-entry" style="display: none;" class="form">
+                <div class="form-group">
+                    <label for="manual-product-id">Product ID:</label>
+                    <input type="text" id="manual-product-id" placeholder="Enter Product ID">
+                </div>
+            </div>
+
+            <div id="scan-result" style="display: none;" class="scan-result">
+                <h3>Product Details</h3>
+                <div id="product-details"></div>
+                <form id="inventory-action-form" class="form">
+                    <div class="form-group">
+                        <label for="action">Action:</label>
+                        <select id="action" required>
+                            <option value="IN">Stock In (Add to Inventory)</option>
+                            <option value="OUT">Stock Out (Remove/Sale)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity:</label>
+                        <input type="number" id="quantity" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="performed-by">Performed By:</label>
+                        <input type="text" id="performed-by" placeholder="Enter name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location:</label>
+                        <input type="text" id="location" placeholder="e.g., Store Room, Warehouse">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">Notes:</label>
+                        <textarea id="notes" rows="3" placeholder="Optional notes"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Transaction</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="inventory" class="section" style="display: none;">
+            <h2>Current Inventory</h2>
+            <div class="filter-bar">
+                <input type="text" id="search-inventory" placeholder="Search products..." class="search-input">
+                <button onclick="loadInventory()" class="btn btn-secondary">Refresh</button>
+            </div>
+            <div id="inventory-table" class="table-container"></div>
+        </section>
+
+        <section id="transactions" class="section" style="display: none;">
+            <h2>Transaction History</h2>
+            <div class="filter-bar">
+                <input type="text" id="search-transactions" placeholder="Search by Product ID..." class="search-input">
+                <button onclick="loadTransactions()" class="btn btn-secondary">Refresh</button>
+            </div>
+            <div id="transactions-table" class="table-container"></div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
