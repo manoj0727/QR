@@ -1,0 +1,13 @@
+{
+  "name": "qr-inventory-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for QR Code Inventory Management System",
+  "scripts": {
+    "serve": "http-server ./public -p 8080 -c-1",
+    "dev": "live-server ./public --port=8080"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  }
+}

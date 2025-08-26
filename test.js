@@ -30,7 +30,11 @@ const req = http.request(options, (res) => {
     res.on('end', () => {
         console.log('Response:', JSON.parse(data));
         console.log('\nTest completed successfully!');
-        console.log('You can now access the application at http://localhost:3000');
+        console.log('Backend is running at: http://localhost:3000');
+        console.log('Frontend can be accessed at: http://localhost:3000');
+        console.log('\nProject structure:');
+        console.log('  backend/  - Server files, database, QR codes');
+        console.log('  frontend/ - Client files (HTML, CSS, JS)');
         process.exit(0);
     });
 });
