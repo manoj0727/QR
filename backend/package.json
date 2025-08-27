@@ -18,8 +18,5 @@
     "pg": "^8.16.3",
     "qrcode": "^1.5.4",
     "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.0"
   }
 }
