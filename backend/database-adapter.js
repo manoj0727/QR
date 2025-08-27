@@ -149,8 +149,8 @@ if (usePostgres) {
           size TEXT NOT NULL,
           color TEXT,
           quantity INTEGER DEFAULT 0,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          created_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
+          updated_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes'))
         )
       `);
 
@@ -163,7 +163,7 @@ if (usePostgres) {
           performed_by TEXT,
           location TEXT,
           notes TEXT,
-          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+          timestamp DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
           FOREIGN KEY (product_id) REFERENCES products (product_id)
         )
       `);
@@ -175,7 +175,7 @@ if (usePostgres) {
           qr_data TEXT NOT NULL,
           qr_image_base64 TEXT NOT NULL,
           qr_image_path TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          created_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
           FOREIGN KEY (product_id) REFERENCES products (product_id)
         )
       `);

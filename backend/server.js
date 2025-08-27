@@ -53,8 +53,8 @@ app.post('/api/products/create', async (req, res) => {
 
             if (initial_quantity > 0) {
               db.run(
-                `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
-                 VALUES (?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes, timestamp)
+                 VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+5 hours', '+30 minutes'))`,
                 [product_id, 'INITIAL_STOCK', initial_quantity, 'System', 'Manufacturing', 'Initial stock creation'],
                 (err) => {
                   if (err) console.error('Transaction log error:', err);
@@ -119,7 +119,7 @@ app.post('/api/inventory/scan', (req, res) => {
       }
 
       db.run(
-        'UPDATE products SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?',
+        `UPDATE products SET quantity = ?, updated_at = datetime('now', '+5 hours', '+30 minutes') WHERE product_id = ?`,
         [newQuantity, product_id],
         (err) => {
           if (err) {
@@ -127,8 +127,8 @@ app.post('/api/inventory/scan', (req, res) => {
           }
 
           db.run(
-            `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes, timestamp)
+             VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+5 hours', '+30 minutes'))`,
             [product_id, action, quantity, performed_by, location, notes],
             (err) => {
               if (err) {
@@ -271,6 +271,28 @@ app.get('/api/inventory/summary', (req, res) => {
       });
     }
   );
+});
+
+// Debug endpoint to view all data (remove in production)
+app.get('/api/debug/all-data', (req, res) => {
+  const data = {};
+  
+  db.all('SELECT * FROM products', [], (err, products) => {
+    if (err) return res.status(500).json({ error: err.message });
+    data.products = products;
+    
+    db.all('SELECT * FROM transactions', [], (err, transactions) => {
+      if (err) return res.status(500).json({ error: err.message });
+      data.transactions = transactions;
+      
+      db.all('SELECT * FROM qr_codes', [], (err, qrCodes) => {
+        if (err) return res.status(500).json({ error: err.message });
+        data.qr_codes = qrCodes;
+        
+        res.json(data);
+      });
+    });
+  });
 });
 
 app.listen(PORT, () => {

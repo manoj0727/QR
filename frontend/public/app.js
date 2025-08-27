@@ -130,7 +130,17 @@ async function loadTransactions() {
         let tableHTML = '<table><thead><tr><th>Timestamp</th><th>Product ID</th><th>Product</th><th>Action</th><th>Quantity</th><th>By</th><th>Location</th></tr></thead><tbody>';
         
         transactions.forEach(trans => {
-            const timestamp = new Date(trans.timestamp).toLocaleString();
+            // Convert to IST (Indian Standard Time)
+            const timestamp = new Date(trans.timestamp).toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
             const actionClass = trans.action.includes('IN') ? 'view-btn' : 'btn-danger';
             // Display user-friendly action names
             let actionDisplay = trans.action;
@@ -322,11 +332,6 @@ async function startScanner() {
         
         console.log('Found cameras:', availableCameras);
         
-        // Show switch button if more than one camera
-        if (availableCameras.length > 1) {
-            document.getElementById('switch-camera-btn').style.display = 'inline-block';
-        }
-        
         // Create scanner instance
         html5QrcodeScanner = new Html5Qrcode("reader");
         
@@ -452,39 +457,18 @@ function onScanError(errorMessage) {
     // Scan error - ignore silently as this is called frequently when no QR code is visible
 }
 
-async function switchCamera() {
-    if (!availableCameras || availableCameras.length <= 1) {
-        return;
-    }
-    
-    // Stop current camera
-    if (html5QrcodeScanner) {
-        try {
-            await html5QrcodeScanner.stop();
-            
-            // Switch to next camera
-            currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-            
-            // Start new camera
-            startCameraAtIndex(currentCameraIndex);
-        } catch (err) {
-            console.error('Error switching camera:', err);
-        }
-    }
-}
+// Switch camera functionality removed as per requirement
 
 function stopScanner() {
     if (html5QrcodeScanner) {
         html5QrcodeScanner.stop().then(() => {
             document.getElementById('scanner-container').style.display = 'none';
-            document.getElementById('switch-camera-btn').style.display = 'none';
             html5QrcodeScanner = null;
             availableCameras = [];
             currentCameraIndex = 0;
         }).catch((err) => {
             console.error('Error stopping scanner:', err);
             document.getElementById('scanner-container').style.display = 'none';
-            document.getElementById('switch-camera-btn').style.display = 'none';
             html5QrcodeScanner = null;
             availableCameras = [];
             currentCameraIndex = 0;
