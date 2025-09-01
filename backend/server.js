@@ -286,28 +286,6 @@ app.get('/api/inventory/summary', (req, res) => {
   );
 });
 
-// Debug endpoint to view all data (remove in production)
-app.get('/api/debug/all-data', (req, res) => {
-  const data = {};
-  
-  db.all('SELECT * FROM products', [], (err, products) => {
-    if (err) return res.status(500).json({ error: err.message });
-    data.products = products;
-    
-    db.all('SELECT * FROM transactions', [], (err, transactions) => {
-      if (err) return res.status(500).json({ error: err.message });
-      data.transactions = transactions;
-      
-      db.all('SELECT * FROM qr_codes', [], (err, qrCodes) => {
-        if (err) return res.status(500).json({ error: err.message });
-        data.qr_codes = qrCodes;
-        
-        res.json(data);
-      });
-    });
-  });
-});
-
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
