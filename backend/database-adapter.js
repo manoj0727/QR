@@ -1,188 +1,161 @@
-// Database adapter that works with both SQLite and PostgreSQL
-const path = require('path');
+const { Client } = require('pg');
 
-// Determine which database to use based on environment
-const usePostgres = process.env.DATABASE_URL && process.env.NODE_ENV === 'production';
+console.log('Connecting to Supabase PostgreSQL database');
 
-let db, initializeDatabase;
+// Set timezone for PostgreSQL client
+process.env.TZ = 'Asia/Kolkata';
 
-if (usePostgres) {
-  console.log('Using PostgreSQL database');
-  const { Client } = require('pg');
-  
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Helper function to convert UTC to IST
+const convertToIST = (utcDate) => {
+  if (!utcDate) return null;
+  const date = new Date(utcDate);
+  // Add 5 hours 30 minutes to UTC to get IST
+  date.setHours(date.getHours() + 5);
+  date.setMinutes(date.getMinutes() + 30);
+  return date.toISOString();
+};
+
+// PostgreSQL adapter
+const pgAdapter = {
+  run: (query, params, callback) => {
+    // Convert SQLite ? placeholders to PostgreSQL $1, $2, etc.
+    let pgQuery = query;
+    let paramIndex = 1;
+    while (pgQuery.includes('?')) {
+      pgQuery = pgQuery.replace('?', `$${paramIndex}`);
+      paramIndex++;
     }
-  });
-
-  // PostgreSQL adapter
-  const pgAdapter = {
-    run: (query, params, callback) => {
-      // Convert SQLite ? placeholders to PostgreSQL $1, $2, etc.
-      let pgQuery = query;
-      let paramIndex = 1;
-      while (pgQuery.includes('?')) {
-        pgQuery = pgQuery.replace('?', `$${paramIndex}`);
-        paramIndex++;
-      }
-      
-      // Handle DATETIME -> TIMESTAMP conversion
-      pgQuery = pgQuery.replace(/DATETIME/gi, 'TIMESTAMP');
-      pgQuery = pgQuery.replace(/CURRENT_TIMESTAMP/gi, 'NOW()');
-      pgQuery = pgQuery.replace(/AUTOINCREMENT/gi, '');
-      
-      client.query(pgQuery, params, (err, result) => {
-        if (callback) {
-          if (typeof callback === 'function') {
-            callback(err);
-          } else if (callback.call) {
-            callback.call({ lastID: result ? result.rows[0]?.id : null }, err);
-          }
-        }
-      });
-    },
     
-    get: (query, params, callback) => {
-      let pgQuery = query;
-      let paramIndex = 1;
-      while (pgQuery.includes('?')) {
-        pgQuery = pgQuery.replace('?', `$${paramIndex}`);
-        paramIndex++;
-      }
-      
-      client.query(pgQuery, params, (err, result) => {
-        if (callback) {
-          callback(err, result ? result.rows[0] : null);
-        }
-      });
-    },
+    // Handle DATETIME -> TIMESTAMP conversion
+    pgQuery = pgQuery.replace(/DATETIME/gi, 'TIMESTAMP WITH TIME ZONE');
+    pgQuery = pgQuery.replace(/datetime\('now'[^)]*\)/gi, "CURRENT_TIMESTAMP");
+    pgQuery = pgQuery.replace(/NOW\(\)/gi, "CURRENT_TIMESTAMP");
+    pgQuery = pgQuery.replace(/AUTOINCREMENT/gi, '');
     
-    all: (query, params, callback) => {
-      let pgQuery = query;
-      let paramIndex = 1;
-      while (pgQuery.includes('?')) {
-        pgQuery = pgQuery.replace('?', `$${paramIndex}`);
-        paramIndex++;
-      }
-      
-      client.query(pgQuery, params, (err, result) => {
-        if (callback) {
-          callback(err, result ? result.rows : []);
+    client.query(pgQuery, params, (err, result) => {
+      if (callback) {
+        if (typeof callback === 'function') {
+          callback(err);
+        } else if (callback.call) {
+          callback.call({ lastID: result ? result.rows[0]?.id : null }, err);
         }
-      });
-    },
-    
-    serialize: (callback) => {
-      callback();
-    }
-  };
-
-  db = pgAdapter;
-  
-  initializeDatabase = async () => {
-    try {
-      await client.connect();
-      console.log('Connected to PostgreSQL');
-      
-      // Create tables for PostgreSQL
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS products (
-          id SERIAL PRIMARY KEY,
-          product_id TEXT UNIQUE NOT NULL,
-          name TEXT NOT NULL,
-          type TEXT NOT NULL,
-          size TEXT NOT NULL,
-          color TEXT,
-          quantity INTEGER DEFAULT 0,
-          created_at TIMESTAMP DEFAULT NOW(),
-          updated_at TIMESTAMP DEFAULT NOW()
-        )
-      `);
-
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS transactions (
-          id SERIAL PRIMARY KEY,
-          product_id TEXT NOT NULL,
-          action TEXT NOT NULL,
-          quantity INTEGER NOT NULL,
-          performed_by TEXT,
-          location TEXT,
-          notes TEXT,
-          timestamp TIMESTAMP DEFAULT NOW()
-        )
-      `);
-
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS qr_codes (
-          id SERIAL PRIMARY KEY,
-          product_id TEXT UNIQUE NOT NULL,
-          qr_data TEXT NOT NULL,
-          qr_image_base64 TEXT,
-          qr_image_path TEXT,
-          created_at TIMESTAMP DEFAULT NOW()
-        )
-      `);
-      
-      console.log('PostgreSQL tables initialized');
-    } catch (err) {
-      console.error('PostgreSQL initialization error:', err);
-      process.exit(1);
-    }
-  };
-  
-} else {
-  console.log('Using SQLite database');
-  // Use original SQLite setup
-  const sqlite3 = require('sqlite3').verbose();
-  db = new sqlite3.Database(path.join(__dirname, 'inventory.db'));
-  
-  initializeDatabase = () => {
-    db.serialize(() => {
-      db.run(`
-        CREATE TABLE IF NOT EXISTS products (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          product_id TEXT UNIQUE NOT NULL,
-          name TEXT NOT NULL,
-          type TEXT NOT NULL,
-          size TEXT NOT NULL,
-          color TEXT,
-          quantity INTEGER DEFAULT 0,
-          created_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
-          updated_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes'))
-        )
-      `);
-
-      db.run(`
-        CREATE TABLE IF NOT EXISTS transactions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          product_id TEXT NOT NULL,
-          action TEXT NOT NULL,
-          quantity INTEGER NOT NULL,
-          performed_by TEXT,
-          location TEXT,
-          notes TEXT,
-          timestamp DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
-          FOREIGN KEY (product_id) REFERENCES products (product_id)
-        )
-      `);
-
-      db.run(`
-        CREATE TABLE IF NOT EXISTS qr_codes (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          product_id TEXT UNIQUE NOT NULL,
-          qr_data TEXT NOT NULL,
-          qr_image_base64 TEXT NOT NULL,
-          qr_image_path TEXT,
-          created_at DATETIME DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
-          FOREIGN KEY (product_id) REFERENCES products (product_id)
-        )
-      `);
-      
-      console.log('SQLite tables initialized');
+      }
     });
-  };
-}
+  },
+  
+  get: (query, params, callback) => {
+    let pgQuery = query;
+    let paramIndex = 1;
+    while (pgQuery.includes('?')) {
+      pgQuery = pgQuery.replace('?', `$${paramIndex}`);
+      paramIndex++;
+    }
+    
+    client.query(pgQuery, params, (err, result) => {
+      if (callback) {
+        const row = result ? result.rows[0] : null;
+        if (row) {
+          // Convert timestamps to IST
+          if (row.created_at) row.created_at = convertToIST(row.created_at);
+          if (row.updated_at) row.updated_at = convertToIST(row.updated_at);
+          if (row.timestamp) row.timestamp = convertToIST(row.timestamp);
+        }
+        callback(err, row);
+      }
+    });
+  },
+  
+  all: (query, params, callback) => {
+    let pgQuery = query;
+    let paramIndex = 1;
+    while (pgQuery.includes('?')) {
+      pgQuery = pgQuery.replace('?', `$${paramIndex}`);
+      paramIndex++;
+    }
+    
+    client.query(pgQuery, params, (err, result) => {
+      if (callback) {
+        const rows = result ? result.rows : [];
+        // Convert timestamps to IST for all rows
+        rows.forEach(row => {
+          if (row.created_at) row.created_at = convertToIST(row.created_at);
+          if (row.updated_at) row.updated_at = convertToIST(row.updated_at);
+          if (row.timestamp) row.timestamp = convertToIST(row.timestamp);
+        });
+        callback(err, rows);
+      }
+    });
+  },
+  
+  serialize: (callback) => {
+    callback();
+  }
+};
+
+const db = pgAdapter;
+
+const initializeDatabase = async () => {
+  // Set session timezone to IST
+  try {
+    await client.connect();
+    console.log('Connected to Supabase PostgreSQL');
+    
+    // Set timezone for this session to IST
+    await client.query("SET TIME ZONE 'Asia/Kolkata'");
+    console.log('Timezone set to IST (Asia/Kolkata)');
+    
+    // Create tables for PostgreSQL
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        product_id TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        size TEXT NOT NULL,
+        color TEXT,
+        quantity INTEGER DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        action TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        performed_by TEXT,
+        location TEXT,
+        notes TEXT,
+        timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS qr_codes (
+        id SERIAL PRIMARY KEY,
+        product_id TEXT UNIQUE NOT NULL,
+        qr_data TEXT NOT NULL,
+        qr_image_base64 TEXT,
+        qr_image_path TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    console.log('Supabase PostgreSQL tables initialized');
+  } catch (err) {
+    console.error('Supabase PostgreSQL initialization error:', err);
+    console.error('Please check your DATABASE_URL in .env file');
+    process.exit(1);
+  }
+};
 
 module.exports = { db, initializeDatabase };

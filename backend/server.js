@@ -1,4 +1,8 @@
 require('dotenv').config();
+
+// Set timezone to IST
+process.env.TZ = 'Asia/Kolkata';
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -7,6 +11,15 @@ const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Helper function to get current IST time
+const getISTTime = () => {
+  const now = new Date();
+  // Add 5 hours 30 minutes to UTC to get IST
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const istTime = new Date(now.getTime() + istOffset);
+  return istTime.toISOString();
+};
 
 app.use(cors());
 app.use(express.json());
@@ -53,8 +66,8 @@ app.post('/api/products/create', async (req, res) => {
 
             if (initial_quantity > 0) {
               db.run(
-                `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes, timestamp)
-                 VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+5 hours', '+30 minutes'))`,
+                `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [product_id, 'INITIAL_STOCK', initial_quantity, 'System', 'Manufacturing', 'Initial stock creation'],
                 (err) => {
                   if (err) console.error('Transaction log error:', err);
@@ -119,7 +132,7 @@ app.post('/api/inventory/scan', (req, res) => {
       }
 
       db.run(
-        `UPDATE products SET quantity = ?, updated_at = datetime('now', '+5 hours', '+30 minutes') WHERE product_id = ?`,
+        `UPDATE products SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?`,
         [newQuantity, product_id],
         (err) => {
           if (err) {
@@ -127,8 +140,8 @@ app.post('/api/inventory/scan', (req, res) => {
           }
 
           db.run(
-            `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes, timestamp)
-             VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+5 hours', '+30 minutes'))`,
+            `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
+             VALUES (?, ?, ?, ?, ?, ?)`,
             [product_id, action, quantity, performed_by, location, notes],
             (err) => {
               if (err) {
@@ -147,7 +160,7 @@ app.post('/api/inventory/scan', (req, res) => {
                   quantity,
                   performed_by,
                   location,
-                  timestamp: new Date().toISOString()
+                  timestamp: getISTTime()
                 }
               });
             }
