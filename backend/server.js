@@ -21,12 +21,32 @@ const getISTTime = () => {
   return istTime.toISOString();
 };
 
-app.use(cors());
+// Configure CORS for production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
+
+// Only serve static files in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
+}
 
 initializeDatabase();
+
+// Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// API health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'healthy', service: 'QR Inventory API', timestamp: new Date().toISOString() });
+});
 
 app.post('/api/products/create', async (req, res) => {
   const { name, type, size, color, initial_quantity = 0 } = req.body;

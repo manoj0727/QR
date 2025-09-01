@@ -1,16 +1,23 @@
 const { Client } = require('pg');
 
-console.log('Connecting to Supabase PostgreSQL database');
+console.log('Connecting to PostgreSQL database');
 
 // Set timezone for PostgreSQL client
 process.env.TZ = 'Asia/Kolkata';
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
+// Configure database connection
+const connectionConfig = {
+  connectionString: process.env.DATABASE_URL
+};
+
+// Add SSL for production (Render requires SSL)
+if (process.env.NODE_ENV === 'production') {
+  connectionConfig.ssl = {
     rejectUnauthorized: false
-  }
-});
+  };
+}
+
+const client = new Client(connectionConfig);
 
 // Helper function to convert UTC to IST
 const convertToIST = (utcDate) => {
