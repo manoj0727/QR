@@ -24,19 +24,23 @@ const getISTTime = () => {
 // Configure CORS for production
 const corsOptions = {
   origin: process.env.FRONTEND_URL || '*',
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Only serve static files in development
-if (process.env.NODE_ENV !== 'production') {
-  app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
-}
+// Serve static files (frontend)
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
 
 initializeDatabase();
+
+// Root route - serve frontend
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'public', 'index.html'));
+});
 
 // Health check endpoint for Render
 app.get('/health', (req, res) => {

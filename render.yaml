@@ -1,7 +1,7 @@
 services:
-  # Backend API Service
+  # Combined Backend + Frontend Service
   - type: web
-    name: qr-inventory-backend
+    name: qr-inventory-app
     runtime: node
     repo: https://github.com/manoj0727/QR
     branch: main
@@ -13,7 +13,7 @@ services:
       - key: DATABASE_URL
         sync: false # You'll set this in Render dashboard
       - key: FRONTEND_URL
-        value: https://qr-inventory-frontend.onrender.com # Update after deployment
+        value: https://qr-pvxs.onrender.com
       - key: TZ
         value: Asia/Kolkata
     healthCheckPath: /health
