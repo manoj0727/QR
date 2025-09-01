@@ -12,7 +12,7 @@ function toggleMenu() {
     menuToggle.textContent = nav.classList.contains('active') ? '✕' : '☰';
 }
 
-function showSection(sectionId) {
+function showSection(sectionId, evt) {
     // Stop camera scanner when switching sections
     if (html5QrcodeScanner) {
         try {
@@ -35,7 +35,21 @@ function showSection(sectionId) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    event.target.classList.add('active');
+    // Only add active class if event exists (button was clicked)
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    } else if (!evt) {
+        // If no event (page load), find and activate the appropriate button
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            if ((btn.textContent === 'Dashboard' && sectionId === 'dashboard') ||
+                (btn.textContent === 'Create Product' && sectionId === 'create-product') ||
+                (btn.textContent === 'Scan QR' && sectionId === 'scan-qr') ||
+                (btn.textContent === 'Inventory' && sectionId === 'inventory') ||
+                (btn.textContent === 'History' && sectionId === 'transactions')) {
+                btn.classList.add('active');
+            }
+        });
+    }
     
     // Close mobile menu after selection
     if (window.innerWidth <= 480) {
@@ -55,15 +69,22 @@ function showSection(sectionId) {
 
 async function loadDashboard() {
     try {
+        // Reset values first to avoid showing stale data
+        document.getElementById('total-items').textContent = 'Loading...';
+        document.getElementById('product-types').textContent = 'Loading...';
+        document.getElementById('recent-transactions').textContent = 'Loading...';
+        
         const response = await fetch(`${API_URL}/inventory/summary`);
+        if (!response.ok) throw new Error('Failed to load inventory summary');
         const data = await response.json();
         
         document.getElementById('total-items').textContent = data.total_items || 0;
         
-        const uniqueTypes = new Set(data.summary_by_type_size.map(item => item.type));
+        const uniqueTypes = new Set((data.summary_by_type_size || []).map(item => item.type));
         document.getElementById('product-types').textContent = uniqueTypes.size;
         
         const transResponse = await fetch(`${API_URL}/transactions?limit=10`);
+        if (!transResponse.ok) throw new Error('Failed to load transactions');
         const transactions = await transResponse.json();
         document.getElementById('recent-transactions').textContent = transactions.length;
         
@@ -80,6 +101,11 @@ async function loadDashboard() {
         document.getElementById('inventory-summary').innerHTML = summaryHTML;
     } catch (error) {
         console.error('Error loading dashboard:', error);
+        // Set default values on error
+        document.getElementById('total-items').textContent = '0';
+        document.getElementById('product-types').textContent = '0';
+        document.getElementById('recent-transactions').textContent = '0';
+        document.getElementById('inventory-summary').innerHTML = '<p>Unable to load inventory summary. Please check your connection.</p>';
     }
 }
 
@@ -619,4 +645,20 @@ async function viewProduct(productId) {
     }
 }
 
-showSection('dashboard');
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Show dashboard section on page load
+    showSection('dashboard');
+    
+    // Also ensure dashboard data is loaded even if API_URL isn't ready yet
+    if (typeof API_URL !== 'undefined') {
+        loadDashboard();
+    } else {
+        // Wait a bit for config.js to load
+        setTimeout(() => {
+            if (typeof API_URL !== 'undefined') {
+                loadDashboard();
+            }
+        }, 100);
+    }
+});

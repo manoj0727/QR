@@ -1,0 +1,20 @@
+services:
+  # Backend API Service
+  - type: web
+    name: qr-inventory-backend
+    runtime: node
+    repo: https://github.com/manoj0727/QR
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # You'll set this in Render dashboard
+      - key: FRONTEND_URL
+        value: https://qr-inventory-frontend.onrender.com # Update after deployment
+      - key: TZ
+        value: Asia/Kolkata
+    healthCheckPath: /health
+    autoDeploy: true

@@ -1,0 +1,20 @@
+# Static Site Configuration for Frontend
+# Use this if you want to deploy frontend separately as a static site
+
+services:
+  - type: web
+    name: qr-inventory-frontend
+    runtime: static
+    repo: https://github.com/manoj0727/QR
+    branch: main
+    staticPublishPath: ./frontend/public
+    buildCommand: echo "No build required for static frontend"
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    autoDeploy: true

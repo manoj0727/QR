@@ -4,8 +4,8 @@ const API_CONFIG = {
   // For local development
   development: 'http://localhost:3000/api',
   
-  // For production - YOUR LIVE BACKEND URL
-  production: 'https://qr-1-mrcg.onrender.com/api'
+  // For production - Render backend URL (will be updated after deployment)
+  production: 'https://qr-inventory-backend.onrender.com/api'
 };
 
 // Automatically detect environment
