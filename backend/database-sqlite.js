@@ -123,6 +123,74 @@ const initializeDatabase = () => {
             else console.log('Fabrics table ready');
         });
 
+        // Users table for authentication
+        db.run(`
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT UNIQUE NOT NULL,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                full_name TEXT NOT NULL,
+                email TEXT,
+                role TEXT NOT NULL DEFAULT 'employee',
+                department TEXT,
+                is_active INTEGER DEFAULT 1,
+                last_login DATETIME,
+                created_by TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `, (err) => {
+            if (err) console.error('Error creating users table:', err);
+            else {
+                console.log('Users table ready');
+                // Create default admin user if not exists
+                const crypto = require('crypto');
+                const adminPassword = crypto.createHash('sha256').update('admin123').digest('hex');
+                db.run(`
+                    INSERT OR IGNORE INTO users (user_id, username, password_hash, full_name, role, email) 
+                    VALUES ('USR-ADMIN', 'admin', ?, 'System Administrator', 'admin', 'admin@qrinventory.com')
+                `, [adminPassword], (err) => {
+                    if (!err) console.log('Default admin user created (username: admin, password: admin123)');
+                });
+            }
+        });
+
+        // User sessions table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS user_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT UNIQUE NOT NULL,
+                user_id TEXT NOT NULL,
+                ip_address TEXT,
+                user_agent TEXT,
+                expires_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        `, (err) => {
+            if (err) console.error('Error creating user_sessions table:', err);
+            else console.log('User sessions table ready');
+        });
+
+        // Activity logs table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                action_type TEXT NOT NULL,
+                description TEXT,
+                entity_type TEXT,
+                entity_id TEXT,
+                ip_address TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(user_id)
+            )
+        `, (err) => {
+            if (err) console.error('Error creating activity_logs table:', err);
+            else console.log('Activity logs table ready');
+        });
+
         console.log('SQLite database initialized successfully');
     });
 };

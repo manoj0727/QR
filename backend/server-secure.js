@@ -335,6 +335,10 @@ app.get('/api/transactions', (req, res) => {
 const tailorRoutes = require('./tailorRoutes');
 app.use('/api/tailor', tailorRoutes);
 
+// Authentication routes
+const { router: authRoutes } = require('./authRoutes');
+app.use('/api/auth', authRoutes);
+
 // Function to get local IP address
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
