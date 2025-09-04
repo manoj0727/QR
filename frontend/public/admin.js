@@ -25,6 +25,24 @@ window.addEventListener('load', async () => {
     // Display current user
     document.getElementById('current-user').textContent = `👤 ${currentUser.full_name} (${currentUser.role})`;
     
+    // Hide all sections first
+    document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Show dashboard section by default
+    const dashboardSection = document.getElementById('admin-dashboard');
+    if (dashboardSection) {
+        dashboardSection.style.display = 'block';
+    }
+    
+    // Activate dashboard button in navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.textContent === 'Dashboard') {
+            btn.classList.add('active');
+        }
+    });
+    
     // Load dashboard data
     loadAdminDashboard();
 });

@@ -810,14 +810,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Show dashboard section on page load
-    showSection('dashboard');
+    // Hide all sections first
+    document.querySelectorAll('.section').forEach(section => {
+        section.style.display = 'none';
+    });
     
-    // Also ensure dashboard data is loaded even if API_URL isn't ready yet
+    // Show dashboard section immediately
+    const dashboardSection = document.getElementById('dashboard');
+    if (dashboardSection) {
+        dashboardSection.style.display = 'block';
+    }
+    
+    // Activate dashboard button in navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.textContent === 'Dashboard') {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Load dashboard data
     if (typeof API_URL !== 'undefined') {
         loadDashboard();
     } else {
-        // Wait a bit for config.js to load
+        // Wait for config.js to load
         setTimeout(() => {
             if (typeof API_URL !== 'undefined') {
                 loadDashboard();
