@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { db } = require('./database-adapter');
+// Use SQLite database
+const { db } = require('./database-sqlite');
 
 // Helper function to generate unique IDs
 const generateTailorId = () => {

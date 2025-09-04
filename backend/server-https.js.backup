@@ -1,0 +1,310 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
+const https = require('https');
+const http = require('http');
+const os = require('os');
+require('dotenv').config();
+
+const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
+const db = require('./database-sqlite'); // Using SQLite for local storage
+
+const app = express();
+const HTTP_PORT = process.env.PORT || 3000;
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
+
+// SSL Certificate
+const privateKey = fs.readFileSync('key.pem', 'utf8');
+const certificate = fs.readFileSync('cert.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        
+        // Allow any origin for local development
+        callback(null, true);
+    },
+    credentials: true
+}));
+
+app.use(express.json());
+
+// Serve static files from the frontend directory
+app.use(express.static(path.join(__dirname, '../frontend/public')));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        database: 'SQLite',
+        https: req.secure,
+        protocol: req.protocol
+    });
+});
+
+// Products endpoints
+app.get('/api/products', (req, res) => {
+    db.all('SELECT * FROM products ORDER BY created_at DESC', [], (err, products) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(products);
+    });
+});
+
+app.get('/api/products/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!product) {
+            res.status(404).json({ error: 'Product not found' });
+            return;
+        }
+        res.json(product);
+    });
+});
+
+app.post('/api/products/create', async (req, res) => {
+    const { name, type, size, color, initial_quantity } = req.body;
+    const product_id = generateUniqueProductId(type, size);
+    const quantity = initial_quantity || 0;
+
+    try {
+        // Generate QR code
+        const qrData = await generateProductQR({
+            product_id,
+            name,
+            type,
+            size,
+            color
+        });
+
+        // Insert product
+        db.run(
+            `INSERT INTO products (product_id, name, type, size, color, quantity) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [product_id, name, type, size, color, quantity],
+            function(err) {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+
+                const productDbId = this.lastID;
+
+                // Store QR code
+                db.run(
+                    `INSERT INTO qr_codes (product_id, qr_data, qr_image) VALUES (?, ?, ?)`,
+                    [product_id, qrData.qrData, qrData.base64],
+                    (err) => {
+                        if (err) {
+                            res.status(500).json({ error: err.message });
+                            return;
+                        }
+
+                        // Log initial inventory if quantity > 0
+                        if (quantity > 0) {
+                            db.run(
+                                `INSERT INTO transactions (product_id, type, quantity, notes) 
+                                 VALUES (?, 'in', ?, 'Initial stock')`,
+                                [product_id, quantity],
+                                (err) => {
+                                    if (err) console.error('Error logging initial transaction:', err);
+                                }
+                            );
+                        }
+
+                        res.json({
+                            success: true,
+                            product_id: product_id,
+                            qr_code: qrData.dataURL,
+                            message: 'Product created successfully'
+                        });
+                    }
+                );
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// QR Code endpoints
+app.get('/api/qr/:product_id', (req, res) => {
+    const { product_id } = req.params;
+    db.get('SELECT * FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!qr) {
+            res.status(404).json({ error: 'QR code not found' });
+            return;
+        }
+        res.json({
+            qr_data: qr.qr_data,
+            qr_image: `data:image/png;base64,${qr.qr_image}`
+        });
+    });
+});
+
+// Inventory endpoints
+app.post('/api/inventory/scan', (req, res) => {
+    const { product_id, action, quantity, notes } = req.body;
+
+    if (!product_id || !action || !quantity) {
+        res.status(400).json({ error: 'Missing required fields' });
+        return;
+    }
+
+    // Get current product
+    db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!product) {
+            res.status(404).json({ error: 'Product not found' });
+            return;
+        }
+
+        const newQuantity = action === 'in' 
+            ? product.quantity + quantity 
+            : Math.max(0, product.quantity - quantity);
+
+        // Update product quantity
+        db.run(
+            'UPDATE products SET quantity = ? WHERE product_id = ?',
+            [newQuantity, product_id],
+            (err) => {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+
+                // Log transaction
+                db.run(
+                    `INSERT INTO transactions (product_id, type, quantity, notes) 
+                     VALUES (?, ?, ?, ?)`,
+                    [product_id, action, quantity, notes || ''],
+                    (err) => {
+                        if (err) {
+                            res.status(500).json({ error: err.message });
+                            return;
+                        }
+
+                        res.json({
+                            success: true,
+                            product_id,
+                            previous_quantity: product.quantity,
+                            new_quantity: newQuantity,
+                            action,
+                            quantity_changed: quantity
+                        });
+                    }
+                );
+            }
+        );
+    });
+});
+
+app.get('/api/inventory/summary', (req, res) => {
+    db.all(
+        `SELECT 
+            type,
+            size,
+            SUM(quantity) as total_quantity,
+            COUNT(*) as product_count
+         FROM products 
+         GROUP BY type, size
+         ORDER BY type, size`,
+        [],
+        (err, summary) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            
+            // Get total items
+            db.get('SELECT SUM(quantity) as total FROM products', [], (err, total) => {
+                if (err) {
+                    res.status(500).json({ error: err.message });
+                    return;
+                }
+                res.json({
+                    summary_by_type_size: summary,
+                    total_items: total.total || 0
+                });
+            });
+        }
+    );
+});
+
+// Transactions endpoint
+app.get('/api/transactions', (req, res) => {
+    const limit = req.query.limit || 100;
+    db.all(
+        `SELECT t.*, p.name as product_name, p.type, p.size, p.color 
+         FROM transactions t 
+         LEFT JOIN products p ON t.product_id = p.product_id 
+         ORDER BY t.created_at DESC 
+         LIMIT ?`,
+        [limit],
+        (err, transactions) => {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json(transactions);
+        }
+    );
+});
+
+// Tailor routes
+const tailorRoutes = require('./tailorRoutes');
+app.use('/api/tailor', tailorRoutes);
+
+// Function to get local IP address
+function getLocalIP() {
+    const interfaces = os.networkInterfaces();
+    for (let devName in interfaces) {
+        const iface = interfaces[devName];
+        for (let i = 0; i < iface.length; i++) {
+            const alias = iface[i];
+            if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+                return alias.address;
+            }
+        }
+    }
+    return 'localhost';
+}
+
+// Create both HTTP and HTTPS servers
+const httpServer = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
+
+// Start HTTP server
+httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
+    const localIP = getLocalIP();
+    console.log(`HTTP Server is running on:`);
+    console.log(`  - Local: http://localhost:${HTTP_PORT}`);
+    console.log(`  - Network: http://${localIP}:${HTTP_PORT}`);
+});
+
+// Start HTTPS server
+httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+    const localIP = getLocalIP();
+    console.log(`\nHTTPS Server is running on:`);
+    console.log(`  - Local: https://localhost:${HTTPS_PORT}`);
+    console.log(`  - Network: https://${localIP}:${HTTPS_PORT}`);
+    console.log(`\n⚠️  Note: You'll see a security warning about the certificate.`);
+    console.log(`   Click "Advanced" and "Proceed to localhost" to continue.`);
+    console.log(`\nOther devices on the same network can access using: https://${localIP}:${HTTPS_PORT}`);
+});

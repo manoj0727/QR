@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Access Info - QR Inventory</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .info-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .qr-code-box {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .access-url {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .instruction-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        .instruction-list li {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-online {
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Network Access Information</h1>
+            <nav>
+                <a href="index.html" class="nav-btn">← Back to App</a>
+            </nav>
+        </header>
+
+        <div class="info-container">
+            <h2>🌐 Share This With Your Team</h2>
+            
+            <div class="qr-code-box">
+                <h3>Access URL for Team Members:</h3>
+                <div class="access-url" id="network-url">Loading...</div>
+                <p><span class="status-indicator status-online"></span>Server is Online</p>
+                <canvas id="qrcode"></canvas>
+            </div>
+
+            <div class="instruction-list">
+                <h3>📋 Instructions for Team Members:</h3>
+                <ol>
+                    <li><strong>Connect to Same WiFi Network</strong>
+                        <br>Make sure you're on the same network as the host computer</li>
+                    <li><strong>Open Browser on Any Device</strong>
+                        <br>Works on phone, tablet, or computer</li>
+                    <li><strong>Enter the URL Above</strong>
+                        <br>Or scan the QR code with your phone</li>
+                    <li><strong>Bookmark for Easy Access</strong>
+                        <br>Save it to your favorites for quick access</li>
+                </ol>
+            </div>
+
+            <div class="instruction-list">
+                <h3>✅ What Your Team Can Do:</h3>
+                <ul>
+                    <li>Create and manage products</li>
+                    <li>Scan QR codes for inventory</li>
+                    <li>Register tailors and assign work</li>
+                    <li>Track fabric inventory</li>
+                    <li>View all transactions</li>
+                    <li>Access the database viewer</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <h4>⚠️ Important Notes:</h4>
+                <ul style="margin: 10px 0;">
+                    <li>Host computer must stay ON and connected</li>
+                    <li>Keep the terminal/server running</li>
+                    <li>All data is stored locally on host computer</li>
+                    <li>Database location: <code>backend/inventory.db</code></li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="copyUrl()" class="btn btn-primary">📋 Copy URL</button>
+                <button onclick="window.location.reload()" class="btn btn-secondary">🔄 Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        // Get the network URL
+        const host = window.location.hostname;
+        const port = window.location.port || '3000';
+        let networkUrl = '';
+        
+        if (host === 'localhost' || host === '127.0.0.1') {
+            // If viewing from localhost, show the actual network IP
+            networkUrl = 'https://10.224.160.234:3443';
+        } else {
+            // If viewing from network, use current host
+            const protocol = window.location.protocol;
+            if (protocol === 'https:') {
+                networkUrl = `https://${host}:3443`;
+            } else {
+                networkUrl = `http://${host}:3000`;
+            }
+        }
+        
+        // Display the URL
+        document.getElementById('network-url').textContent = networkUrl;
+        
+        // Generate QR code
+        QRCode.toCanvas(document.getElementById('qrcode'), networkUrl, {
+            width: 200,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            }
+        });
+        
+        // Copy URL function
+        function copyUrl() {
+            navigator.clipboard.writeText(networkUrl).then(() => {
+                alert('URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const temp = document.createElement('input');
+                temp.value = networkUrl;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                alert('URL copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>

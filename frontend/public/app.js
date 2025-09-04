@@ -107,30 +107,78 @@ async function loadDashboard() {
         document.getElementById('product-types').textContent = 'Loading...';
         document.getElementById('recent-transactions').textContent = 'Loading...';
         
-        const response = await fetch(`${API_URL}/inventory/summary`);
-        if (!response.ok) throw new Error('Failed to load inventory summary');
-        const data = await response.json();
+        // Fetch all data in parallel for better performance
+        const [summaryResponse, productsResponse, transResponse] = await Promise.all([
+            fetch(`${API_URL}/api/inventory/summary`),
+            fetch(`${API_URL}/api/products`),
+            fetch(`${API_URL}/api/transactions?limit=10`)
+        ]);
         
+        if (!summaryResponse.ok) throw new Error('Failed to load inventory summary');
+        if (!productsResponse.ok) throw new Error('Failed to load products');
+        if (!transResponse.ok) throw new Error('Failed to load transactions');
+        
+        const data = await summaryResponse.json();
+        const products = await productsResponse.json();
+        const transactions = await transResponse.json();
+        
+        // Update stats
         document.getElementById('total-items').textContent = data.total_items || 0;
         
         const uniqueTypes = new Set((data.summary_by_type_size || []).map(item => item.type));
         document.getElementById('product-types').textContent = uniqueTypes.size;
         
-        const transResponse = await fetch(`${API_URL}/transactions?limit=10`);
-        if (!transResponse.ok) throw new Error('Failed to load transactions');
-        const transactions = await transResponse.json();
         document.getElementById('recent-transactions').textContent = transactions.length;
         
-        let summaryHTML = '<h3>Inventory by Type and Size</h3><table><thead><tr><th>Type</th><th>Size</th><th>Quantity</th><th>Products</th></tr></thead><tbody>';
+        // Enhanced inventory summary with more details
+        let summaryHTML = '<h3>Inventory by Type and Size</h3>';
+        summaryHTML += '<table><thead><tr><th>Type</th><th>Size</th><th>Quantity</th><th>Products</th><th>Status</th></tr></thead><tbody>';
         data.summary_by_type_size.forEach(item => {
+            const stockStatus = item.total_quantity <= 5 ? 'low-stock' : item.total_quantity <= 20 ? 'medium-stock' : 'good-stock';
+            const statusLabel = item.total_quantity <= 5 ? 'Low Stock' : item.total_quantity <= 20 ? 'Medium' : 'Good';
             summaryHTML += `<tr>
                 <td>${item.type}</td>
                 <td>${item.size}</td>
                 <td>${item.total_quantity}</td>
                 <td>${item.product_count}</td>
+                <td><span class="stock-status ${stockStatus}">${statusLabel}</span></td>
             </tr>`;
         });
         summaryHTML += '</tbody></table>';
+        
+        // Add recent products section
+        summaryHTML += '<h3 style="margin-top: 2rem;">Recent Products</h3>';
+        summaryHTML += '<div class="recent-products-grid">';
+        
+        // Show last 6 products
+        const recentProducts = products.slice(0, 6);
+        if (recentProducts.length > 0) {
+            recentProducts.forEach(product => {
+                const stockClass = product.quantity <= 5 ? 'low-stock-card' : product.quantity <= 20 ? 'medium-stock-card' : '';
+                summaryHTML += `
+                    <div class="product-card ${stockClass}">
+                        <div class="product-id">${product.product_id}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-details">
+                            <span class="product-type">${product.type}</span>
+                            <span class="product-size">${product.size}</span>
+                            ${product.color ? `<span class="product-color">${product.color}</span>` : ''}
+                        </div>
+                        <div class="product-quantity">
+                            <span class="quantity-label">Stock:</span>
+                            <span class="quantity-value">${product.quantity}</span>
+                        </div>
+                        <div class="product-date">Added: ${new Date(product.created_at).toLocaleDateString('en-IN')}</div>
+                        <button class="action-btn view-btn" onclick="viewProduct('${product.product_id}')">View QR</button>
+                    </div>
+                `;
+            });
+        } else {
+            summaryHTML += '<p style="text-align: center; padding: 2rem;">No products added yet</p>';
+        }
+        
+        summaryHTML += '</div>';
+        
         document.getElementById('inventory-summary').innerHTML = summaryHTML;
     } catch (error) {
         console.error('Error loading dashboard:', error);
@@ -144,7 +192,7 @@ async function loadDashboard() {
 
 async function loadInventory() {
     try {
-        const response = await fetch(`${API_URL}/products`);
+        const response = await fetch(`${API_URL}/api/products`);
         const products = await response.json();
         
         let tableHTML = '<table><thead><tr><th>Product ID</th><th>Name</th><th>Type</th><th>Size</th><th>Color</th><th>Quantity</th><th>Actions</th></tr></thead><tbody>';
@@ -183,7 +231,7 @@ async function loadInventory() {
 
 async function loadTransactions() {
     try {
-        const response = await fetch(`${API_URL}/transactions`);
+        const response = await fetch(`${API_URL}/api/transactions`);
         const transactions = await response.json();
         
         let tableHTML = '<table><thead><tr><th>Timestamp</th><th>Product ID</th><th>Product</th><th>Action</th><th>Quantity</th><th>By</th><th>Location</th></tr></thead><tbody>';
@@ -251,7 +299,7 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
     };
     
     try {
-        const response = await fetch(`${API_URL}/products/create`, {
+        const response = await fetch(`${API_URL}/api/products/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
@@ -275,8 +323,13 @@ document.getElementById('product-form').addEventListener('submit', async (e) => 
             
             document.getElementById('product-form').reset();
             
+            // Refresh dashboard to show new product
+            loadDashboard();
+            
             setTimeout(() => {
                 alert('Product created successfully! QR code has been generated.');
+                // Switch to dashboard to show the new product
+                showSection('dashboard');
             }, 500);
         } else {
             alert('Error creating product: ' + (result.error || 'Unknown error'));
@@ -543,7 +596,7 @@ function showManualEntry() {
         const productId = e.target.value;
         if (productId) {
             try {
-                const response = await fetch(`${API_URL}/products/${productId}`);
+                const response = await fetch(`${API_URL}/api/products/${productId}`);
                 const data = await response.json();
                 
                 if (data.product) {
@@ -580,7 +633,7 @@ function processScannedQR(qrData) {
             <p><strong>Color:</strong> ${parsedData.color || 'N/A'}</p>
         `;
         
-        fetch(`${API_URL}/products/${parsedData.product_id}`)
+        fetch(`${API_URL}/api/products/${parsedData.product_id}`)
             .then(response => response.json())
             .then(data => {
                 if (data.product) {
@@ -603,23 +656,40 @@ document.getElementById('inventory-action-form').addEventListener('submit', asyn
         return;
     }
     
+    // Validate required fields
+    const action = document.getElementById('action').value;
+    const quantityInput = document.getElementById('quantity').value;
+    
+    if (!action) {
+        alert('Please select an action (Add Items or Remove Items)');
+        return;
+    }
+    
+    if (!quantityInput || isNaN(quantityInput) || parseInt(quantityInput) < 1) {
+        alert('Please enter a valid quantity');
+        return;
+    }
+    
     const formData = {
         qr_data: scannedData,
-        action: document.getElementById('action').value,
-        quantity: parseInt(document.getElementById('quantity').value),
-        performed_by: document.getElementById('performed-by').value,
-        location: document.getElementById('location').value,
-        notes: document.getElementById('notes').value
+        action: action,
+        quantity: parseInt(quantityInput),
+        performed_by: document.getElementById('performed-by').value || 'Unknown',
+        location: document.getElementById('location').value || '',
+        notes: document.getElementById('notes').value || ''
     };
     
+    console.log('Submitting form data:', formData);
+    
     try {
-        const response = await fetch(`${API_URL}/inventory/scan`, {
+        const response = await fetch(`${API_URL}/api/inventory/scan`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
         
         const result = await response.json();
+        console.log('Server response:', result);
         
         if (result.success) {
             const actionType = formData.action === 'IN' ? 'added to' : 'removed from';
@@ -635,20 +705,27 @@ document.getElementById('inventory-action-form').addEventListener('submit', asyn
             
             loadDashboard();
         } else {
+            console.error('Server error:', result.error);
             alert('Error: ' + (result.error || 'Unknown error'));
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error processing transaction');
+        console.error('Network error:', error);
+        alert('Error processing transaction: ' + error.message);
     }
 });
 
 async function viewProduct(productId) {
     try {
-        const response = await fetch(`${API_URL}/products/${productId}`);
-        const data = await response.json();
+        // Fetch both product details and QR code
+        const [productResponse, qrResponse] = await Promise.all([
+            fetch(`${API_URL}/api/products/${productId}`),
+            fetch(`${API_URL}/api/qr/${productId}`)
+        ]);
         
-        if (data.product && data.qr_code) {
+        const product = await productResponse.json();
+        const qrData = await qrResponse.json();
+        
+        if (product && qrData.qr_image) {
             const qrWindow = window.open('', '_blank', 'width=400,height=500');
             qrWindow.document.write(`
                 <html>
@@ -661,10 +738,10 @@ async function viewProduct(productId) {
                 </head>
                 <body>
                     <h2>QR Code</h2>
-                    <p><strong>Product ID:</strong> ${data.product.product_id}</p>
-                    <p><strong>Name:</strong> ${data.product.name}</p>
-                    <p><strong>Size:</strong> ${data.product.size}</p>
-                    <img src="${data.qr_code}" alt="QR Code" width="300">
+                    <p><strong>Product ID:</strong> ${product.product_id}</p>
+                    <p><strong>Name:</strong> ${product.name}</p>
+                    <p><strong>Size:</strong> ${product.size}</p>
+                    <img src="${qrData.qr_image}" alt="QR Code" width="300">
                     <br><br>
                     <button onclick="window.print()">Print QR Code</button>
                 </body>

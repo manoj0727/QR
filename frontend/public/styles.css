@@ -910,3 +910,141 @@ tbody tr:nth-child(even) {
         opacity: 1;
     }
 }
+
+/* Enhanced Dashboard Styles */
+.recent-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.product-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.product-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.product-card.low-stock-card {
+    border-left: 4px solid #e74c3c;
+}
+
+.product-card.medium-stock-card {
+    border-left: 4px solid #f39c12;
+}
+
+.product-card .product-id {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.product-card .product-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.product-card .product-details {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.product-card .product-details span {
+    padding: 0.25rem 0.5rem;
+    background: #f0f0f0;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.product-card .product-type {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.product-card .product-size {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.product-card .product-color {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.product-card .product-quantity {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.product-card .quantity-label {
+    color: #666;
+    font-weight: normal;
+}
+
+.product-card .quantity-value {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.product-card .product-date {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 0.75rem;
+}
+
+.stock-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.stock-status.low-stock {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.stock-status.medium-stock {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.stock-status.good-stock {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Mobile responsive for product cards */
+@media (max-width: 768px) {
+    .recent-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .recent-products-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .product-card {
+        padding: 1rem;
+    }
+}

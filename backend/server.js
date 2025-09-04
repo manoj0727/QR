@@ -6,7 +6,8 @@ process.env.TZ = 'Asia/Kolkata';
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { db, initializeDatabase } = require('./database-adapter');
+// Use SQLite instead of PostgreSQL
+const { db, initializeDatabase } = require('./database-sqlite');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 const tailorRoutes = require('./tailorRoutes');
 
@@ -119,10 +120,15 @@ app.post('/api/products/create', async (req, res) => {
 });
 
 app.post('/api/inventory/scan', (req, res) => {
+  console.log('Received scan request:', req.body);
   const { qr_data, action, quantity = 1, performed_by = 'Unknown', location = '', notes = '' } = req.body;
   
-  if (!qr_data || !action) {
-    return res.status(400).json({ error: 'QR data and action are required' });
+  if (!qr_data) {
+    return res.status(400).json({ error: 'Missing QR data. Please scan a QR code first.' });
+  }
+  
+  if (!action) {
+    return res.status(400).json({ error: 'Missing action. Please select Add Items or Remove Items.' });
   }
 
   try {
@@ -130,7 +136,7 @@ app.post('/api/inventory/scan', (req, res) => {
     const product_id = parsedData.product_id;
 
     if (!product_id) {
-      return res.status(400).json({ error: 'Invalid QR code data' });
+      return res.status(400).json({ error: 'Invalid QR code data - missing product ID' });
     }
 
     db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
@@ -258,7 +264,7 @@ app.get('/api/qr/:product_id', (req, res) => {
       return res.status(404).json({ error: 'QR code not found' });
     }
     
-    res.json({ qr_code: qr.qr_image_base64 });
+    res.json({ qr_image: qr.qr_image_base64 });
   });
 });
 
@@ -314,6 +320,26 @@ app.get('/api/inventory/summary', (req, res) => {
   );
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// Get the local IP address
+const os = require('os');
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces();
+  for (const devName in interfaces) {
+    const iface = interfaces[devName];
+    for (const alias of iface) {
+      if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+        return alias.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+};
+
+// Listen on all network interfaces (0.0.0.0)
+app.listen(PORT, '0.0.0.0', () => {
+  const localIP = getLocalIP();
+  console.log(`Server is running on:`);
+  console.log(`  - Local: http://localhost:${PORT}`);
+  console.log(`  - Network: http://${localIP}:${PORT}`);
+  console.log(`\nOther devices on the same network can access using: http://${localIP}:${PORT}`);
 });
