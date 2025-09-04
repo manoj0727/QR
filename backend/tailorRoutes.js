@@ -113,7 +113,7 @@ router.put('/tailors/:tailor_id/status', (req, res) => {
   }
 
   db.run(
-    `UPDATE tailors SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE tailor_id = ?`,
+    `UPDATE tailors SET status = ? WHERE tailor_id = ?`,
     [status, tailor_id],
     function(err) {
       if (err) {
@@ -219,7 +219,7 @@ router.put('/assignments/:assignment_id/status', (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
-  let updateQuery = `UPDATE work_assignments SET status = ?, updated_at = CURRENT_TIMESTAMP`;
+  let updateQuery = `UPDATE work_assignments SET status = ?`;
   let params = [status];
 
   if (status === 'completed') {
@@ -364,7 +364,7 @@ router.put('/fabrics/:fabric_id/update-quantity', (req, res) => {
     }
 
     db.run(
-      `UPDATE fabrics SET quantity_meters = ?, updated_at = CURRENT_TIMESTAMP WHERE fabric_id = ?`,
+      `UPDATE fabrics SET quantity_meters = ? WHERE fabric_id = ?`,
       [newQuantity, fabric_id],
       function(err) {
         if (err) {
