@@ -755,8 +755,53 @@ async function viewProduct(productId) {
     }
 }
 
+// Check authentication and get session
+function checkAuth() {
+    const sessionId = localStorage.getItem('session_id');
+    const userStr = localStorage.getItem('user');
+    
+    if (!sessionId || !userStr) {
+        // Redirect to login if not authenticated
+        window.location.href = 'login.html';
+        return null;
+    }
+    
+    return {
+        sessionId,
+        user: JSON.parse(userStr)
+    };
+}
+
+// Add logout function
+function logout() {
+    const sessionId = localStorage.getItem('session_id');
+    
+    if (sessionId) {
+        fetch(`${API_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${sessionId}`
+            }
+        }).catch(err => console.error('Logout error:', err));
+    }
+    
+    localStorage.removeItem('session_id');
+    localStorage.removeItem('user');
+    window.location.href = 'login.html';
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
+    const auth = checkAuth();
+    if (!auth) return;
+    
+    // Display user info in header if element exists
+    const userInfoEl = document.getElementById('user-info');
+    if (userInfoEl) {
+        userInfoEl.innerHTML = `👤 ${auth.user.full_name} (${auth.user.role}) | <a href="#" onclick="logout(); return false;">Logout</a>`;
+    }
+    
     // Show dashboard section on page load
     showSection('dashboard');
     
