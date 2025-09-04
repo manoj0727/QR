@@ -8,6 +8,7 @@ const cors = require('cors');
 const path = require('path');
 const { db, initializeDatabase } = require('./database-adapter');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
+const tailorRoutes = require('./tailorRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +52,9 @@ app.get('/health', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'healthy', service: 'QR Inventory API', timestamp: new Date().toISOString() });
 });
+
+// Mount tailor management routes
+app.use('/api/tailor', tailorRoutes);
 
 app.post('/api/products/create', async (req, res) => {
   const { name, type, size, color, initial_quantity = 0 } = req.body;

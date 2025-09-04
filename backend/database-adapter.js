@@ -156,6 +156,51 @@ const initializeDatabase = async () => {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tailors (
+        id SERIAL PRIMARY KEY,
+        tailor_id TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        specialization TEXT,
+        contact_number TEXT,
+        status TEXT DEFAULT 'active',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS work_assignments (
+        id SERIAL PRIMARY KEY,
+        assignment_id TEXT UNIQUE NOT NULL,
+        tailor_id TEXT NOT NULL,
+        product_id TEXT,
+        garment_type TEXT NOT NULL,
+        fabric_type TEXT NOT NULL,
+        quantity INTEGER NOT NULL,
+        assigned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        expected_date TIMESTAMP WITH TIME ZONE,
+        completed_date TIMESTAMP WITH TIME ZONE,
+        status TEXT DEFAULT 'assigned',
+        notes TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS fabrics (
+        id SERIAL PRIMARY KEY,
+        fabric_id TEXT UNIQUE NOT NULL,
+        fabric_type TEXT NOT NULL,
+        color TEXT,
+        quantity_meters DECIMAL(10,2),
+        location TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
     
     console.log('Supabase PostgreSQL tables initialized');
   } catch (err) {
