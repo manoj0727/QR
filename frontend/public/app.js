@@ -12,6 +12,38 @@ function toggleMenu() {
     menuToggle.textContent = nav.classList.contains('active') ? '✕' : '☰';
 }
 
+// Show tailor tab
+function showTailorTab(tabId, evt) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const tab = document.getElementById(tabId);
+    if (tab) {
+        tab.classList.add('active');
+    }
+    
+    // Update tab button states
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    }
+    
+    // Load data for the selected tab
+    if (tabId === 'tailors-tab' && window.tailorManagement) {
+        window.tailorManagement.loadTailors();
+    } else if (tabId === 'assignments-tab' && window.tailorManagement) {
+        window.tailorManagement.loadTailors(); // For tailor dropdown
+        window.tailorManagement.loadAssignments();
+    } else if (tabId === 'fabrics-tab' && window.tailorManagement) {
+        window.tailorManagement.loadFabrics();
+    }
+}
+
 function showSection(sectionId, evt) {
     // Stop camera scanner when switching sections
     if (html5QrcodeScanner) {
@@ -45,7 +77,8 @@ function showSection(sectionId, evt) {
                 (btn.textContent === 'Create Product' && sectionId === 'create-product') ||
                 (btn.textContent === 'Scan QR' && sectionId === 'scan-qr') ||
                 (btn.textContent === 'Inventory' && sectionId === 'inventory') ||
-                (btn.textContent === 'History' && sectionId === 'transactions')) {
+                (btn.textContent === 'History' && sectionId === 'transactions') ||
+                (btn.textContent === 'Tailor Management' && sectionId === 'tailor-management')) {
                 btn.classList.add('active');
             }
         });
@@ -660,5 +693,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadDashboard();
             }
         }, 100);
+    }
+    
+    // Initialize tailor management if available
+    if (window.tailorManagement) {
+        window.tailorManagement.init();
     }
 });

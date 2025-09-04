@@ -17,6 +17,7 @@
                 <button class="nav-btn" onclick="showSection('scan-qr', event)">Scan QR</button>
                 <button class="nav-btn" onclick="showSection('inventory', event)">Inventory</button>
                 <button class="nav-btn" onclick="showSection('transactions', event)">History</button>
+                <button class="nav-btn" onclick="showSection('tailor-management', event)">Tailor Management</button>
             </nav>
         </header>
 
@@ -183,6 +184,152 @@
             </div>
             <div class="table-container" id="transactions-table"></div>
         </div>
+
+        <!-- Tailor Management Section -->
+        <div id="tailor-management" class="section">
+            <h2>Tailor & Garment Management</h2>
+            
+            <!-- Dashboard Stats -->
+            <div id="tailor-dashboard-stats"></div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="showTailorTab('tailors-tab', event)">Tailors</button>
+                <button class="tab-btn" onclick="showTailorTab('assignments-tab', event)">Work Assignments</button>
+                <button class="tab-btn" onclick="showTailorTab('fabrics-tab', event)">Fabrics</button>
+            </div>
+            
+            <!-- Tailors Tab -->
+            <div id="tailors-tab" class="tab-content active">
+                <h3>Register New Tailor</h3>
+                <form id="tailor-form" class="form">
+                    <div class="form-group">
+                        <label for="tailor-name">Tailor Name</label>
+                        <input type="text" id="tailor-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tailor-specialization">Specialization</label>
+                        <input type="text" id="tailor-specialization" placeholder="e.g., Shirts, Pants, Alterations">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tailor-contact">Contact Number</label>
+                        <input type="tel" id="tailor-contact">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Register Tailor</button>
+                </form>
+                
+                <h3>Registered Tailors</h3>
+                <div class="filter-bar">
+                    <input type="text" id="search-tailors" class="search-input" placeholder="Search tailors...">
+                </div>
+                <div id="tailors-list" class="table-container"></div>
+            </div>
+            
+            <!-- Assignments Tab -->
+            <div id="assignments-tab" class="tab-content">
+                <h3>Create Work Assignment</h3>
+                <form id="assignment-form" class="form">
+                    <div class="form-group">
+                        <label for="assignment-tailor">Select Tailor</label>
+                        <select id="assignment-tailor" required>
+                            <option value="">Select Tailor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assignment-product">Product ID (Optional)</label>
+                        <input type="text" id="assignment-product" placeholder="Link to existing product">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="garment-type">Garment Type</label>
+                        <select id="garment-type" required>
+                            <option value="">Select Type</option>
+                            <option value="Shirt">Shirt</option>
+                            <option value="T-Shirt">T-Shirt</option>
+                            <option value="Pants">Pants</option>
+                            <option value="Jacket">Jacket</option>
+                            <option value="Dress">Dress</option>
+                            <option value="Skirt">Skirt</option>
+                            <option value="Suit">Suit</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fabric-type">Fabric Type</label>
+                        <select id="fabric-type" required>
+                            <option value="">Select Fabric</option>
+                            <option value="Cotton">Cotton</option>
+                            <option value="Silk">Silk</option>
+                            <option value="Polyester">Polyester</option>
+                            <option value="Wool">Wool</option>
+                            <option value="Linen">Linen</option>
+                            <option value="Denim">Denim</option>
+                            <option value="Mixed">Mixed</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assignment-quantity">Quantity</label>
+                        <input type="number" id="assignment-quantity" min="1" value="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expected-date">Expected Completion Date</label>
+                        <input type="date" id="expected-date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="assignment-notes">Notes</label>
+                        <textarea id="assignment-notes" rows="2" placeholder="Special instructions..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Assign Work</button>
+                </form>
+                
+                <h3>Work Assignments</h3>
+                <div class="filter-bar">
+                    <input type="text" id="search-assignments" class="search-input" placeholder="Search assignments...">
+                </div>
+                <div id="assignments-list" class="table-container"></div>
+            </div>
+            
+            <!-- Fabrics Tab -->
+            <div id="fabrics-tab" class="tab-content">
+                <h3>Add Fabric Stock</h3>
+                <form id="fabric-form" class="form">
+                    <div class="form-group">
+                        <label for="fabric-type-input">Fabric Type</label>
+                        <input type="text" id="fabric-type-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fabric-color">Color</label>
+                        <input type="text" id="fabric-color">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fabric-quantity">Quantity (meters)</label>
+                        <input type="number" id="fabric-quantity" step="0.01" min="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fabric-location">Storage Location</label>
+                        <input type="text" id="fabric-location" placeholder="e.g., Rack A1">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Add Fabric</button>
+                </form>
+                
+                <h3>Fabric Inventory</h3>
+                <div id="fabrics-list" class="table-container"></div>
+            </div>
+        </div>
     </div>
 
     <!-- QR Code Scanner Library (load before app.js) -->
@@ -200,6 +347,7 @@
     </script>
     
     <script src="config.js"></script>
+    <script src="tailor.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
