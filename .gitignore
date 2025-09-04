@@ -8,6 +8,8 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
+backend/inventory.db
+backend/*.db
 
 # Generated QR codes
 qr_codes/*.png
@@ -47,3 +49,36 @@ build/
 # Temporary files
 tmp/
 temp/
+
+# Security - SSL Certificates (NEVER commit these!)
+backend/*.pem
+backend/cert.pem
+backend/key.pem
+*.key
+*.crt
+*.cer
+
+# Backup files
+*.backup
+*.bak
+*~
+*.old
+backend/server-https.js.backup
+
+# Local config files
+frontend/public/config-simple.js
+frontend/public/config-dynamic.js
+
+# Test files
+frontend/public/test-database.html
+frontend/public/database.html
+frontend/public/network-info.html
+
+# Shell scripts with potential sensitive info
+start-local-server.sh
+view-database.sh
+
+# Server logs
+backend/server.log
+server.log
+*.log
