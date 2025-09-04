@@ -339,6 +339,11 @@ app.use('/api/tailor', tailorRoutes);
 const { router: authRoutes } = require('./authRoutes');
 app.use('/api/auth', authRoutes);
 
+// Redirect root to login page
+app.get('/', (req, res) => {
+    res.redirect('/login.html');
+});
+
 // Function to get local IP address
 function getLocalIP() {
     const interfaces = os.networkInterfaces();

@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f5f5;
+    background: #ffffff;
     color: #333;
     line-height: 1.6;
 }
@@ -17,17 +17,18 @@ body {
     margin: 0 auto;
     background: white;
     min-height: 100vh;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.08);
 }
 
 header {
-    background: #2c3e50;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 1rem;
     text-align: center;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
 }
 
 header h1 {
@@ -43,21 +44,25 @@ nav {
 }
 
 .nav-btn {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.2);
     color: white;
-    border: 2px solid white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
     padding: 0.5rem 1rem;
-    border-radius: 5px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s;
     white-space: nowrap;
+    backdrop-filter: blur(10px);
 }
 
 .nav-btn:hover, .nav-btn.active {
     background: white;
-    color: #2c3e50;
+    color: #667eea;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .section {
@@ -85,11 +90,18 @@ nav {
 
 .stat-card {
     background: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1rem;
+    border: 1px solid #e3f2fd;
+    border-radius: 12px;
+    padding: 1.25rem;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    border-color: #2196f3;
 }
 
 .stat-card h3 {
@@ -102,7 +114,10 @@ nav {
 .stat-number {
     font-size: 2rem;
     font-weight: bold;
-    color: #2c3e50;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* Forms */
@@ -147,14 +162,15 @@ nav {
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 /* Buttons */
 .btn {
     padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 25px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
@@ -164,58 +180,74 @@ nav {
     text-align: center;
     width: 100%;
     max-width: 300px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-primary {
-    background: #3498db;
+    background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%);
     color: white;
+    box-shadow: 0 4px 6px rgba(33, 150, 243, 0.3);
 }
 
 .btn-primary:hover {
-    background: #2980b9;
+    background: linear-gradient(135deg, #00acc1 0%, #1976d2 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(33, 150, 243, 0.4);
 }
 
 .btn-success {
-    background: #27ae60;
+    background: linear-gradient(135deg, #00e676 0%, #00c853 100%);
     color: white;
+    box-shadow: 0 4px 6px rgba(0, 200, 83, 0.3);
 }
 
 .btn-success:hover {
-    background: #229954;
+    background: linear-gradient(135deg, #00c853 0%, #00a041 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 200, 83, 0.4);
 }
 
 .btn-danger {
-    background: #e74c3c;
+    background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
     color: white;
+    box-shadow: 0 4px 6px rgba(244, 67, 54, 0.3);
 }
 
 .btn-danger:hover {
-    background: #c0392b;
+    background: linear-gradient(135deg, #ff1744 0%, #d32f2f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(244, 67, 54, 0.4);
 }
 
 .btn-secondary {
-    background: #95a5a6;
+    background: linear-gradient(135deg, #64b5f6 0%, #42a5f5 100%);
     color: white;
+    box-shadow: 0 4px 6px rgba(66, 165, 245, 0.3);
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+    background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(66, 165, 245, 0.4);
 }
 
 /* QR Result Display */
 .qr-result {
     margin-top: 1.5rem;
     padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+    border-radius: 12px;
     text-align: center;
-    border: 2px solid #27ae60;
+    border: 2px solid #00c853;
+    box-shadow: 0 4px 10px rgba(0, 200, 83, 0.15);
 }
 
 .qr-result h3 {
-    color: #27ae60;
+    color: #00c853;
     margin-bottom: 1rem;
     font-size: 1.1rem;
+    font-weight: 600;
 }
 
 #qr-display {
@@ -265,14 +297,14 @@ nav {
 }
 
 #reader {
-    border: 3px solid #3498db;
-    border-radius: 10px;
+    border: 3px solid #2196f3;
+    border-radius: 15px;
     overflow: hidden;
     width: 350px;
     height: 350px;
     position: relative;
     background: #000;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.3);
 }
 
 #reader video {
@@ -310,7 +342,7 @@ nav {
 #product-details h4 {
     color: #2c3e50;
     margin-bottom: 0.75rem;
-    border-bottom: 2px solid #3498db;
+    border-bottom: 2px solid #2196f3;
     padding-bottom: 0.5rem;
     font-size: 1.1rem;
 }
@@ -340,7 +372,7 @@ table {
 }
 
 thead {
-    background: #34495e;
+    background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
     color: white;
 }
 
@@ -374,27 +406,31 @@ tbody tr:nth-child(even) {
 
 .search-input:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 /* Action Buttons in Tables */
 .action-btn {
     padding: 0.3rem 0.8rem;
     border: none;
-    border-radius: 3px;
+    border-radius: 15px;
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
+    transition: all 0.3s;
 }
 
 .view-btn {
-    background: #3498db;
+    background: linear-gradient(135deg, #00bcd4 0%, #2196f3 100%);
     color: white;
 }
 
 .view-btn:hover {
-    background: #2980b9;
+    background: linear-gradient(135deg, #00acc1 0%, #1976d2 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
 }
 
 /* Summary Table */
@@ -749,12 +785,12 @@ tbody tr:nth-child(even) {
 }
 
 .tab-btn:hover {
-    color: #3498db;
+    color: #2196f3;
 }
 
 .tab-btn.active {
-    color: #3498db;
-    border-bottom-color: #3498db;
+    color: #2196f3;
+    border-bottom-color: #2196f3;
     font-weight: 600;
 }
 
