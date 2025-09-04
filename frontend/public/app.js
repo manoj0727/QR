@@ -802,6 +802,14 @@ document.addEventListener('DOMContentLoaded', function() {
         userInfoEl.innerHTML = `👤 ${auth.user.full_name} (${auth.user.role}) | <a href="#" onclick="logout(); return false;">Logout</a>`;
     }
     
+    // Show admin portal link for admin/manager users
+    if (auth.user.role === 'admin' || auth.user.role === 'manager') {
+        const adminLink = document.getElementById('admin-link');
+        if (adminLink) {
+            adminLink.style.display = 'inline-block';
+        }
+    }
+    
     // Show dashboard section on page load
     showSection('dashboard');
     
