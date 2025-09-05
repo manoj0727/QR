@@ -4,10 +4,8 @@
   "description": "Backend for QR Code Inventory Management System",
   "main": "server.js",
   "scripts": {
-    "start": "node server-secure.js",
-    "start:old": "node server.js",
-    "dev": "nodemon server-secure.js",
-    "dev:old": "nodemon server.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
     "build": "echo 'No build needed for backend'"
   },
   "engines": {

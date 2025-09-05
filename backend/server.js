@@ -4,15 +4,24 @@ require('dotenv').config();
 process.env.TZ = 'Asia/Kolkata';
 
 const express = require('express');
+const https = require('https');
+const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
 // Use SQLite instead of PostgreSQL
 const { db, initializeDatabase } = require('./database-sqlite');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 const tailorRoutes = require('./tailorRoutes');
+const { router: authRoutes } = require('./authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// SSL certificate paths
+const sslOptions = {
+  key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'))
+};
 
 // Helper function to get current IST time
 const getISTTime = () => {
@@ -53,6 +62,9 @@ app.get('/health', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'healthy', service: 'QR Inventory API', timestamp: new Date().toISOString() });
 });
+
+// Mount auth routes
+app.use('/api/auth', authRoutes);
 
 // Mount tailor management routes
 app.use('/api/tailor', tailorRoutes);
@@ -335,11 +347,15 @@ const getLocalIP = () => {
   return '127.0.0.1';
 };
 
-// Listen on all network interfaces (0.0.0.0)
-app.listen(PORT, '0.0.0.0', () => {
+// Create HTTPS server and listen on all network interfaces (0.0.0.0)
+const httpsServer = https.createServer(sslOptions, app);
+
+httpsServer.listen(PORT, '0.0.0.0', () => {
   const localIP = getLocalIP();
-  console.log(`Server is running on:`);
-  console.log(`  - Local: http://localhost:${PORT}`);
-  console.log(`  - Network: http://${localIP}:${PORT}`);
-  console.log(`\nOther devices on the same network can access using: http://${localIP}:${PORT}`);
+  console.log(`HTTPS Server is running on:`);
+  console.log(`  - Local: https://localhost:${PORT}`);
+  console.log(`  - Network: https://${localIP}:${PORT}`);
+  console.log(`\nOther devices on the same network can access using: https://${localIP}:${PORT}`);
+  console.log(`\n⚠️  Note: The server uses a self-signed certificate.`);
+  console.log(`   Browsers will show a security warning that you can bypass for development.`);
 });
