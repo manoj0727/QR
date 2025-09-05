@@ -13,6 +13,7 @@ const { db, initializeDatabase } = require('./database-sqlite');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 const tailorRoutes = require('./tailorRoutes');
 const { router: authRoutes } = require('./authRoutes');
+const { validateOnStartup } = require('./routeValidator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] ${req.method} ${req.url}`);
+  next();
+});
 
 // Serve static files (frontend)
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
@@ -332,6 +340,32 @@ app.get('/api/inventory/summary', (req, res) => {
   );
 });
 
+// 404 handler for undefined API routes
+app.use((req, res, next) => {
+  // Only handle /api routes that haven't been matched
+  if (req.path.startsWith('/api/')) {
+    console.error(`[404] Route not found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ 
+      error: 'API endpoint not found',
+      path: req.originalUrl,
+      method: req.method,
+      message: 'The requested API endpoint does not exist. Please check the URL and try again.'
+    });
+  } else {
+    next();
+  }
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('[ERROR]', err.stack);
+  res.status(err.status || 500).json({
+    error: 'Internal server error',
+    message: err.message || 'Something went wrong!',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+  });
+});
+
 // Get the local IP address
 const os = require('os');
 const getLocalIP = () => {
@@ -352,10 +386,25 @@ const httpsServer = https.createServer(sslOptions, app);
 
 httpsServer.listen(PORT, '0.0.0.0', () => {
   const localIP = getLocalIP();
-  console.log(`HTTPS Server is running on:`);
-  console.log(`  - Local: https://localhost:${PORT}`);
-  console.log(`  - Network: https://${localIP}:${PORT}`);
-  console.log(`\nOther devices on the same network can access using: https://${localIP}:${PORT}`);
-  console.log(`\n⚠️  Note: The server uses a self-signed certificate.`);
-  console.log(`   Browsers will show a security warning that you can bypass for development.`);
+  console.log('\n========================================');
+  console.log('🚀 HTTPS Server Started Successfully!');
+  console.log('========================================');
+  console.log(`📍 Local: https://localhost:${PORT}`);
+  console.log(`📍 Network: https://${localIP}:${PORT}`);
+  console.log('\n🔐 Registered API Routes:');
+  console.log('  ✓ /api/auth/* - Authentication endpoints');
+  console.log('  ✓ /api/tailor/* - Tailor management');
+  console.log('  ✓ /api/products/* - Product management');
+  console.log('  ✓ /api/inventory/* - Inventory operations');
+  console.log('  ✓ /api/transactions - Transaction logs');
+  console.log('  ✓ /api/qr/* - QR code operations');
+  console.log('\n⚠️  Note: Using self-signed certificate');
+  console.log('   Browsers will show a security warning.');
+  console.log('\n📝 Default Login Credentials:');
+  console.log('   Username: admin');
+  console.log('   Password: admin123');
+  console.log('========================================\n');
+  
+  // Validate all routes are properly mounted
+  validateOnStartup(app);
 });
