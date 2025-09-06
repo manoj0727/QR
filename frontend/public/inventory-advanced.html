@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - QR System</title>
+    <link rel="stylesheet" href="inventory-advanced.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="inventory-container">
+        <!-- Header Bar -->
+        <div class="inventory-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Inventory</h1>
+                <span class="record-count">0 Records</span>
+            </div>
+            
+            <div class="header-right">
+                <button class="btn-action primary">
+                    <i class="fas fa-plus"></i>
+                    New Product
+                </button>
+                <button class="btn-action">
+                    <i class="fas fa-file-import"></i>
+                    Import
+                </button>
+                <button class="btn-action">
+                    <i class="fas fa-file-export"></i>
+                    Export
+                </button>
+                <button class="btn-icon">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="status-filter" class="filter-select">
+                        <option value="all">All</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select id="category-filter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="shirt">Shirts</option>
+                        <option value="pants">Pants</option>
+                        <option value="jacket">Jackets</option>
+                        <option value="t-shirt">T-Shirts</option>
+                        <option value="other">Others</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Date Range</label>
+                    <div class="date-range">
+                        <input type="date" id="date-from" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="date-to" class="date-input">
+                    </div>
+                </div>
+                
+                <button class="filter-btn">
+                    <i class="fas fa-filter"></i>
+                    More Filters
+                </button>
+                
+                <button class="clear-filter">
+                    Clear All
+                </button>
+            </div>
+            
+            <div class="search-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by product name, SKU, or ID..." id="search-input">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Table Controls -->
+        <div class="table-controls">
+            <div class="controls-left">
+                <div class="bulk-actions" style="display: none;">
+                    <input type="checkbox" id="select-all">
+                    <span class="selected-count">0 selected</span>
+                    <button class="bulk-btn">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                    </button>
+                    <button class="bulk-btn">
+                        <i class="fas fa-trash"></i>
+                        Delete
+                    </button>
+                    <button class="bulk-btn">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+            
+            <div class="controls-right">
+                <div class="view-options">
+                    <button class="view-btn active" data-view="table">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-btn" data-view="grid">
+                        <i class="fas fa-th"></i>
+                    </button>
+                </div>
+                
+                <div class="per-page">
+                    <label>Show</label>
+                    <select id="per-page">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                    </select>
+                    <label>entries</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Table -->
+        <div class="table-wrapper">
+            <table class="inventory-table">
+                <thead>
+                    <tr>
+                        <th class="checkbox-col">
+                            <input type="checkbox" id="select-all-header">
+                        </th>
+                        <th class="sortable" data-column="product_id">
+                            Product ID
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="image">
+                            Image
+                        </th>
+                        <th class="sortable active desc" data-column="name">
+                            Product Name
+                            <i class="fas fa-sort-down"></i>
+                        </th>
+                        <th class="sortable" data-column="sku">
+                            SKU
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="category">
+                            Category
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="size">
+                            Size
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="color">
+                            Color
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="quantity">
+                            Stock
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="status">
+                            Status
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="price">
+                            Price
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-column="last_updated">
+                            Last Updated
+                            <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="actions-col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-tbody">
+                    <!-- Sample rows - will be populated dynamically -->
+                    <tr>
+                        <td class="checkbox-col">
+                            <input type="checkbox" class="row-checkbox">
+                        </td>
+                        <td class="product-id">
+                            <a href="#" class="link">PRD-001</a>
+                        </td>
+                        <td class="image-col">
+                            <div class="product-image">
+                                <img src="https://via.placeholder.com/40" alt="Product">
+                            </div>
+                        </td>
+                        <td class="product-name">
+                            <div class="name-cell">
+                                <span class="name">Blue Cotton Shirt</span>
+                                <span class="sub-info">Premium Collection</span>
+                            </div>
+                        </td>
+                        <td class="sku">BCS-M-001</td>
+                        <td class="category">
+                            <span class="category-badge">Shirt</span>
+                        </td>
+                        <td class="size">M</td>
+                        <td class="color">
+                            <div class="color-display">
+                                <span class="color-dot" style="background: #2196f3;"></span>
+                                Blue
+                            </div>
+                        </td>
+                        <td class="quantity">
+                            <div class="stock-info">
+                                <span class="stock-number">145</span>
+                                <div class="stock-bar">
+                                    <div class="stock-level" style="width: 72%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="status">
+                            <span class="status-badge in-stock">In Stock</span>
+                        </td>
+                        <td class="price">$45.00</td>
+                        <td class="last-updated">
+                            <span class="date">Dec 26, 2024</span>
+                            <span class="time">10:30 AM</span>
+                        </td>
+                        <td class="actions-col">
+                            <div class="actions">
+                                <button class="action-btn" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn" title="QR Code">
+                                    <i class="fas fa-qrcode"></i>
+                                </button>
+                                <div class="dropdown">
+                                    <button class="action-btn" title="More">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a href="#">Duplicate</a>
+                                        <a href="#">Print Label</a>
+                                        <a href="#">View History</a>
+                                        <div class="divider"></div>
+                                        <a href="#" class="danger">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- More sample rows -->
+                    <tr>
+                        <td class="checkbox-col">
+                            <input type="checkbox" class="row-checkbox">
+                        </td>
+                        <td class="product-id">
+                            <a href="#" class="link">PRD-002</a>
+                        </td>
+                        <td class="image-col">
+                            <div class="product-image">
+                                <img src="https://via.placeholder.com/40" alt="Product">
+                            </div>
+                        </td>
+                        <td class="product-name">
+                            <div class="name-cell">
+                                <span class="name">Black Denim Jeans</span>
+                                <span class="sub-info">Casual Wear</span>
+                            </div>
+                        </td>
+                        <td class="sku">BDJ-L-002</td>
+                        <td class="category">
+                            <span class="category-badge">Pants</span>
+                        </td>
+                        <td class="size">L</td>
+                        <td class="color">
+                            <div class="color-display">
+                                <span class="color-dot" style="background: #000;"></span>
+                                Black
+                            </div>
+                        </td>
+                        <td class="quantity">
+                            <div class="stock-info">
+                                <span class="stock-number low">12</span>
+                                <div class="stock-bar">
+                                    <div class="stock-level low" style="width: 15%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="status">
+                            <span class="status-badge low-stock">Low Stock</span>
+                        </td>
+                        <td class="price">$65.00</td>
+                        <td class="last-updated">
+                            <span class="date">Dec 26, 2024</span>
+                            <span class="time">09:15 AM</span>
+                        </td>
+                        <td class="actions-col">
+                            <div class="actions">
+                                <button class="action-btn" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-btn" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn" title="QR Code">
+                                    <i class="fas fa-qrcode"></i>
+                                </button>
+                                <div class="dropdown">
+                                    <button class="action-btn" title="More">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a href="#">Duplicate</a>
+                                        <a href="#">Print Label</a>
+                                        <a href="#">View History</a>
+                                        <div class="divider"></div>
+                                        <a href="#" class="danger">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Empty State -->
+            <div class="empty-state" style="display: none;">
+                <i class="fas fa-box-open"></i>
+                <h3>No products found</h3>
+                <p>Try adjusting your filters or add a new product</p>
+                <button class="btn-action primary">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </button>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Showing <span id="start-record">1</span> to <span id="end-record">25</span> 
+                of <span id="total-records">248</span> entries
+            </div>
+            
+            <div class="pagination">
+                <button class="page-btn" disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="page-number active">1</button>
+                <button class="page-number">2</button>
+                <button class="page-number">3</button>
+                <span class="page-dots">...</span>
+                <button class="page-number">10</button>
+                <button class="page-btn">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick View Modal -->
+    <div class="modal" id="quick-view-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Product Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="inventory-advanced.js"></script>
+</body>
+</html>

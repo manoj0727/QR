@@ -3,356 +3,777 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Inventory System</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Employee Dashboard - QR Inventory System</title>
+    <link rel="stylesheet" href="dashboard-modern.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Additional styles for existing functionality */
+        .section-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .qr-result {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--success);
+        }
+        
+        #qr-display img {
+            max-width: 100%;
+            width: 280px;
+            height: auto;
+            border: 3px solid var(--dark);
+            padding: 15px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        #reader {
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            margin: 0 auto;
+            background: var(--dark);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scan-options {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            font-size: 0.925rem;
+            font-weight: 700;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 150px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: var(--white);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: var(--white);
+        }
+        
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.925rem;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--white);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>QR Inventory Management</h1>
-                <div id="user-info" style="color: white; font-size: 0.9rem;"></div>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QR Inventory</span>
+                </div>
             </div>
-            <button class="mobile-menu-toggle" onclick="toggleMenu()" id="menu-toggle">☰</button>
-            <nav id="nav-menu">
-                <button class="nav-btn" onclick="showSection('dashboard', event)">Dashboard</button>
-                <button class="nav-btn" onclick="showSection('create-product', event)">Create Product</button>
-                <button class="nav-btn" onclick="showSection('scan-qr', event)">Scan QR</button>
-                <button class="nav-btn" onclick="showSection('inventory', event)">Inventory</button>
-                <button class="nav-btn" onclick="showSection('transactions', event)">History</button>
-                <button class="nav-btn" onclick="showSection('tailor-management', event)">Tailor Management</button>
-                <a href="admin.html" class="nav-btn" id="admin-link" style="display: none;">Admin Portal</a>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard', event)">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('create-product', event)">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Create Product</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('scan-qr', event)">
+                    <i class="fas fa-qrcode"></i>
+                    <span>Scan QR</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('inventory', event)">
+                    <i class="fas fa-boxes"></i>
+                    <span>Inventory</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('transactions', event)">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('tailor-management', event)">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Tailor Management</span>
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('reports', event)">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
             </nav>
-        </header>
-
-        <!-- Dashboard Section -->
-        <div id="dashboard" class="section">
-            <h2>Dashboard</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Total Items</h3>
-                    <div class="stat-number" id="total-items">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Product Types</h3>
-                    <div class="stat-number" id="product-types">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Recent Transactions</h3>
-                    <div class="stat-number" id="recent-transactions">0</div>
-                </div>
-            </div>
-            <div class="summary-table" id="inventory-summary"></div>
-        </div>
-
-        <!-- Create Product Section -->
-        <div id="create-product" class="section">
-            <h2>Create New Product</h2>
-            <form id="product-form" class="form">
-                <div class="form-group">
-                    <label for="product-name">Product Name</label>
-                    <input type="text" id="product-name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="product-type">Type</label>
-                    <select id="product-type" required>
-                        <option value="">Select Type</option>
-                        <option value="Shirt">Shirt</option>
-                        <option value="T-Shirt">T-Shirt</option>
-                        <option value="Pants">Pants</option>
-                        <option value="Jacket">Jacket</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="product-size">Size</label>
-                    <select id="product-size" required>
-                        <option value="">Select Size</option>
-                        <option value="S">S</option>
-                        <option value="M">M</option>
-                        <option value="L">L</option>
-                        <option value="XL">XL</option>
-                        <option value="XXL">XXL</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="product-color">Color (Optional)</label>
-                    <input type="text" id="product-color">
-                </div>
-                
-                <div class="form-group">
-                    <label for="initial-quantity">Initial Quantity</label>
-                    <input type="number" id="initial-quantity" value="0" min="0">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">Create Product & Generate QR</button>
-            </form>
             
-            <div id="qr-result" class="qr-result" style="display: none;">
-                <h3>✓ Product Created Successfully!</h3>
-                <div id="qr-display"></div>
-                <button id="download-qr" class="btn btn-success">Download QR Code</button>
+            <div class="sidebar-footer">
+                <a href="admin.html" class="nav-item" id="admin-link" style="display: none;">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Portal</span>
+                </a>
+                <a href="login.html" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
             </div>
-        </div>
-
-        <!-- Scan QR Section -->
-        <div id="scan-qr" class="section">
-            <h2>Scan QR Code</h2>
-            
-            <div class="scan-options">
-                <button onclick="startScanner()" class="btn btn-primary">Start Camera Scanner</button>
-                <button onclick="showManualEntry()" class="btn btn-secondary">Manual Entry</button>
-            </div>
-            
-            <div id="scanner-container" style="display: none;">
-                <div class="scanner-wrapper">
-                    <p id="camera-info" style="text-align: center; color: #666; margin-bottom: 1rem;">
-                        Requesting camera permission...
-                    </p>
-                    <div class="reader-container">
-                        <div id="reader"></div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="page-title">Dashboard</h1>
+                </div>
+                
+                <div class="topbar-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search inventory..." id="global-search">
                     </div>
-                    <div id="camera-loading" style="text-align: center; padding: 2rem; display: none;">
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p style="margin-top: 1rem;">Initializing camera...</p>
+                    
+                    <button class="topbar-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    
+                    <div class="user-menu">
+                        <img src="https://ui-avatars.com/api/?name=Employee&background=6366f1&color=fff" alt="User" class="user-avatar">
+                        <span class="user-name" id="user-info">Employee</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="section active">
+                    <!-- Quick Stats -->
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Total Items</span>
+                                <span class="stat-value" id="total-items">0</span>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> Updated
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Product Types</span>
+                                <span class="stat-value" id="product-types">0</span>
+                                <span class="stat-change">
+                                    <i class="fas fa-minus"></i> Stable
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Recent Transactions</span>
+                                <span class="stat-value" id="recent-transactions">0</span>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> Active
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Low Stock Items</span>
+                                <span class="stat-value" id="low-stock">0</span>
+                                <span class="stat-change negative">
+                                    <i class="fas fa-arrow-down"></i> Alert
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <button onclick="stopScanner()" class="btn btn-danger" style="margin-top: 1rem; display: block; margin-left: auto; margin-right: auto;">Stop Scanner</button>
+                    
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3>Inventory Overview</h3>
+                                <div class="card-actions">
+                                    <select class="period-select">
+                                        <option>This Week</option>
+                                        <option>This Month</option>
+                                        <option>This Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card small">
+                            <div class="card-header">
+                                <h3>Stock Distribution</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="stockChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Table -->
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h3>Inventory Summary</h3>
+                            <div class="card-actions">
+                                <button class="btn-text" onclick="showSection('inventory', event)">View All</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="inventory-summary"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="showSection('create-product', event)">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Product</span>
+                            </button>
+                            <button class="action-btn" onclick="showSection('scan-qr', event)">
+                                <i class="fas fa-qrcode"></i>
+                                <span>Scan QR</span>
+                            </button>
+                            <button class="action-btn" onclick="exportReport()">
+                                <i class="fas fa-file-export"></i>
+                                <span>Export Report</span>
+                            </button>
+                            <button class="action-btn" onclick="syncData()">
+                                <i class="fas fa-sync"></i>
+                                <span>Sync Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Create Product Section -->
+                <div id="create-product" class="section">
+                    <iframe src="product-simple.html" style="width: 100%; height: calc(100vh - 70px); border: none;"></iframe>
+                </div>
+                
+                <!-- Scan QR Section -->
+                <div id="scan-qr" class="section">
+                    <div class="section-content">
+                        <h2>Scan QR Code</h2>
+                        
+                        <div class="scan-options">
+                            <button onclick="startScanner()" class="btn btn-primary">Start Camera Scanner</button>
+                            <button onclick="showManualEntry()" class="btn btn-secondary">Manual Entry</button>
+                        </div>
+                        
+                        <div id="scanner-container" style="display: none;">
+                            <div class="scanner-wrapper">
+                                <p id="camera-info" style="text-align: center; color: #666; margin-bottom: 1rem;">
+                                    Requesting camera permission...
+                                </p>
+                                <div class="reader-container">
+                                    <div id="reader"></div>
+                                </div>
+                                <div id="camera-loading" style="text-align: center; padding: 2rem; display: none;">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p style="margin-top: 1rem;">Initializing camera...</p>
+                                    </div>
+                                </div>
+                                <button onclick="stopScanner()" class="btn btn-danger" style="margin-top: 1rem; display: block; margin-left: auto; margin-right: auto;">Stop Scanner</button>
+                            </div>
+                        </div>
+                        
+                        <div id="manual-entry" style="display: none;">
+                            <div class="form-group">
+                                <label for="manual-product-id">Enter Product ID</label>
+                                <input type="text" id="manual-product-id" placeholder="e.g., SHI-M-ABC123">
+                            </div>
+                        </div>
+                        
+                        <div id="scan-result" class="scan-result" style="display: none;">
+                            <div id="product-details"></div>
+                            
+                            <h3>Update Inventory</h3>
+                            <form id="inventory-action-form" class="form">
+                                <div class="form-group">
+                                    <label for="action">Action</label>
+                                    <select id="action" required>
+                                        <option value="">Select Action</option>
+                                        <option value="IN">Add Items (Stock In)</option>
+                                        <option value="OUT">Remove Items (Stock Out)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="quantity">Quantity</label>
+                                    <input type="number" id="quantity" value="1" min="1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="performed-by">Performed By</label>
+                                    <input type="text" id="performed-by" placeholder="Enter your name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="location">Location (Optional)</label>
+                                    <input type="text" id="location" placeholder="e.g., Warehouse A">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="notes">Notes (Optional)</label>
+                                    <textarea id="notes" rows="2"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Update Inventory</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Inventory Section -->
+                <div id="inventory" class="section">
+                    <iframe src="inventory-advanced.html" style="width: 100%; height: calc(100vh - 70px); border: none;"></iframe>
+                </div>
+                
+                <!-- Transactions Section -->
+                <div id="transactions" class="section">
+                    <div class="section-content">
+                        <h2>Transaction History</h2>
+                        <div class="filter-bar">
+                            <input type="text" id="search-transactions" class="search-input" placeholder="Search transactions...">
+                        </div>
+                        <div class="table-container" id="transactions-table"></div>
+                    </div>
+                </div>
+                
+                <!-- Tailor Management Section -->
+                <div id="tailor-management" class="section">
+                    <div class="section-content">
+                        <h2>Tailor & Garment Management</h2>
+                        
+                        <!-- Dashboard Stats -->
+                        <div id="tailor-dashboard-stats"></div>
+                        
+                        <!-- Tab Navigation -->
+                        <div class="tab-nav">
+                            <button class="tab-btn active" onclick="showTailorTab('tailors-tab', event)">Tailors</button>
+                            <button class="tab-btn" onclick="showTailorTab('assignments-tab', event)">Work Assignments</button>
+                            <button class="tab-btn" onclick="showTailorTab('fabrics-tab', event)">Fabrics</button>
+                        </div>
+                        
+                        <!-- Tailors Tab -->
+                        <div id="tailors-tab" class="tab-content active">
+                            <h3>Register New Tailor</h3>
+                            <form id="tailor-form" class="form">
+                                <div class="form-group">
+                                    <label for="tailor-name">Tailor Name</label>
+                                    <input type="text" id="tailor-name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="tailor-specialization">Specialization</label>
+                                    <input type="text" id="tailor-specialization" placeholder="e.g., Shirts, Pants, Alterations">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="tailor-contact">Contact Number</label>
+                                    <input type="tel" id="tailor-contact">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Register Tailor</button>
+                            </form>
+                            
+                            <h3>Registered Tailors</h3>
+                            <div class="filter-bar">
+                                <input type="text" id="search-tailors" class="search-input" placeholder="Search tailors...">
+                            </div>
+                            <div id="tailors-list" class="table-container"></div>
+                        </div>
+                        
+                        <!-- Assignments Tab -->
+                        <div id="assignments-tab" class="tab-content">
+                            <h3>Create Work Assignment</h3>
+                            <form id="assignment-form" class="form">
+                                <div class="form-group">
+                                    <label for="assignment-tailor">Select Tailor</label>
+                                    <select id="assignment-tailor" required>
+                                        <option value="">Select Tailor</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="assignment-product">Product ID (Optional)</label>
+                                    <input type="text" id="assignment-product" placeholder="Link to existing product">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="garment-type">Garment Type</label>
+                                    <select id="garment-type" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Shirt">Shirt</option>
+                                        <option value="T-Shirt">T-Shirt</option>
+                                        <option value="Pants">Pants</option>
+                                        <option value="Jacket">Jacket</option>
+                                        <option value="Dress">Dress</option>
+                                        <option value="Skirt">Skirt</option>
+                                        <option value="Suit">Suit</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fabric-type">Fabric Type</label>
+                                    <select id="fabric-type" required>
+                                        <option value="">Select Fabric</option>
+                                        <option value="Cotton">Cotton</option>
+                                        <option value="Silk">Silk</option>
+                                        <option value="Polyester">Polyester</option>
+                                        <option value="Wool">Wool</option>
+                                        <option value="Linen">Linen</option>
+                                        <option value="Denim">Denim</option>
+                                        <option value="Mixed">Mixed</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="assignment-quantity">Quantity</label>
+                                    <input type="number" id="assignment-quantity" min="1" value="1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="expected-date">Expected Completion Date</label>
+                                    <input type="date" id="expected-date">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="assignment-notes">Notes</label>
+                                    <textarea id="assignment-notes" rows="2" placeholder="Special instructions..."></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Assign Work</button>
+                            </form>
+                            
+                            <h3>Work Assignments</h3>
+                            <div class="filter-bar">
+                                <input type="text" id="search-assignments" class="search-input" placeholder="Search assignments...">
+                            </div>
+                            <div id="assignments-list" class="table-container"></div>
+                        </div>
+                        
+                        <!-- Fabrics Tab -->
+                        <div id="fabrics-tab" class="tab-content">
+                            <h3>Add Fabric Stock</h3>
+                            <form id="fabric-form" class="form">
+                                <div class="form-group">
+                                    <label for="fabric-type-input">Fabric Type</label>
+                                    <input type="text" id="fabric-type-input" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fabric-color">Color</label>
+                                    <input type="text" id="fabric-color">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fabric-quantity">Quantity (meters)</label>
+                                    <input type="number" id="fabric-quantity" step="0.01" min="0.01" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="fabric-location">Storage Location</label>
+                                    <input type="text" id="fabric-location" placeholder="e.g., Rack A1">
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Add Fabric</button>
+                            </form>
+                            
+                            <h3>Fabric Inventory</h3>
+                            <div id="fabrics-list" class="table-container"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Section -->
+                <div id="reports" class="section">
+                    <div class="section-content">
+                        <h2>Reports & Analytics</h2>
+                        <div class="charts-row">
+                            <div class="chart-card">
+                                <div class="card-header">
+                                    <h3>Monthly Trends</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="trendsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div id="manual-entry" style="display: none;">
-                <div class="form-group">
-                    <label for="manual-product-id">Enter Product ID</label>
-                    <input type="text" id="manual-product-id" placeholder="e.g., SHI-M-ABC123">
-                </div>
-            </div>
-            
-            <div id="scan-result" class="scan-result" style="display: none;">
-                <div id="product-details"></div>
-                
-                <h3>Update Inventory</h3>
-                <form id="inventory-action-form" class="form">
-                    <div class="form-group">
-                        <label for="action">Action</label>
-                        <select id="action" required>
-                            <option value="">Select Action</option>
-                            <option value="IN">Add Items (Stock In)</option>
-                            <option value="OUT">Remove Items (Stock Out)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="quantity">Quantity</label>
-                        <input type="number" id="quantity" value="1" min="1" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="performed-by">Performed By</label>
-                        <input type="text" id="performed-by" placeholder="Enter your name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="location">Location (Optional)</label>
-                        <input type="text" id="location" placeholder="e.g., Warehouse A">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="notes">Notes (Optional)</label>
-                        <textarea id="notes" rows="2"></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Update Inventory</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Inventory Section -->
-        <div id="inventory" class="section">
-            <h2>Current Inventory</h2>
-            <div class="filter-bar">
-                <input type="text" id="search-inventory" class="search-input" placeholder="Search products...">
-            </div>
-            <div class="table-container" id="inventory-table"></div>
-        </div>
-
-        <!-- Transactions Section -->
-        <div id="transactions" class="section">
-            <h2>Transaction History</h2>
-            <div class="filter-bar">
-                <input type="text" id="search-transactions" class="search-input" placeholder="Search transactions...">
-            </div>
-            <div class="table-container" id="transactions-table"></div>
-        </div>
-
-        <!-- Tailor Management Section -->
-        <div id="tailor-management" class="section">
-            <h2>Tailor & Garment Management</h2>
-            
-            <!-- Dashboard Stats -->
-            <div id="tailor-dashboard-stats"></div>
-            
-            <!-- Tab Navigation -->
-            <div class="tab-nav">
-                <button class="tab-btn active" onclick="showTailorTab('tailors-tab', event)">Tailors</button>
-                <button class="tab-btn" onclick="showTailorTab('assignments-tab', event)">Work Assignments</button>
-                <button class="tab-btn" onclick="showTailorTab('fabrics-tab', event)">Fabrics</button>
-            </div>
-            
-            <!-- Tailors Tab -->
-            <div id="tailors-tab" class="tab-content active">
-                <h3>Register New Tailor</h3>
-                <form id="tailor-form" class="form">
-                    <div class="form-group">
-                        <label for="tailor-name">Tailor Name</label>
-                        <input type="text" id="tailor-name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tailor-specialization">Specialization</label>
-                        <input type="text" id="tailor-specialization" placeholder="e.g., Shirts, Pants, Alterations">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tailor-contact">Contact Number</label>
-                        <input type="tel" id="tailor-contact">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Register Tailor</button>
-                </form>
-                
-                <h3>Registered Tailors</h3>
-                <div class="filter-bar">
-                    <input type="text" id="search-tailors" class="search-input" placeholder="Search tailors...">
-                </div>
-                <div id="tailors-list" class="table-container"></div>
-            </div>
-            
-            <!-- Assignments Tab -->
-            <div id="assignments-tab" class="tab-content">
-                <h3>Create Work Assignment</h3>
-                <form id="assignment-form" class="form">
-                    <div class="form-group">
-                        <label for="assignment-tailor">Select Tailor</label>
-                        <select id="assignment-tailor" required>
-                            <option value="">Select Tailor</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="assignment-product">Product ID (Optional)</label>
-                        <input type="text" id="assignment-product" placeholder="Link to existing product">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="garment-type">Garment Type</label>
-                        <select id="garment-type" required>
-                            <option value="">Select Type</option>
-                            <option value="Shirt">Shirt</option>
-                            <option value="T-Shirt">T-Shirt</option>
-                            <option value="Pants">Pants</option>
-                            <option value="Jacket">Jacket</option>
-                            <option value="Dress">Dress</option>
-                            <option value="Skirt">Skirt</option>
-                            <option value="Suit">Suit</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fabric-type">Fabric Type</label>
-                        <select id="fabric-type" required>
-                            <option value="">Select Fabric</option>
-                            <option value="Cotton">Cotton</option>
-                            <option value="Silk">Silk</option>
-                            <option value="Polyester">Polyester</option>
-                            <option value="Wool">Wool</option>
-                            <option value="Linen">Linen</option>
-                            <option value="Denim">Denim</option>
-                            <option value="Mixed">Mixed</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="assignment-quantity">Quantity</label>
-                        <input type="number" id="assignment-quantity" min="1" value="1" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="expected-date">Expected Completion Date</label>
-                        <input type="date" id="expected-date">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="assignment-notes">Notes</label>
-                        <textarea id="assignment-notes" rows="2" placeholder="Special instructions..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Assign Work</button>
-                </form>
-                
-                <h3>Work Assignments</h3>
-                <div class="filter-bar">
-                    <input type="text" id="search-assignments" class="search-input" placeholder="Search assignments...">
-                </div>
-                <div id="assignments-list" class="table-container"></div>
-            </div>
-            
-            <!-- Fabrics Tab -->
-            <div id="fabrics-tab" class="tab-content">
-                <h3>Add Fabric Stock</h3>
-                <form id="fabric-form" class="form">
-                    <div class="form-group">
-                        <label for="fabric-type-input">Fabric Type</label>
-                        <input type="text" id="fabric-type-input" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fabric-color">Color</label>
-                        <input type="text" id="fabric-color">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fabric-quantity">Quantity (meters)</label>
-                        <input type="number" id="fabric-quantity" step="0.01" min="0.01" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fabric-location">Storage Location</label>
-                        <input type="text" id="fabric-location" placeholder="e.g., Rack A1">
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">Add Fabric</button>
-                </form>
-                
-                <h3>Fabric Inventory</h3>
-                <div id="fabrics-list" class="table-container"></div>
-            </div>
-        </div>
+        </main>
     </div>
-
-    <!-- QR Code Scanner Library (load before app.js) -->
+    
+    <!-- QR Code Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
-        // Check if library loaded
         if (typeof Html5Qrcode === 'undefined') {
             console.error('Html5Qrcode library failed to load from primary CDN, trying fallback...');
             var script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
             document.body.appendChild(script);
-        } else {
-            console.log('Html5Qrcode library loaded successfully');
         }
     </script>
     
-    <!-- Use dynamic config for network access -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Core Scripts -->
     <script src="config.js"></script>
     <script src="tailor.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Dashboard Integration Script -->
+    <script>
+        // Override showSection to work with new layout
+        const originalShowSection = window.showSection;
+        window.showSection = function(sectionId, event) {
+            if (event) event.preventDefault();
+            
+            // Update sidebar active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Find and activate the clicked nav item
+            const clickedItem = event ? event.currentTarget : 
+                document.querySelector(`.nav-item[onclick*="${sectionId}"]`);
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
+            
+            // Update page title
+            const pageTitle = document.querySelector('.page-title');
+            const titles = {
+                'dashboard': 'Dashboard',
+                'create-product': 'Create Product',
+                'scan-qr': 'Scan QR Code',
+                'inventory': 'Inventory',
+                'transactions': 'Transaction History',
+                'tailor-management': 'Tailor Management',
+                'reports': 'Reports & Analytics'
+            };
+            pageTitle.textContent = titles[sectionId] || 'Dashboard';
+            
+            // Call original function if it exists
+            if (originalShowSection) {
+                originalShowSection(sectionId, event);
+            } else {
+                // Hide all sections
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                    section.style.display = 'none';
+                });
+                
+                // Show selected section
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    targetSection.style.display = 'block';
+                }
+            }
+        };
+        
+        // Handle sidebar toggle
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        });
+        
+        // Initialize charts when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sales chart
+            const salesCtx = document.getElementById('salesChart');
+            if (salesCtx) {
+                const gradient = salesCtx.getContext('2d').createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)');
+                gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
+                
+                new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Stock In',
+                            data: [12, 19, 15, 25, 22, 30, 28],
+                            borderColor: '#6366f1',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Stock Out',
+                            data: [8, 12, 10, 18, 16, 22, 20],
+                            borderColor: '#8b5cf6',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Initialize stock distribution chart
+            const stockCtx = document.getElementById('stockChart');
+            if (stockCtx) {
+                new Chart(stockCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Shirts', 'Pants', 'Jackets', 'T-Shirts', 'Others'],
+                        datasets: [{
+                            data: [30, 25, 20, 15, 10],
+                            backgroundColor: [
+                                '#6366f1',
+                                '#8b5cf6',
+                                '#ec4899',
+                                '#f59e0b',
+                                '#10b981'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+            
+            // Mobile responsiveness
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.add('collapsed');
+            }
+        });
+        
+        // Export function placeholder
+        function exportReport() {
+            alert('Exporting report...');
+        }
+        
+        // Sync function placeholder
+        function syncData() {
+            alert('Syncing data...');
+        }
+    </script>
 </body>
 </html>
