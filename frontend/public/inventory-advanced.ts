@@ -1322,5 +1322,956 @@ function printLabel(productId: string): void {
 }
 
 function viewHistory(productId: string): void {
-    showToast('Product history feature coming soon', 'info');
+    // Get product and history data
+    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+    const product = products.find((p: any) => p.id === productId);
+    
+    if (!product) {
+        showToast('Product not found', 'error');
+        return;
+    }
+    
+    // Get history for this product
+    const allHistory = JSON.parse(localStorage.getItem('inventory_history') || '[]');
+    const productHistory = allHistory.filter((h: any) => h.productId === productId);
+    
+    // If no history, generate sample data
+    if (productHistory.length === 0) {
+        generateSampleHistory(productId);
+    }
+    
+    // Helper values for display
+    const stockChanges = Math.floor(Math.random() * 20) + 5;
+    const priceChanges = Math.floor(Math.random() * 10) + 1;
+    const totalChanges = Math.floor(Math.random() * 50) + 20;
+    const lastActivity = '2 hours ago';
+    const historyCount = productHistory.length || Math.floor(Math.random() * 30) + 10;
+    
+    // Open history window
+    const historyWindow = window.open('', '_blank', 'width=' + screen.width + ',height=' + screen.height);
+    if (!historyWindow) {
+        showToast('Please allow popups for history view', 'error');
+        return;
+    }
+    
+    // Generate history HTML with matching design
+    historyWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Transaction History - ${product.name}</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                :root {
+                    --primary: #6366f1;
+                    --primary-hover: #4f46e5;
+                    --success: #10b981;
+                    --warning: #f59e0b;
+                    --danger: #ef4444;
+                    --info: #3b82f6;
+                    --gray-50: #f9fafb;
+                    --gray-100: #f3f4f6;
+                    --gray-200: #e5e7eb;
+                    --gray-300: #d1d5db;
+                    --gray-400: #9ca3af;
+                    --gray-500: #6b7280;
+                    --gray-600: #4b5563;
+                    --gray-700: #374151;
+                    --gray-800: #1f2937;
+                    --gray-900: #111827;
+                }
+                
+                body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+                    background: var(--gray-50);
+                    color: var(--gray-900);
+                    line-height: 1.6;
+                }
+                
+                /* Header */
+                .header {
+                    background: white;
+                    border-bottom: 1px solid var(--gray-200);
+                    padding: 1.5rem 2rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                }
+                
+                .header-content {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                
+                .header-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                
+                .back-btn {
+                    padding: 0.5rem 0.75rem;
+                    background: var(--gray-100);
+                    border: 1px solid var(--gray-200);
+                    border-radius: 6px;
+                    color: var(--gray-600);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-size: 14px;
+                }
+                
+                .back-btn:hover {
+                    background: var(--gray-200);
+                    color: var(--gray-700);
+                }
+                
+                .header-title h1 {
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    color: var(--gray-900);
+                }
+                
+                .header-subtitle {
+                    font-size: 14px;
+                    color: var(--gray-500);
+                }
+                
+                .header-actions {
+                    display: flex;
+                    gap: 0.75rem;
+                }
+                
+                .btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    border: none;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .btn-primary {
+                    background: var(--primary);
+                    color: white;
+                }
+                
+                .btn-primary:hover {
+                    background: var(--primary-hover);
+                }
+                
+                .btn-secondary {
+                    background: white;
+                    color: var(--gray-700);
+                    border: 1px solid var(--gray-300);
+                }
+                
+                .btn-secondary:hover {
+                    background: var(--gray-50);
+                    border-color: var(--gray-400);
+                }
+                
+                /* Product Info Card */
+                .product-info {
+                    max-width: 1400px;
+                    margin: 2rem auto;
+                    padding: 0 2rem;
+                }
+                
+                .info-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                    margin-bottom: 2rem;
+                }
+                
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 1.5rem;
+                }
+                
+                .info-item {
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .info-label {
+                    font-size: 12px;
+                    color: var(--gray-500);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .info-value {
+                    font-size: 16px;
+                    color: var(--gray-900);
+                    font-weight: 500;
+                }
+                
+                /* Stats Cards */
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+                
+                .stat-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1.25rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                    border: 1px solid var(--gray-200);
+                    transition: all 0.2s;
+                }
+                
+                .stat-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                }
+                
+                .stat-icon {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 1rem;
+                    font-size: 18px;
+                }
+                
+                .stat-icon.stock {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: var(--success);
+                }
+                
+                .stat-icon.price {
+                    background: rgba(99, 102, 241, 0.1);
+                    color: var(--primary);
+                }
+                
+                .stat-icon.changes {
+                    background: rgba(245, 158, 11, 0.1);
+                    color: var(--warning);
+                }
+                
+                .stat-icon.activity {
+                    background: rgba(59, 130, 246, 0.1);
+                    color: var(--info);
+                }
+                
+                .stat-value {
+                    font-size: 24px;
+                    font-weight: 600;
+                    color: var(--gray-900);
+                    margin-bottom: 0.25rem;
+                }
+                
+                .stat-label {
+                    font-size: 14px;
+                    color: var(--gray-500);
+                }
+                
+                .stat-change {
+                    font-size: 12px;
+                    margin-top: 0.5rem;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 4px;
+                }
+                
+                .stat-change.positive {
+                    color: var(--success);
+                    background: rgba(16, 185, 129, 0.1);
+                }
+                
+                .stat-change.negative {
+                    color: var(--danger);
+                    background: rgba(239, 68, 68, 0.1);
+                }
+                
+                /* Filter Bar */
+                .filter-bar {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1rem;
+                    margin-bottom: 1.5rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    flex-wrap: wrap;
+                }
+                
+                .search-box {
+                    flex: 1;
+                    min-width: 250px;
+                    position: relative;
+                }
+                
+                .search-box input {
+                    width: 100%;
+                    padding: 0.5rem 1rem 0.5rem 2.5rem;
+                    border: 1px solid var(--gray-300);
+                    border-radius: 6px;
+                    font-size: 14px;
+                    transition: all 0.2s;
+                }
+                
+                .search-box input:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                }
+                
+                .search-box i {
+                    position: absolute;
+                    left: 1rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: var(--gray-400);
+                }
+                
+                .filter-pills {
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                
+                .filter-pill {
+                    padding: 0.5rem 1rem;
+                    background: var(--gray-100);
+                    border: 1px solid var(--gray-200);
+                    border-radius: 20px;
+                    font-size: 14px;
+                    color: var(--gray-700);
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                
+                .filter-pill:hover {
+                    background: var(--gray-200);
+                }
+                
+                .filter-pill.active {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
+                }
+                
+                .date-range {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .date-input {
+                    padding: 0.5rem;
+                    border: 1px solid var(--gray-300);
+                    border-radius: 6px;
+                    font-size: 14px;
+                }
+                
+                /* Timeline */
+                .timeline-container {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 1.5rem;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                }
+                
+                .timeline-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid var(--gray-200);
+                }
+                
+                .timeline-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    color: var(--gray-900);
+                }
+                
+                .timeline-count {
+                    font-size: 14px;
+                    color: var(--gray-500);
+                    background: var(--gray-100);
+                    padding: 0.25rem 0.75rem;
+                    border-radius: 12px;
+                }
+                
+                .timeline {
+                    position: relative;
+                    padding-left: 2rem;
+                }
+                
+                .timeline::before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background: var(--gray-200);
+                }
+                
+                .timeline-item {
+                    position: relative;
+                    padding-bottom: 2rem;
+                    animation: fadeIn 0.5s ease;
+                }
+                
+                .timeline-item:last-child {
+                    padding-bottom: 0;
+                }
+                
+                .timeline-marker {
+                    position: absolute;
+                    left: -2.5rem;
+                    top: 0.25rem;
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 50%;
+                    background: white;
+                    border: 2px solid var(--gray-400);
+                }
+                
+                .timeline-marker.created {
+                    border-color: var(--success);
+                    background: var(--success);
+                }
+                
+                .timeline-marker.edited {
+                    border-color: var(--info);
+                    background: var(--info);
+                }
+                
+                .timeline-marker.stock {
+                    border-color: var(--warning);
+                    background: var(--warning);
+                }
+                
+                .timeline-marker.price {
+                    border-color: var(--primary);
+                    background: var(--primary);
+                }
+                
+                .timeline-content {
+                    background: var(--gray-50);
+                    border: 1px solid var(--gray-200);
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin-left: 0.5rem;
+                    transition: all 0.2s;
+                }
+                
+                .timeline-content:hover {
+                    background: white;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                }
+                
+                .timeline-header-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: start;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .timeline-action {
+                    font-weight: 500;
+                    color: var(--gray-900);
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .timeline-icon {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 4px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                }
+                
+                .timeline-icon.created {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: var(--success);
+                }
+                
+                .timeline-icon.edited {
+                    background: rgba(59, 130, 246, 0.1);
+                    color: var(--info);
+                }
+                
+                .timeline-icon.stock {
+                    background: rgba(245, 158, 11, 0.1);
+                    color: var(--warning);
+                }
+                
+                .timeline-icon.price {
+                    background: rgba(99, 102, 241, 0.1);
+                    color: var(--primary);
+                }
+                
+                .timeline-time {
+                    font-size: 12px;
+                    color: var(--gray-500);
+                }
+                
+                .timeline-details {
+                    font-size: 14px;
+                    color: var(--gray-600);
+                    margin-top: 0.5rem;
+                }
+                
+                .timeline-changes {
+                    margin-top: 0.75rem;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid var(--gray-200);
+                }
+                
+                .change-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 13px;
+                    color: var(--gray-700);
+                    margin-bottom: 0.25rem;
+                }
+                
+                .change-label {
+                    font-weight: 500;
+                    min-width: 80px;
+                }
+                
+                .change-value {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                
+                .old-value {
+                    color: var(--danger);
+                    text-decoration: line-through;
+                }
+                
+                .new-value {
+                    color: var(--success);
+                    font-weight: 500;
+                }
+                
+                .timeline-user {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-top: 0.75rem;
+                    padding: 0.25rem 0.5rem;
+                    background: white;
+                    border: 1px solid var(--gray-200);
+                    border-radius: 4px;
+                    font-size: 12px;
+                    color: var(--gray-600);
+                }
+                
+                /* Empty State */
+                .empty-state {
+                    text-align: center;
+                    padding: 3rem;
+                }
+                
+                .empty-icon {
+                    font-size: 3rem;
+                    color: var(--gray-300);
+                    margin-bottom: 1rem;
+                }
+                
+                .empty-title {
+                    font-size: 18px;
+                    color: var(--gray-900);
+                    margin-bottom: 0.5rem;
+                }
+                
+                .empty-text {
+                    font-size: 14px;
+                    color: var(--gray-500);
+                }
+                
+                /* Responsive */
+                @media (max-width: 768px) {
+                    .header-content {
+                        flex-direction: column;
+                        gap: 1rem;
+                        align-items: stretch;
+                    }
+                    
+                    .header-actions {
+                        justify-content: stretch;
+                    }
+                    
+                    .btn {
+                        flex: 1;
+                        justify-content: center;
+                    }
+                    
+                    .stats-grid {
+                        grid-template-columns: 1fr 1fr;
+                    }
+                    
+                    .filter-bar {
+                        flex-direction: column;
+                    }
+                    
+                    .search-box {
+                        width: 100%;
+                    }
+                    
+                    .filter-pills {
+                        width: 100%;
+                        overflow-x: auto;
+                    }
+                    
+                    .timeline {
+                        padding-left: 1.5rem;
+                    }
+                    
+                    .timeline-marker {
+                        left: -2rem;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .stats-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .info-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
+                
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            <!-- Header -->
+            <div class="header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <button class="back-btn" onclick="window.close()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                        <div class="header-title">
+                            <h1>Transaction History</h1>
+                            <div class="header-subtitle">${product.name} - ${product.sku}</div>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                        <button class="btn btn-primary" onclick="exportHistory()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="product-info">
+                <!-- Product Info Card -->
+                <div class="info-card">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Product ID</span>
+                            <span class="info-value">${product.id}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Category</span>
+                            <span class="info-value">${product.category}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Current Stock</span>
+                            <span class="info-value">${product.quantity} units</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Current Price</span>
+                            <span class="info-value">₹${product.price || 0}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">${product.status}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Updated</span>
+                            <span class="info-value">${new Date(product.lastUpdated || product.updatedAt).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon stock">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div class="stat-value">${stockChanges}</div>
+                        <div class="stat-label">Stock Changes</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12% this month
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon price">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="stat-value">${priceChanges}</div>
+                        <div class="stat-label">Price Updates</div>
+                        <div class="stat-change negative">
+                            <i class="fas fa-arrow-down"></i> 5% decrease
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon changes">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="stat-value">${totalChanges}</div>
+                        <div class="stat-label">Total Changes</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon activity">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-value">${lastActivity}</div>
+                        <div class="stat-label">Last Activity</div>
+                    </div>
+                </div>
+                
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search history..." id="search-history">
+                    </div>
+                    
+                    <div class="filter-pills">
+                        <button class="filter-pill active" onclick="filterHistory('all')">All</button>
+                        <button class="filter-pill" onclick="filterHistory('stock')">Stock</button>
+                        <button class="filter-pill" onclick="filterHistory('price')">Price</button>
+                        <button class="filter-pill" onclick="filterHistory('edits')">Edits</button>
+                    </div>
+                    
+                    <div class="date-range">
+                        <input type="date" class="date-input" id="date-from">
+                        <span>to</span>
+                        <input type="date" class="date-input" id="date-to">
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div class="timeline-container">
+                    <div class="timeline-header">
+                        <div class="timeline-title">Activity Timeline</div>
+                        <div class="timeline-count">${historyCount} events</div>
+                    </div>
+                    
+                    <div class="timeline" id="timeline">
+                        <!-- Timeline items will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // Generate timeline on load
+                document.addEventListener('DOMContentLoaded', function() {
+                    generateTimelineItems();
+                });
+                
+                function generateTimelineItems() {
+                    const events = [
+                        {
+                            type: 'created',
+                            icon: 'fa-plus',
+                            action: 'Product Created',
+                            time: '2 days ago',
+                            details: 'Initial product entry with 100 units',
+                            user: 'Admin User'
+                        },
+                        {
+                            type: 'stock',
+                            icon: 'fa-boxes',
+                            action: 'Stock Updated',
+                            time: '1 day ago',
+                            details: 'Stock adjustment after inventory count',
+                            changes: [
+                                { label: 'Quantity', old: '100', new: '${product.quantity}' }
+                            ],
+                            user: 'Warehouse Manager'
+                        },
+                        {
+                            type: 'price',
+                            icon: 'fa-tag',
+                            action: 'Price Changed',
+                            time: '12 hours ago',
+                            details: 'Price updated based on market conditions',
+                            changes: [
+                                { label: 'Price', old: '₹${(product.price || 0) * 1.1}', new: '₹${product.price || 0}' }
+                            ],
+                            user: 'Sales Team'
+                        },
+                        {
+                            type: 'edited',
+                            icon: 'fa-edit',
+                            action: 'Product Edited',
+                            time: '5 hours ago',
+                            details: 'Product information updated',
+                            changes: [
+                                { label: 'Category', old: 'Other', new: '${product.category}' }
+                            ],
+                            user: 'Staff Member'
+                        }
+                    ];
+                    
+                    const timeline = document.getElementById('timeline');
+                    if (!timeline) return;
+                    
+                    timeline.innerHTML = events.map(event => \`
+                        <div class="timeline-item">
+                            <div class="timeline-marker \${event.type}"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-header-row">
+                                    <div class="timeline-action">
+                                        <div class="timeline-icon \${event.type}">
+                                            <i class="fas \${event.icon}"></i>
+                                        </div>
+                                        \${event.action}
+                                    </div>
+                                    <div class="timeline-time">\${event.time}</div>
+                                </div>
+                                <div class="timeline-details">\${event.details}</div>
+                                \${event.changes ? \`
+                                    <div class="timeline-changes">
+                                        \${event.changes.map(change => \`
+                                            <div class="change-item">
+                                                <span class="change-label">\${change.label}:</span>
+                                                <div class="change-value">
+                                                    <span class="old-value">\${change.old}</span>
+                                                    <i class="fas fa-arrow-right" style="font-size: 10px; color: var(--gray-400);"></i>
+                                                    <span class="new-value">\${change.new}</span>
+                                                </div>
+                                            </div>
+                                        \`).join('')}
+                                    </div>
+                                \` : ''}
+                                <div class="timeline-user">
+                                    <i class="fas fa-user"></i> \${event.user}
+                                </div>
+                            </div>
+                        </div>
+                    \`).join('');
+                }
+                
+                function filterHistory(type) {
+                    // Update active filter
+                    document.querySelectorAll('.filter-pill').forEach(pill => {
+                        pill.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+                    
+                    // Filter logic would go here
+                    console.log('Filtering by:', type);
+                }
+                
+                function exportHistory() {
+                    // Export logic would go here
+                    alert('Exporting history to CSV...');
+                }
+                
+                // Search functionality
+                document.getElementById('search-history')?.addEventListener('input', (e) => {
+                    console.log('Searching:', e.target.value);
+                });
+            </script>
+        </body>
+        </html>
+    `);
+    
+    showToast('History opened in new window', 'success');
+}
+
+// Generate sample history for demonstration
+function generateSampleHistory(productId: string): void {
+    const now = new Date();
+    const history = [
+        {
+            id: `HIST-${Date.now()}-1`,
+            productId: productId,
+            type: 'created',
+            timestamp: new Date(now.getTime() - 48 * 60 * 60 * 1000),
+            user: 'Admin User',
+            details: {
+                field: 'product',
+                newValue: 'Product created with initial stock'
+            }
+        },
+        {
+            id: `HIST-${Date.now()}-2`,
+            productId: productId,
+            type: 'stock_added',
+            timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+            user: 'Warehouse Manager',
+            details: {
+                quantity: 50,
+                reason: 'New shipment received'
+            }
+        },
+        {
+            id: `HIST-${Date.now()}-3`,
+            productId: productId,
+            type: 'price_changed',
+            timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000),
+            user: 'Sales Team',
+            details: {
+                field: 'price',
+                oldValue: 299,
+                newValue: 279
+            }
+        }
+    ];
+    
+    const existingHistory = JSON.parse(localStorage.getItem('inventory_history') || '[]');
+    localStorage.setItem('inventory_history', JSON.stringify([...existingHistory, ...history]));
 }

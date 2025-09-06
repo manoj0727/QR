@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Dashboard - QR Inventory System</title>
     <link rel="stylesheet" href="dashboard-modern.css">
+    <link rel="stylesheet" href="transaction-history.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Additional styles for existing functionality */
@@ -427,12 +428,141 @@
                 
                 <!-- Transactions Section -->
                 <div id="transactions" class="section">
-                    <div class="section-content">
-                        <h2>Transaction History</h2>
-                        <div class="filter-bar">
-                            <input type="text" id="search-transactions" class="search-input" placeholder="Search transactions...">
+                    <div class="transaction-container">
+                        <!-- Simple Header -->
+                        <div class="transaction-header-simple">
+                            <h2>Transaction History</h2>
+                            <button class="btn-export-simple" onclick="exportTransactions()">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
                         </div>
-                        <div class="table-container" id="transactions-table"></div>
+                        
+                        <!-- Simple Filter Bar -->
+                        <div class="transaction-filter-bar">
+                            <!-- Search -->
+                            <div class="search-box-trans">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="search-transactions" placeholder="Search transactions...">
+                            </div>
+                            
+                            <!-- Filter Pills -->
+                            <div class="filter-pills-trans">
+                                <button class="pill active" onclick="filterByType('all')">All</button>
+                                <button class="pill" onclick="filterByType('in')">Stock In</button>
+                                <button class="pill" onclick="filterByType('out')">Stock Out</button>
+                                <button class="pill" onclick="filterByType('update')">Updated</button>
+                                <button class="pill" onclick="filterByType('remove')">Removed</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Transaction Table -->
+                        <div class="trans-table-wrapper">
+                            <table class="trans-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date & Time</th>
+                                        <th>Product</th>
+                                        <th>Status</th>
+                                        <th>Quantity</th>
+                                        <th>Stock Level</th>
+                                        <th>User</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trans-tbody">
+                                    <!-- Sample rows for demonstration -->
+                                    <tr>
+                                        <td>TRX-000001</td>
+                                        <td>
+                                            <div class="time-info">
+                                                <span class="date">Dec 26, 2024</span>
+                                                <span class="time">10:30 AM</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="prod-name">Blue Cotton Shirt</span>
+                                                <span class="prod-sku">BCS-M-001</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge stock-in">
+                                                <i class="fas fa-arrow-down"></i> Stock In
+                                            </span>
+                                        </td>
+                                        <td class="qty-change positive">+50</td>
+                                        <td>
+                                            <span class="stock-before">100</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="stock-after">150</span>
+                                        </td>
+                                        <td>John Doe</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TRX-000002</td>
+                                        <td>
+                                            <div class="time-info">
+                                                <span class="date">Dec 26, 2024</span>
+                                                <span class="time">11:15 AM</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="prod-name">Black Denim Jeans</span>
+                                                <span class="prod-sku">BDJ-L-002</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge stock-out">
+                                                <i class="fas fa-arrow-up"></i> Stock Out
+                                            </span>
+                                        </td>
+                                        <td class="qty-change negative">-20</td>
+                                        <td>
+                                            <span class="stock-before">80</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="stock-after">60</span>
+                                        </td>
+                                        <td>Jane Smith</td>
+                                    </tr>
+                                    <tr>
+                                        <td>TRX-000003</td>
+                                        <td>
+                                            <div class="time-info">
+                                                <span class="date">Dec 26, 2024</span>
+                                                <span class="time">02:30 PM</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <span class="prod-name">Red Polo Shirt</span>
+                                                <span class="prod-sku">RPS-S-003</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge updated">
+                                                <i class="fas fa-edit"></i> Updated
+                                            </span>
+                                        </td>
+                                        <td class="qty-change neutral">0</td>
+                                        <td>
+                                            <span class="stock-before">45</span>
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span class="stock-after">45</span>
+                                        </td>
+                                        <td>Mike Johnson</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <!-- Empty State -->
+                            <div class="trans-empty" id="trans-empty" style="display: none;">
+                                <i class="fas fa-inbox"></i>
+                                <h3>No Transactions Found</h3>
+                                <p>Start scanning QR codes to track inventory movements</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 

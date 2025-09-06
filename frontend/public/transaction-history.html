@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - QR Inventory System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light-gray: #f3f4f6;
+            --white: #ffffff;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: var(--light-gray);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--gray);
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-export {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-export:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Quick Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.stock-in::before {
+            background: var(--success);
+        }
+
+        .stat-card.stock-out::before {
+            background: var(--danger);
+        }
+
+        .stat-card.updates::before {
+            background: var(--info);
+        }
+
+        .stat-card.removed::before {
+            background: var(--warning);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .stat-icon.red {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .stat-icon.blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+
+        .stat-icon.orange {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 14px;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-top: 1rem;
+        }
+
+        .stat-change.up {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .stat-change.down {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-pill {
+            padding: 0.75rem 1.25rem;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-pill.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .date-filter:hover {
+            border-color: var(--primary);
+        }
+
+        .date-filter i {
+            color: var(--gray);
+        }
+
+        .date-filter span {
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        /* Transaction Table */
+        .transaction-table-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .table-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Table Styles */
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transaction-table thead {
+            background: var(--light-gray);
+        }
+
+        .transaction-table th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .transaction-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .transaction-table tbody tr:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .transaction-table td {
+            padding: 1rem;
+            font-size: 14px;
+            color: var(--dark);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge i {
+            font-size: 10px;
+        }
+
+        .status-badge.stock-in {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.stock-out {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-badge.updated {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-badge.removed {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* Product Info Cell */
+        .product-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .product-sku {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        /* Quantity Display */
+        .quantity-display {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .quantity-display.positive {
+            color: var(--success);
+        }
+
+        .quantity-display.negative {
+            color: var(--danger);
+        }
+
+        .quantity-display.neutral {
+            color: var(--info);
+        }
+
+        /* Stock Levels */
+        .stock-level {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stock-value {
+            font-weight: 500;
+        }
+
+        .stock-arrow {
+            font-size: 10px;
+            color: var(--gray);
+        }
+
+        .stock-after {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .stock-after.increased {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .stock-after.decreased {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* User Badge */
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: var(--light-gray);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .user-badge i {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        /* Time Display */
+        .time-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .time-date {
+            font-size: 13px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .time-ago {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.25rem;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Load More */
+        .load-more {
+            padding: 1.5rem;
+            text-align: center;
+            background: var(--light-gray);
+        }
+
+        .load-more-btn {
+            padding: 0.75rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .load-more-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn-action {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .filter-pills {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+
+            .transaction-details {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .transaction-item:hover {
+                padding-left: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <button class="back-btn" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h1>Transaction History</h1>
+                        <div class="subtitle">Track all inventory movements</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-action btn-export" onclick="exportTransactions()">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-row">
+            <div class="stat-card stock-in">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="stock-in-count">0</div>
+                        <div class="stat-label">Stock In</div>
+                        <div class="stat-change up">
+                            <i class="fas fa-arrow-up"></i>
+                            +15% this week
+                        </div>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card stock-out">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="stock-out-count">0</div>
+                        <div class="stat-label">Stock Out</div>
+                        <div class="stat-change down">
+                            <i class="fas fa-arrow-down"></i>
+                            -8% this week
+                        </div>
+                    </div>
+                    <div class="stat-icon red">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card updates">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="update-count">0</div>
+                        <div class="stat-label">Updates</div>
+                        <div class="stat-change up">
+                            <i class="fas fa-arrow-up"></i>
+                            +5% this week
+                        </div>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card removed">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="remove-count">0</div>
+                        <div class="stat-label">Removed</div>
+                        <div class="stat-change down">
+                            <i class="fas fa-arrow-down"></i>
+                            -2% this week
+                        </div>
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" id="search" placeholder="Search by product name or ID...">
+                </div>
+                
+                <div class="filter-pills">
+                    <button class="filter-pill active" data-type="all">All</button>
+                    <button class="filter-pill" data-type="in">Stock In</button>
+                    <button class="filter-pill" data-type="out">Stock Out</button>
+                    <button class="filter-pill" data-type="update">Updates</button>
+                    <button class="filter-pill" data-type="remove">Removed</button>
+                </div>
+
+                <div class="date-filter">
+                    <i class="fas fa-calendar"></i>
+                    <span>Last 30 days</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="transaction-table-container">
+            <div class="table-header">
+                <div class="table-title">Recent Transactions</div>
+                <div class="table-count" id="transaction-count">0 Total</div>
+            </div>
+
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date & Time</th>
+                        <th>Product</th>
+                        <th>Status</th>
+                        <th>Quantity</th>
+                        <th>Stock Level</th>
+                        <th>User</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody id="transaction-tbody">
+                    <!-- Transactions will be loaded here -->
+                </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <i class="fas fa-inbox empty-icon"></i>
+                <div class="empty-title">No Transactions Yet</div>
+                <div class="empty-text">Start scanning QR codes to track inventory movements</div>
+            </div>
+
+            <!-- Load More -->
+            <div class="load-more" id="load-more" style="display: none;">
+                <button class="load-more-btn" onclick="loadMoreTransactions()">
+                    Load More Transactions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for demonstration
+        let transactions = [];
+        let currentFilter = 'all';
+        let displayCount = 10;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTransactions();
+            attachEventListeners();
+            updateStats();
+        });
+
+        // Attach event listeners
+        function attachEventListeners() {
+            // Filter pills
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.type;
+                    filterTransactions();
+                });
+            });
+
+            // Search
+            document.getElementById('search').addEventListener('input', function() {
+                filterTransactions();
+            });
+        }
+
+        // Load transactions
+        function loadTransactions() {
+            // Load from localStorage or generate sample data
+            const saved = localStorage.getItem('transactions');
+            if (saved) {
+                transactions = JSON.parse(saved);
+            } else {
+                generateSampleTransactions();
+            }
+            displayTransactions();
+        }
+
+        // Generate sample transactions
+        function generateSampleTransactions() {
+            const types = ['in', 'out', 'update', 'remove'];
+            const products = [
+                { id: 'PRD-001', name: 'Blue Cotton Shirt', sku: 'BCS-M-001' },
+                { id: 'PRD-002', name: 'Black Denim Jeans', sku: 'BDJ-L-002' },
+                { id: 'PRD-003', name: 'Red Polo Shirt', sku: 'RPS-S-003' },
+                { id: 'PRD-004', name: 'Gray Hoodie', sku: 'GH-XL-004' },
+                { id: 'PRD-005', name: 'White T-Shirt', sku: 'WTS-M-005' }
+            ];
+
+            const users = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'];
+            const now = new Date();
+
+            for (let i = 0; i < 50; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const product = products[Math.floor(Math.random() * products.length)];
+                const user = users[Math.floor(Math.random() * users.length)];
+                const hoursAgo = Math.floor(Math.random() * 720); // Up to 30 days
+                const date = new Date(now - hoursAgo * 60 * 60 * 1000);
+
+                transactions.push({
+                    id: `TRX-${String(i + 1).padStart(6, '0')}`,
+                    type: type,
+                    product: product,
+                    quantity: Math.floor(Math.random() * 50) + 1,
+                    stockBefore: Math.floor(Math.random() * 200) + 50,
+                    user: user,
+                    date: date.toISOString(),
+                    location: 'Warehouse A'
+                });
+            }
+
+            // Sort by date (newest first)
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        // Display transactions
+        function displayTransactions() {
+            const tbody = document.getElementById('transaction-tbody');
+            const table = document.querySelector('.transaction-table');
+            const filtered = getFilteredTransactions();
+            const toDisplay = filtered.slice(0, displayCount);
+
+            if (toDisplay.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                table.style.display = 'none';
+                document.getElementById('load-more').style.display = 'none';
+            } else {
+                document.getElementById('empty-state').style.display = 'none';
+                table.style.display = 'table';
+                tbody.innerHTML = toDisplay.map(t => createTransactionRow(t)).join('');
+                
+                // Show/hide load more button
+                if (filtered.length > displayCount) {
+                    document.getElementById('load-more').style.display = 'block';
+                } else {
+                    document.getElementById('load-more').style.display = 'none';
+                }
+            }
+
+            // Update count
+            document.getElementById('transaction-count').textContent = filtered.length + ' Total';
+        }
+
+        // Create transaction row
+        function createTransactionRow(transaction) {
+            const typeConfig = {
+                'in': { badge: 'stock-in', title: 'Stock In', icon: 'arrow-down', sign: '+' },
+                'out': { badge: 'stock-out', title: 'Stock Out', icon: 'arrow-up', sign: '-' },
+                'update': { badge: 'updated', title: 'Updated', icon: 'edit', sign: '' },
+                'remove': { badge: 'removed', title: 'Removed', icon: 'trash', sign: '-' }
+            };
+
+            const config = typeConfig[transaction.type];
+            const stockAfter = transaction.type === 'in' 
+                ? transaction.stockBefore + transaction.quantity
+                : transaction.type === 'out' || transaction.type === 'remove'
+                ? transaction.stockBefore - transaction.quantity
+                : transaction.stockBefore;
+
+            const quantityClass = transaction.type === 'in' ? 'positive' : 
+                                 transaction.type === 'out' || transaction.type === 'remove' ? 'negative' : 
+                                 'neutral';
+            
+            const stockClass = stockAfter > transaction.stockBefore ? 'increased' : 
+                              stockAfter < transaction.stockBefore ? 'decreased' : '';
+
+            return `
+                <tr>
+                    <td>${transaction.id}</td>
+                    <td>
+                        <div class="time-cell">
+                            <span class="time-date">${formatDate(transaction.date)}</span>
+                            <span class="time-ago">${getTimeAgo(transaction.date)}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="product-cell">
+                            <span class="product-name">${transaction.product.name}</span>
+                            <span class="product-sku">${transaction.product.sku}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${config.badge}">
+                            <i class="fas fa-${config.icon}"></i>
+                            ${config.title}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="quantity-display ${quantityClass}">
+                            ${config.sign}${transaction.quantity}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="stock-level">
+                            <span class="stock-value">${transaction.stockBefore}</span>
+                            <i class="fas fa-arrow-right stock-arrow"></i>
+                            <span class="stock-after ${stockClass}">${stockAfter}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="user-badge">
+                            <i class="fas fa-user"></i>
+                            ${transaction.user}
+                        </span>
+                    </td>
+                    <td>${transaction.location}</td>
+                </tr>
+            `;
+        }
+
+        // Filter transactions
+        function filterTransactions() {
+            displayCount = 10; // Reset to initial count
+            displayTransactions();
+        }
+
+        // Get filtered transactions
+        function getFilteredTransactions() {
+            let filtered = [...transactions];
+
+            // Filter by type
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(t => t.type === currentFilter);
+            }
+
+            // Filter by search
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(t => 
+                    t.product.name.toLowerCase().includes(searchTerm) ||
+                    t.product.sku.toLowerCase().includes(searchTerm) ||
+                    t.id.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            return filtered;
+        }
+
+        // Load more transactions
+        function loadMoreTransactions() {
+            displayCount += 10;
+            displayTransactions();
+        }
+
+        // Update stats
+        function updateStats() {
+            const stats = {
+                in: transactions.filter(t => t.type === 'in').length,
+                out: transactions.filter(t => t.type === 'out').length,
+                update: transactions.filter(t => t.type === 'update').length,
+                remove: transactions.filter(t => t.type === 'remove').length
+            };
+
+            document.getElementById('stock-in-count').textContent = stats.in;
+            document.getElementById('stock-out-count').textContent = stats.out;
+            document.getElementById('update-count').textContent = stats.update;
+            document.getElementById('remove-count').textContent = stats.remove;
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Get time ago
+        function getTimeAgo(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            
+            if (hours < 1) return 'Just now';
+            if (hours < 24) return hours + ' hours ago';
+            const days = Math.floor(hours / 24);
+            if (days === 1) return 'Yesterday';
+            if (days < 30) return days + ' days ago';
+            return Math.floor(days / 30) + ' months ago';
+        }
+
+        // Export transactions
+        function exportTransactions() {
+            const filtered = getFilteredTransactions();
+            const csv = convertToCSV(filtered);
+            downloadCSV(csv, 'transactions.csv');
+        }
+
+        // Convert to CSV
+        function convertToCSV(data) {
+            const headers = ['ID', 'Date', 'Type', 'Product', 'SKU', 'Quantity', 'Stock Before', 'Stock After', 'User', 'Location'];
+            const rows = data.map(t => {
+                const stockAfter = t.type === 'in' ? t.stockBefore + t.quantity :
+                                 t.type === 'out' || t.type === 'remove' ? t.stockBefore - t.quantity :
+                                 t.stockBefore;
+                return [
+                    t.id,
+                    new Date(t.date).toLocaleString(),
+                    t.type.toUpperCase(),
+                    t.product.name,
+                    t.product.sku,
+                    t.quantity,
+                    t.stockBefore,
+                    stockAfter,
+                    t.user,
+                    t.location
+                ];
+            });
+            
+            return [headers, ...rows].map(row => row.join(',')).join('\n');
+        }
+
+        // Download CSV
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
