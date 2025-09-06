@@ -7,8 +7,8 @@ class InventoryManager {
             category: 'all'
         };
         this.currentSort = {
-            column: 'name',
-            direction: 'desc'
+            column: 'createdAt',
+            direction: 'desc' // Newest first
         };
         this.pagination = {
             page: 1,
@@ -27,68 +27,87 @@ class InventoryManager {
         this.render();
     }
     loadProducts() {
-        // Sample data - replace with API call
+        // Load products from localStorage (saved by create product form)
+        const savedProducts = localStorage.getItem('inventory_products');
+        if (savedProducts) {
+            try {
+                const products = JSON.parse(savedProducts);
+                this.products = products.map((p) => (Object.assign(Object.assign({}, p), { lastUpdated: p.updatedAt ? new Date(p.updatedAt) : new Date(), createdAt: p.createdAt ? new Date(p.createdAt) : new Date(), 
+                    // Ensure all required fields have values
+                    material: p.material || 'Not specified', brand: p.brand || '', location: p.location || '', minStock: p.minStock || 10, price: p.price || 0 })));
+                // Sort by creation date - newest first
+                this.products.sort((a, b) => {
+                    const dateA = a.createdAt ? a.createdAt.getTime() : 0;
+                    const dateB = b.createdAt ? b.createdAt.getTime() : 0;
+                    return dateB - dateA; // Newest first
+                });
+            }
+            catch (error) {
+                console.error('Error loading products from localStorage:', error);
+                this.loadSampleData();
+            }
+        }
+        else {
+            // Load sample data if no saved products
+            this.loadSampleData();
+        }
+        this.applyFilters();
+    }
+    loadSampleData() {
+        // Sample data with all new fields
         this.products = [
             {
                 id: 'PRD-001',
-                sku: 'BCS-M-001',
+                sku: 'SHI-M-BL-001',
                 name: 'Blue Cotton Shirt',
                 category: 'Shirt',
                 size: 'M',
                 color: 'Blue',
+                material: 'Cotton',
+                brand: 'Fashion Brand',
                 quantity: 145,
-                price: 45.00,
+                minStock: 20,
+                price: 599,
+                location: 'Rack A-12',
                 status: 'in-stock',
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                createdAt: new Date()
             },
             {
                 id: 'PRD-002',
-                sku: 'BDJ-L-002',
+                sku: 'PAN-L-BL-002',
                 name: 'Black Denim Jeans',
                 category: 'Pants',
                 size: 'L',
                 color: 'Black',
+                material: 'Denim',
+                brand: 'Denim Co',
                 quantity: 12,
-                price: 65.00,
+                minStock: 15,
+                price: 1299,
+                location: 'Rack B-05',
                 status: 'low-stock',
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                createdAt: new Date()
             },
             {
                 id: 'PRD-003',
-                sku: 'RLJ-XL-003',
+                sku: 'JAC-XL-RE-003',
                 name: 'Red Leather Jacket',
                 category: 'Jacket',
                 size: 'XL',
                 color: 'Red',
+                material: 'Leather',
+                brand: 'Premium Wear',
                 quantity: 0,
-                price: 120.00,
+                minStock: 5,
+                price: 3499,
+                location: 'Rack C-01',
                 status: 'out-of-stock',
-                lastUpdated: new Date()
+                lastUpdated: new Date(),
+                createdAt: new Date()
             }
         ];
-        // Generate more sample data
-        for (let i = 4; i <= 100; i++) {
-            const categories = ['Shirt', 'Pants', 'Jacket', 'T-Shirt'];
-            const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
-            const colors = ['Blue', 'Black', 'Red', 'White', 'Green', 'Yellow'];
-            const category = categories[Math.floor(Math.random() * categories.length)];
-            const size = sizes[Math.floor(Math.random() * sizes.length)];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const quantity = Math.floor(Math.random() * 200);
-            this.products.push({
-                id: `PRD-${String(i).padStart(3, '0')}`,
-                sku: `${category.substring(0, 3).toUpperCase()}-${size}-${String(i).padStart(3, '0')}`,
-                name: `${color} ${category} ${i}`,
-                category: category,
-                size: size,
-                color: color,
-                quantity: quantity,
-                price: Math.floor(Math.random() * 150) + 20,
-                status: quantity === 0 ? 'out-of-stock' : quantity < 20 ? 'low-stock' : 'in-stock',
-                lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000))
-            });
-        }
-        this.applyFilters();
     }
     attachEventListeners() {
         var _a, _b, _c, _d, _e, _f;
@@ -186,6 +205,10 @@ class InventoryManager {
             if (column === 'last_updated') {
                 aVal = a.lastUpdated.getTime();
                 bVal = b.lastUpdated.getTime();
+            }
+            else if (column === 'createdAt') {
+                aVal = a.createdAt ? a.createdAt.getTime() : 0;
+                bVal = b.createdAt ? b.createdAt.getTime() : 0;
             }
             if (typeof aVal === 'string') {
                 aVal = aVal.toLowerCase();
@@ -289,6 +312,10 @@ class InventoryManager {
     renderTableRow(product) {
         const stockPercentage = Math.min((product.quantity / 200) * 100, 100);
         const isChecked = this.selectedRows.has(product.id) ? 'checked' : '';
+        // Show "No Image" text if no image is available
+        const imageDisplay = product.image
+            ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px;\\'>No Image</span>'">`
+            : '<span style="color: #999; font-size: 11px;">No Image</span>';
         return `
             <tr data-id="${product.id}">
                 <td class="checkbox-col">
@@ -298,17 +325,16 @@ class InventoryManager {
                     <a href="#" class="link">${product.id}</a>
                 </td>
                 <td class="image-col">
-                    <div class="product-image">
-                        <img src="https://via.placeholder.com/40" alt="${product.name}">
+                    <div class="product-image" style="display: flex; align-items: center; justify-content: center; min-height: 40px;">
+                        ${imageDisplay}
                     </div>
                 </td>
                 <td class="product-name">
                     <div class="name-cell">
                         <span class="name">${product.name}</span>
-                        <span class="sub-info">${product.category} Collection</span>
+                        <span class="sub-info">${product.description || product.category + ' Collection'}</span>
                     </div>
                 </td>
-                <td class="sku">${product.sku}</td>
                 <td class="category">
                     <span class="category-badge">${product.category}</span>
                 </td>
@@ -319,31 +345,34 @@ class InventoryManager {
                         ${product.color}
                     </div>
                 </td>
+                <td class="material">${product.material}</td>
+                <td class="brand">${product.brand || '-'}</td>
                 <td class="quantity">
                     <div class="stock-info">
-                        <span class="stock-number ${product.quantity < 20 ? 'low' : ''}">${product.quantity}</span>
+                        <span class="stock-number ${product.quantity < (product.minStock || 20) ? 'low' : ''}">${product.quantity}</span>
                         <div class="stock-bar">
-                            <div class="stock-level ${product.quantity < 20 ? 'low' : ''}" style="width: ${stockPercentage}%;"></div>
+                            <div class="stock-level ${product.quantity < (product.minStock || 20) ? 'low' : ''}" style="width: ${stockPercentage}%;"></div>
                         </div>
                     </div>
                 </td>
                 <td class="status">
                     <span class="status-badge ${product.status}">${this.formatStatus(product.status)}</span>
                 </td>
-                <td class="price">$${product.price.toFixed(2)}</td>
+                <td class="price">₹${product.price.toFixed(0)}</td>
+                <td class="location">${product.location || '-'}</td>
                 <td class="last-updated">
                     <span class="date">${this.formatDate(product.lastUpdated)}</span>
                     <span class="time">${this.formatTime(product.lastUpdated)}</span>
                 </td>
                 <td class="actions-col">
                     <div class="actions">
-                        <button class="action-btn" title="View">
+                        <button class="action-btn" title="View" onclick="viewProduct('${product.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn" title="Edit">
+                        <button class="action-btn" title="Edit" onclick="editProduct('${product.id}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn" title="QR Code">
+                        <button class="action-btn" title="QR Code" onclick="showQRCode('${product.id}')">
                             <i class="fas fa-qrcode"></i>
                         </button>
                         <div class="dropdown">

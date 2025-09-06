@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/manoj0727/QR/issues"
   },
-  "homepage": "https://github.com/manoj0727/QR#readme"
+  "homepage": "https://github.com/manoj0727/QR#readme",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
 }

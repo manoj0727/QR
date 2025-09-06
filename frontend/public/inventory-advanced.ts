@@ -46,8 +46,8 @@ class InventoryManager {
         category: 'all'
     };
     private currentSort: SortOptions = {
-        column: 'name',
-        direction: 'desc'
+        column: 'createdAt',
+        direction: 'desc'  // Newest first
     };
     private pagination: PaginationOptions = {
         page: 1,
@@ -84,6 +84,13 @@ class InventoryManager {
                     minStock: p.minStock || 10,
                     price: p.price || 0
                 }));
+                
+                // Sort by creation date - newest first
+                this.products.sort((a, b) => {
+                    const dateA = a.createdAt ? a.createdAt.getTime() : 0;
+                    const dateB = b.createdAt ? b.createdAt.getTime() : 0;
+                    return dateB - dateA; // Newest first
+                });
             } catch (error) {
                 console.error('Error loading products from localStorage:', error);
                 this.loadSampleData();
@@ -269,6 +276,9 @@ class InventoryManager {
             if (column === 'last_updated') {
                 aVal = a.lastUpdated.getTime();
                 bVal = b.lastUpdated.getTime();
+            } else if (column === 'createdAt') {
+                aVal = a.createdAt ? a.createdAt.getTime() : 0;
+                bVal = b.createdAt ? b.createdAt.getTime() : 0;
             }
 
             if (typeof aVal === 'string') {
@@ -390,6 +400,11 @@ class InventoryManager {
         const stockPercentage = Math.min((product.quantity / 200) * 100, 100);
         const isChecked = this.selectedRows.has(product.id) ? 'checked' : '';
         
+        // Show "No Image" text if no image is available
+        const imageDisplay = product.image 
+            ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px;\\'>No Image</span>'">`
+            : '<span style="color: #999; font-size: 11px;">No Image</span>';
+        
         return `
             <tr data-id="${product.id}">
                 <td class="checkbox-col">
@@ -399,17 +414,16 @@ class InventoryManager {
                     <a href="#" class="link">${product.id}</a>
                 </td>
                 <td class="image-col">
-                    <div class="product-image">
-                        <img src="https://via.placeholder.com/40" alt="${product.name}">
+                    <div class="product-image" style="display: flex; align-items: center; justify-content: center; min-height: 40px;">
+                        ${imageDisplay}
                     </div>
                 </td>
                 <td class="product-name">
                     <div class="name-cell">
                         <span class="name">${product.name}</span>
-                        <span class="sub-info">${product.category} Collection</span>
+                        <span class="sub-info">${product.description || product.category + ' Collection'}</span>
                     </div>
                 </td>
-                <td class="sku">${product.sku}</td>
                 <td class="category">
                     <span class="category-badge">${product.category}</span>
                 </td>
@@ -420,31 +434,34 @@ class InventoryManager {
                         ${product.color}
                     </div>
                 </td>
+                <td class="material">${product.material}</td>
+                <td class="brand">${product.brand || '-'}</td>
                 <td class="quantity">
                     <div class="stock-info">
-                        <span class="stock-number ${product.quantity < 20 ? 'low' : ''}">${product.quantity}</span>
+                        <span class="stock-number ${product.quantity < (product.minStock || 20) ? 'low' : ''}">${product.quantity}</span>
                         <div class="stock-bar">
-                            <div class="stock-level ${product.quantity < 20 ? 'low' : ''}" style="width: ${stockPercentage}%;"></div>
+                            <div class="stock-level ${product.quantity < (product.minStock || 20) ? 'low' : ''}" style="width: ${stockPercentage}%;"></div>
                         </div>
                     </div>
                 </td>
                 <td class="status">
                     <span class="status-badge ${product.status}">${this.formatStatus(product.status)}</span>
                 </td>
-                <td class="price">$${product.price.toFixed(2)}</td>
+                <td class="price">₹${product.price.toFixed(0)}</td>
+                <td class="location">${product.location || '-'}</td>
                 <td class="last-updated">
                     <span class="date">${this.formatDate(product.lastUpdated)}</span>
                     <span class="time">${this.formatTime(product.lastUpdated)}</span>
                 </td>
                 <td class="actions-col">
                     <div class="actions">
-                        <button class="action-btn" title="View">
+                        <button class="action-btn" title="View" onclick="viewProduct('${product.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn" title="Edit">
+                        <button class="action-btn" title="Edit" onclick="editProduct('${product.id}')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn" title="QR Code">
+                        <button class="action-btn" title="QR Code" onclick="showQRCode('${product.id}')">
                             <i class="fas fa-qrcode"></i>
                         </button>
                         <div class="dropdown">
