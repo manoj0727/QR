@@ -38,54 +38,64 @@
             </div>
         </div>
         
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-section">
-                <div class="filter-group">
-                    <label>Status</label>
-                    <select id="status-filter" class="filter-select">
-                        <option value="all">All</option>
-                        <option value="in-stock">In Stock</option>
-                        <option value="low-stock">Low Stock</option>
-                        <option value="out-of-stock">Out of Stock</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Category</label>
-                    <select id="category-filter" class="filter-select">
-                        <option value="all">All Categories</option>
-                        <option value="shirt">Shirts</option>
-                        <option value="pants">Pants</option>
-                        <option value="jacket">Jackets</option>
-                        <option value="t-shirt">T-Shirts</option>
-                        <option value="other">Others</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label>Date Range</label>
-                    <div class="date-range">
-                        <input type="date" id="date-from" class="date-input">
-                        <span>to</span>
-                        <input type="date" id="date-to" class="date-input">
-                    </div>
-                </div>
-                
-                <button class="filter-btn">
-                    <i class="fas fa-filter"></i>
-                    More Filters
-                </button>
-                
-                <button class="clear-filter">
-                    Clear All
-                </button>
-            </div>
-            
-            <div class="search-section">
-                <div class="search-box">
+        <!-- Premium Filter Bar -->
+        <div class="premium-filter-bar">
+            <div class="filter-container">
+                <!-- Search Box -->
+                <div class="search-box-premium">
                     <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search by product name, SKU, or ID..." id="search-input">
+                    <input type="text" placeholder="Search products..." id="search-input">
+                </div>
+                
+                <!-- Filter Pills -->
+                <div class="filter-pills">
+                    <!-- Status Filter -->
+                    <div class="filter-pill">
+                        <i class="fas fa-circle-check"></i>
+                        <select id="status-filter" class="pill-select">
+                            <option value="all">All Status</option>
+                            <option value="in-stock">In Stock</option>
+                            <option value="low-stock">Low Stock</option>
+                            <option value="out-of-stock">Out of Stock</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Category Filter -->
+                    <div class="filter-pill">
+                        <i class="fas fa-tags"></i>
+                        <select id="category-filter" class="pill-select">
+                            <option value="all">All Categories</option>
+                            <option value="shirt">Shirts</option>
+                            <option value="pants">Pants</option>
+                            <option value="jacket">Jackets</option>
+                            <option value="t-shirt">T-Shirts</option>
+                            <option value="other">Others</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Date Range Filter -->
+                    <div class="filter-pill date-pill">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="date-from" class="date-input-premium">
+                        <span class="date-separator">→</span>
+                        <input type="date" id="date-to" class="date-input-premium">
+                    </div>
+                    
+                    <!-- Clear Button -->
+                    <button class="clear-filters-btn" onclick="clearAllFilters()">
+                        <i class="fas fa-times"></i>
+                        Clear
+                    </button>
+                </div>
+                
+                <!-- View Toggle -->
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="table">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="view-btn" data-view="grid">
+                        <i class="fas fa-th"></i>
+                    </button>
                 </div>
             </div>
         </div>
