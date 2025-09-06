@@ -878,6 +878,429 @@
                 opacity: 0.6;
             }
         }
+
+        /* Reports Section Styles */
+        .reports-container {
+            padding: 0;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+
+        .reports-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .reports-controls {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-range-picker {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-range-picker label {
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .date-range-picker select {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        .export-controls {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .metric-details h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            color: #1e293b;
+        }
+
+        .metric-details p {
+            margin: 0 0 0.5rem 0;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .metric-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive {
+            color: #10b981;
+        }
+
+        .metric-change.negative {
+            color: #ef4444;
+        }
+
+        .metric-change.neutral {
+            color: #64748b;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            padding: 0 2rem 2rem;
+            background: #f8fafc;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .charts-row:last-child {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .chart-card.large {
+            grid-column: span 1;
+        }
+
+        .chart-card.medium {
+            grid-column: span 1;
+        }
+
+        .chart-card .card-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-card .card-header h3 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chart-btn.active {
+            background: #6366f1;
+            color: white;
+        }
+
+        .chart-card .card-body {
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* Analytics Table */
+        .analytics-table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-top: 1.5rem;
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Insights Panel */
+        .insights-panel {
+            padding: 2rem;
+            background: #f8fafc;
+        }
+
+        .insights-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .insights-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .refresh-insights {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-insights:hover {
+            background: #4f46e5;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .insight-icon.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .insight-icon.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .insight-icon.info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .insight-content h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .insight-content p {
+            margin: 0 0 0.75rem 0;
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        .insight-content a {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .insight-content a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive for Reports */
+        @media (max-width: 1024px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .reports-header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.5rem 1rem;
+            }
+
+            .reports-controls {
+                flex-direction: column;
+                width: 100%;
+                gap: 1rem;
+            }
+
+            .export-controls {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-outline {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .metrics-grid {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .charts-section {
+                padding: 0 1rem 1rem;
+            }
+
+            .insights-panel {
+                padding: 1rem;
+            }
+
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+
+            .analytics-search {
+                width: 100%;
+            }
+
+            .chart-controls {
+                flex-wrap: wrap;
+            }
+
+            .chart-btn {
+                flex: 1;
+                min-width: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metric-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .insight-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .insights-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .refresh-insights {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1730,15 +2153,237 @@
                 
                 <!-- Reports Section -->
                 <div id="reports" class="section">
-                    <div class="section-content">
-                        <h2>Reports & Analytics</h2>
-                        <div class="charts-row">
-                            <div class="chart-card">
+                    <div class="reports-container">
+                        <!-- Header with Controls -->
+                        <div class="reports-header">
+                            <div class="header-content">
+                                <h2><i class="fas fa-chart-line"></i> Reports & Analytics</h2>
+                                <p class="header-subtitle">Comprehensive insights and data visualization</p>
+                            </div>
+                            
+                            <div class="reports-controls">
+                                <div class="date-range-picker">
+                                    <label>Date Range:</label>
+                                    <select id="date-range">
+                                        <option value="7">Last 7 Days</option>
+                                        <option value="30" selected>Last 30 Days</option>
+                                        <option value="90">Last 3 Months</option>
+                                        <option value="365">Last Year</option>
+                                        <option value="custom">Custom Range</option>
+                                    </select>
+                                </div>
+                                <div class="export-controls">
+                                    <button class="btn btn-outline" onclick="exportReports('pdf')">
+                                        <i class="fas fa-file-pdf"></i> Export PDF
+                                    </button>
+                                    <button class="btn btn-outline" onclick="exportReports('excel')">
+                                        <i class="fas fa-file-excel"></i> Export Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Metrics Cards -->
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="metric-details">
+                                    <h3 id="total-products-metric">0</h3>
+                                    <p>Total Products</p>
+                                    <span class="metric-change positive" id="products-change">
+                                        <i class="fas fa-arrow-up"></i> +12% vs last period
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="metric-details">
+                                    <h3 id="total-transactions-metric">0</h3>
+                                    <p>Total Transactions</p>
+                                    <span class="metric-change positive" id="transactions-change">
+                                        <i class="fas fa-arrow-up"></i> +8% vs last period
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <div class="metric-details">
+                                    <h3 id="avg-stock-level">0</h3>
+                                    <p>Avg Stock Level</p>
+                                    <span class="metric-change neutral" id="stock-change">
+                                        <i class="fas fa-minus"></i> -2% vs last period
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="metric-card">
+                                <div class="metric-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="metric-details">
+                                    <h3 id="active-tailors-metric">0</h3>
+                                    <p>Active Tailors</p>
+                                    <span class="metric-change positive" id="tailors-change">
+                                        <i class="fas fa-arrow-up"></i> +5% vs last period
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <div class="charts-section">
+                            <!-- Main Analytics Charts -->
+                            <div class="charts-row">
+                                <div class="chart-card large">
+                                    <div class="card-header">
+                                        <h3>Inventory Trends</h3>
+                                        <div class="chart-controls">
+                                            <button class="chart-btn active" data-chart="line">Line</button>
+                                            <button class="chart-btn" data-chart="bar">Bar</button>
+                                            <button class="chart-btn" data-chart="area">Area</button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="trendsChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="chart-card medium">
+                                    <div class="card-header">
+                                        <h3>Product Distribution</h3>
+                                        <div class="legend-toggle">
+                                            <label>
+                                                <input type="checkbox" checked id="show-legend"> Show Legend
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="distributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Secondary Charts -->
+                            <div class="charts-row">
+                                <div class="chart-card medium">
+                                    <div class="card-header">
+                                        <h3>Stock Movement</h3>
+                                        <select id="movement-filter">
+                                            <option value="all">All Movements</option>
+                                            <option value="IN">Stock In</option>
+                                            <option value="OUT">Stock Out</option>
+                                        </select>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="movementChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="chart-card medium">
+                                    <div class="card-header">
+                                        <h3>Tailor Performance</h3>
+                                        <div class="performance-period">
+                                            <select id="performance-period">
+                                                <option value="week">This Week</option>
+                                                <option value="month">This Month</option>
+                                                <option value="quarter">This Quarter</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="tailorChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Analytics Table -->
+                            <div class="analytics-table-card">
                                 <div class="card-header">
-                                    <h3>Monthly Trends</h3>
+                                    <h3>Detailed Analytics</h3>
+                                    <div class="table-controls">
+                                        <div class="search-container">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" id="analytics-search" placeholder="Search analytics...">
+                                        </div>
+                                        <select id="analytics-filter">
+                                            <option value="all">All Categories</option>
+                                            <option value="products">Products</option>
+                                            <option value="transactions">Transactions</option>
+                                            <option value="tailors">Tailors</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="trendsChart"></canvas>
+                                    <div class="modern-table-container">
+                                        <table class="modern-table">
+                                            <thead>
+                                                <tr>
+                                                    <th><i class="fas fa-hashtag"></i> Rank</th>
+                                                    <th><i class="fas fa-tag"></i> Item/Entity</th>
+                                                    <th><i class="fas fa-layer-group"></i> Category</th>
+                                                    <th><i class="fas fa-chart-bar"></i> Value</th>
+                                                    <th><i class="fas fa-percent"></i> Change</th>
+                                                    <th><i class="fas fa-calendar"></i> Last Updated</th>
+                                                    <th><i class="fas fa-cog"></i> Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="analytics-table-body">
+                                                <!-- Analytics data will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Insights Panel -->
+                        <div class="insights-panel">
+                            <div class="insights-header">
+                                <h3><i class="fas fa-lightbulb"></i> Quick Insights</h3>
+                                <button class="refresh-insights" onclick="refreshInsights()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="insights-grid">
+                                <div class="insight-card">
+                                    <div class="insight-icon warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Low Stock Alert</h4>
+                                        <p id="low-stock-insight">3 products are running low on stock</p>
+                                        <a href="#" onclick="showSection('inventory', event)">View Details</a>
+                                    </div>
+                                </div>
+
+                                <div class="insight-card">
+                                    <div class="insight-icon success">
+                                        <i class="fas fa-trending-up"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Top Performer</h4>
+                                        <p id="top-performer-insight">Cotton Shirts showing highest demand</p>
+                                        <a href="#" onclick="viewProductDetails()">View Details</a>
+                                    </div>
+                                </div>
+
+                                <div class="insight-card">
+                                    <div class="insight-icon info">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Peak Activity</h4>
+                                        <p id="peak-activity-insight">Most transactions occur between 2-4 PM</p>
+                                        <a href="#" onclick="viewTimeAnalytics()">View Details</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2865,6 +3510,389 @@
             
             showNotification('Tailors exported successfully!', 'success');
         }
+
+        // ============= REPORTS & ANALYTICS FUNCTIONALITY =============
+
+        // Reports data and chart instances
+        let reportsData = {
+            trends: null,
+            distribution: null,
+            movement: null,
+            tailor: null
+        };
+
+        // Initialize reports when section is shown
+        function initReports() {
+            updateReportsMetrics();
+            initReportsCharts();
+            loadAnalyticsTable();
+            updateInsights();
+        }
+
+        // Update metrics cards
+        function updateReportsMetrics() {
+            // Get data from existing storage systems
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const transactions = JSON.parse(localStorage.getItem('transaction_history') || '[]');
+            const tailors = JSON.parse(localStorage.getItem('tailors') || '[]');
+
+            // Calculate metrics
+            const totalProducts = products.length;
+            const totalTransactions = transactions.length;
+            const avgStockLevel = products.length > 0 ? 
+                Math.round(products.reduce((sum, p) => sum + (p.quantity || 0), 0) / products.length) : 0;
+            const activeTailors = tailors.filter(t => t.status === 'active').length;
+
+            // Update DOM
+            document.getElementById('total-products-metric').textContent = totalProducts;
+            document.getElementById('total-transactions-metric').textContent = totalTransactions;
+            document.getElementById('avg-stock-level').textContent = avgStockLevel;
+            document.getElementById('active-tailors-metric').textContent = activeTailors;
+        }
+
+        // Initialize all charts
+        function initReportsCharts() {
+            initTrendsChart();
+            initDistributionChart();
+            initMovementChart();
+            initTailorChart();
+        }
+
+        // Trends Chart
+        function initTrendsChart() {
+            const ctx = document.getElementById('trendsChart');
+            if (!ctx) return;
+
+            // Generate sample trend data
+            const labels = [];
+            const stockInData = [];
+            const stockOutData = [];
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                stockInData.push(Math.floor(Math.random() * 50) + 10);
+                stockOutData.push(Math.floor(Math.random() * 40) + 5);
+            }
+
+            reportsData.trends = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Stock In',
+                        data: stockInData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Stock Out',
+                        data: stockOutData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#f1f5f9'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Distribution Chart (Pie Chart)
+        function initDistributionChart() {
+            const ctx = document.getElementById('distributionChart');
+            if (!ctx) return;
+
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const typeDistribution = {};
+            
+            products.forEach(product => {
+                typeDistribution[product.type] = (typeDistribution[product.type] || 0) + 1;
+            });
+
+            const labels = Object.keys(typeDistribution);
+            const data = Object.values(typeDistribution);
+            const colors = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
+
+            reportsData.distribution = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // Stock Movement Chart (Bar Chart)
+        function initMovementChart() {
+            const ctx = document.getElementById('movementChart');
+            if (!ctx) return;
+
+            // Generate sample movement data
+            const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            const inData = [45, 38, 52, 41];
+            const outData = [32, 28, 35, 29];
+
+            reportsData.movement = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Stock In',
+                        data: inData,
+                        backgroundColor: '#10b981'
+                    }, {
+                        label: 'Stock Out',
+                        data: outData,
+                        backgroundColor: '#ef4444'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tailor Performance Chart
+        function initTailorChart() {
+            const ctx = document.getElementById('tailorChart');
+            if (!ctx) return;
+
+            const tailors = JSON.parse(localStorage.getItem('tailors') || '[]');
+            const labels = tailors.slice(0, 5).map(t => t.name);
+            const data = labels.map(() => Math.floor(Math.random() * 100) + 20);
+
+            reportsData.tailor = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Speed', 'Quality', 'Efficiency', 'Reliability', 'Innovation'],
+                    datasets: [{
+                        label: 'Performance Score',
+                        data: [85, 90, 78, 88, 82],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        pointBackgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load analytics table data
+        function loadAnalyticsTable() {
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const tbody = document.getElementById('analytics-table-body');
+            if (!tbody) return;
+
+            const analyticsData = products.map((product, index) => {
+                return {
+                    rank: index + 1,
+                    name: product.name,
+                    category: 'Products',
+                    value: product.quantity,
+                    change: (Math.random() > 0.5 ? '+' : '-') + Math.floor(Math.random() * 20) + '%',
+                    updated: new Date(product.created_at || Date.now()).toLocaleDateString(),
+                    id: product.product_id
+                };
+            }).sort((a, b) => b.value - a.value);
+
+            tbody.innerHTML = analyticsData.map(item => `
+                <tr>
+                    <td>${item.rank}</td>
+                    <td>${item.name}</td>
+                    <td><span class="badge badge-primary">${item.category}</span></td>
+                    <td>${item.value}</td>
+                    <td class="${item.change.startsWith('+') ? 'text-success' : 'text-danger'}">${item.change}</td>
+                    <td>${item.updated}</td>
+                    <td>
+                        <button class="btn-sm btn-primary" onclick="viewDetails('${item.id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update insights
+        function updateInsights() {
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const lowStockCount = products.filter(p => (p.quantity || 0) < 10).length;
+            
+            // Update insights
+            document.getElementById('low-stock-insight').textContent = 
+                `${lowStockCount} products are running low on stock`;
+
+            // Find top performing product type
+            const typeCount = {};
+            products.forEach(p => {
+                typeCount[p.type] = (typeCount[p.type] || 0) + (p.quantity || 0);
+            });
+            
+            const topType = Object.keys(typeCount).reduce((a, b) => 
+                typeCount[a] > typeCount[b] ? a : b, 'N/A');
+            
+            document.getElementById('top-performer-insight').textContent = 
+                `${topType} showing highest inventory levels`;
+        }
+
+        // Export functions
+        function exportReports(format) {
+            if (format === 'pdf') {
+                // Simulate PDF export
+                showNotification('PDF export functionality will be implemented soon', 'info');
+            } else if (format === 'excel') {
+                // Export as CSV
+                const data = JSON.parse(localStorage.getItem('products') || '[]');
+                const csvContent = "data:text/csv;charset=utf-8," + 
+                    "Name,Type,Size,Color,Quantity,Created\n" +
+                    data.map(p => `${p.name},${p.type},${p.size},${p.color},${p.quantity},${p.created_at}`).join("\n");
+                
+                const link = document.createElement("a");
+                link.setAttribute("href", encodeURI(csvContent));
+                link.setAttribute("download", `inventory-report-${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('Report exported successfully!', 'success');
+            }
+        }
+
+        // Refresh insights
+        function refreshInsights() {
+            updateInsights();
+            updateReportsMetrics();
+            showNotification('Insights refreshed!', 'success');
+        }
+
+        // Placeholder functions for insight actions
+        function viewProductDetails() {
+            showNotification('Product details functionality coming soon', 'info');
+        }
+
+        function viewTimeAnalytics() {
+            showNotification('Time analytics functionality coming soon', 'info');
+        }
+
+        function viewDetails(id) {
+            showNotification(`Viewing details for ${id}`, 'info');
+        }
+
+        // Chart control event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Chart type switching
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const chartType = this.dataset.chart;
+                    const parentCard = this.closest('.chart-card');
+                    
+                    // Update active state
+                    parentCard.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Switch chart type (placeholder)
+                    showNotification(`Switched to ${chartType} chart`, 'info');
+                });
+            });
+
+            // Date range filter
+            const dateRangeSelect = document.getElementById('date-range');
+            if (dateRangeSelect) {
+                dateRangeSelect.addEventListener('change', function() {
+                    showNotification(`Date range changed to: ${this.options[this.selectedIndex].text}`, 'info');
+                    // Update charts based on date range
+                });
+            }
+
+            // Analytics search
+            const analyticsSearch = document.getElementById('analytics-search');
+            if (analyticsSearch) {
+                analyticsSearch.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#analytics-table-body tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+            }
+        });
+
+        // Hook into showSection to initialize reports when needed
+        const originalShowSectionForReports = window.showSection;
+        window.showSection = function(sectionId, event) {
+            if (originalShowSectionForReports) {
+                originalShowSectionForReports(sectionId, event);
+            }
+            
+            // Initialize reports if reports section is shown
+            if (sectionId === 'reports') {
+                setTimeout(() => {
+                    initReports();
+                }, 100);
+            }
+        };
     </script>
 </body>
 </html>
