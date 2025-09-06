@@ -431,11 +431,10 @@
                     <div class="transaction-container">
                         <!-- Simple Header -->
                         <div class="transaction-header-simple">
-                            <h2>Transaction History</h2>
-                            <button class="btn-export-simple" onclick="exportTransactions()">
-                                <i class="fas fa-download"></i>
-                                Export
-                            </button>
+                            <div class="header-left">
+                                <h2>Transaction History</h2>
+                                <span class="record-count" id="transaction-count">0 Records</span>
+                            </div>
                         </div>
                         
                         <!-- Simple Filter Bar -->
@@ -446,13 +445,31 @@
                                 <input type="text" id="search-transactions" placeholder="Search transactions...">
                             </div>
                             
-                            <!-- Filter Pills -->
-                            <div class="filter-pills-trans">
-                                <button class="pill active" onclick="filterByType('all')">All</button>
-                                <button class="pill" onclick="filterByType('in')">Stock In</button>
-                                <button class="pill" onclick="filterByType('out')">Stock Out</button>
-                                <button class="pill" onclick="filterByType('update')">Updated</button>
-                                <button class="pill" onclick="filterByType('remove')">Removed</button>
+                            <!-- Type Filter -->
+                            <div class="filter-inline">
+                                <label class="mobile-label">Type:</label>
+                                <select id="transaction-type-filter" class="inline-select" onchange="filterByTypeSelect(this.value)">
+                                    <option value="all">All Types</option>
+                                    <option value="in">Stock In</option>
+                                    <option value="out">Stock Out</option>
+                                    <option value="update">Updated</option>
+                                    <option value="remove">Removed</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Spacer -->
+                            <div class="nav-spacer"></div>
+                            
+                            <!-- Show Entries -->
+                            <div class="entries-inline">
+                                <label>Show</label>
+                                <select id="trans-per-page" class="inline-select" onchange="updateTransactionDisplay()">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <label class="entries-label">entries</label>
                             </div>
                         </div>
                         
@@ -1028,15 +1045,9 @@
             }
         }
         
-        // Filter transactions by type
-        function filterByType(type) {
+        // Filter transactions by type (dropdown version)
+        function filterByTypeSelect(type) {
             currentTransactionFilter = type;
-            
-            // Update button states
-            document.querySelectorAll('.filter-pills-trans .pill').forEach(pill => {
-                pill.classList.remove('active');
-            });
-            event.target.classList.add('active');
             
             // Apply filter
             if (type === 'all') {
@@ -1053,6 +1064,11 @@
             }
             
             updateTransactionDisplay();
+        }
+        
+        // Legacy filter function (kept for compatibility)
+        function filterByType(type) {
+            filterByTypeSelect(type);
         }
         
         // Search transactions
@@ -1093,7 +1109,17 @@
             const tbody = document.getElementById('trans-tbody');
             if (!tbody) return;
             
-            if (filteredTransactions.length === 0) {
+            // Update record count
+            const countElement = document.getElementById('transaction-count');
+            if (countElement) {
+                countElement.textContent = `${filteredTransactions.length} Records`;
+            }
+            
+            // Get pagination settings
+            const perPage = parseInt(document.getElementById('trans-per-page')?.value || '10');
+            const displayTransactions = filteredTransactions.slice(0, perPage);
+            
+            if (displayTransactions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 2rem; color: #9ca3af;">
@@ -1103,7 +1129,7 @@
                 return;
             }
             
-            tbody.innerHTML = filteredTransactions.map(createTransactionRow).join('');
+            tbody.innerHTML = displayTransactions.map(createTransactionRow).join('');
         }
         
         // Create transaction row HTML
