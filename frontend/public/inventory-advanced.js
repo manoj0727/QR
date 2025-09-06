@@ -337,12 +337,17 @@ class InventoryManager {
     }
     renderTable() {
         const tbody = document.getElementById('inventory-tbody');
+        const emptyState = document.querySelector('.empty-state');
         if (!tbody)
             return;
         const products = this.getCurrentPageProducts();
         if (products.length === 0) {
             this.showEmptyState();
             return;
+        }
+        // Hide empty state when we have products
+        if (emptyState) {
+            emptyState.style.display = 'none';
         }
         tbody.innerHTML = products.map(product => this.renderTableRow(product)).join('');
         this.attachRowEventListeners();
