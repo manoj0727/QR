@@ -9,7 +9,7 @@ const fs = require('fs');
 const cors = require('cors');
 const path = require('path');
 // Use SQLite instead of PostgreSQL
-const { db, initializeDatabase } = require('./database-sqlite');
+const databases = require('./database');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 const tailorRoutes = require('./tailorRoutes');
 const { router: authRoutes } = require('./authRoutes');
@@ -54,7 +54,7 @@ app.use((req, res, next) => {
 // Serve static files (frontend)
 app.use(express.static(path.join(__dirname, '..', 'frontend', 'public')));
 
-initializeDatabase();
+databases.initializeAllDatabases();
 
 // Root route - serve frontend
 app.get('/', (req, res) => {
@@ -95,7 +95,7 @@ app.post('/api/products/create', async (req, res) => {
       color
     });
 
-    db.run(
+    databases.inventory.db.run(
       `INSERT INTO products (product_id, name, type, size, color, quantity) 
        VALUES (?, ?, ?, ?, ?, ?)`,
       [product_id, name, type, size, color, initial_quantity],
@@ -104,7 +104,7 @@ app.post('/api/products/create', async (req, res) => {
           return res.status(500).json({ error: err.message });
         }
 
-        db.run(
+        databases.inventory.db.run(
           `INSERT INTO qr_codes (product_id, qr_data, qr_image_base64, qr_image_path) 
            VALUES (?, ?, ?, ?)`,
           [product_id, qrResult.qrData, qrResult.dataURL, ''],
@@ -114,7 +114,7 @@ app.post('/api/products/create', async (req, res) => {
             }
 
             if (initial_quantity > 0) {
-              db.run(
+              databases.inventory.db.run(
                 `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
                  VALUES (?, ?, ?, ?, ?, ?)`,
                 [product_id, 'INITIAL_STOCK', initial_quantity, 'System', 'Manufacturing', 'Initial stock creation'],
@@ -159,7 +159,7 @@ app.post('/api/inventory/scan', (req, res) => {
       return res.status(400).json({ error: 'Invalid QR code data - missing product ID' });
     }
 
-    db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
+    databases.inventory.db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
@@ -185,7 +185,7 @@ app.post('/api/inventory/scan', (req, res) => {
         return res.status(400).json({ error: 'Invalid action. Use IN or OUT' });
       }
 
-      db.run(
+      databases.inventory.db.run(
         `UPDATE products SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?`,
         [newQuantity, product_id],
         (err) => {
@@ -193,7 +193,7 @@ app.post('/api/inventory/scan', (req, res) => {
             return res.status(500).json({ error: err.message });
           }
 
-          db.run(
+          databases.inventory.db.run(
             `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
              VALUES (?, ?, ?, ?, ?, ?)`,
             [product_id, action, quantity, performed_by, location, notes],
@@ -228,7 +228,7 @@ app.post('/api/inventory/scan', (req, res) => {
 });
 
 app.get('/api/products', (req, res) => {
-  db.all('SELECT * FROM products ORDER BY created_at DESC', [], (err, rows) => {
+  databases.inventory.db.all('SELECT * FROM products ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -239,7 +239,7 @@ app.get('/api/products', (req, res) => {
 app.get('/api/products/:product_id', (req, res) => {
   const { product_id } = req.params;
   
-  db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
+  databases.inventory.db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -248,12 +248,12 @@ app.get('/api/products/:product_id', (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    db.get('SELECT * FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
+    databases.inventory.db.get('SELECT * FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
 
-      db.all(
+      databases.inventory.db.all(
         'SELECT * FROM transactions WHERE product_id = ? ORDER BY timestamp DESC LIMIT 10',
         [product_id],
         (err, transactions) => {
@@ -275,7 +275,7 @@ app.get('/api/products/:product_id', (req, res) => {
 app.get('/api/qr/:product_id', (req, res) => {
   const { product_id } = req.params;
   
-  db.get('SELECT qr_image_base64 FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
+  databases.inventory.db.get('SELECT qr_image_base64 FROM qr_codes WHERE product_id = ?', [product_id], (err, qr) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -302,7 +302,7 @@ app.get('/api/transactions', (req, res) => {
   query += ' ORDER BY t.timestamp DESC LIMIT ?';
   params.push(parseInt(limit));
   
-  db.all(query, params, (err, rows) => {
+  databases.inventory.db.all(query, params, (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -311,7 +311,7 @@ app.get('/api/transactions', (req, res) => {
 });
 
 app.get('/api/inventory/summary', (req, res) => {
-  db.all(
+  databases.inventory.db.all(
     `SELECT 
       type,
       size,
@@ -326,7 +326,7 @@ app.get('/api/inventory/summary', (req, res) => {
         return res.status(500).json({ error: err.message });
       }
       
-      db.get('SELECT SUM(quantity) as total_items FROM products', [], (err, total) => {
+      databases.inventory.db.get('SELECT SUM(quantity) as total_items FROM products', [], (err, total) => {
         if (err) {
           return res.status(500).json({ error: err.message });
         }

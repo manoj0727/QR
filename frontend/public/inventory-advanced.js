@@ -26,32 +26,70 @@ class InventoryManager {
         this.attachEventListeners();
         this.render();
     }
-    loadProducts() {
-        // Load products from localStorage (saved by create product form)
+    async loadProducts() {
+        try {
+            // Try to load from database first
+            if (window.apiService) {
+                showToast('Loading products from database...', 'info');
+                const dbProducts = await window.apiService.getProducts();
+                
+                if (dbProducts && dbProducts.length > 0) {
+                    // Convert backend format to frontend format
+                    this.products = dbProducts.map(p => window.apiService.formatProductForFrontend(p));
+                    
+                    // Sort by creation date - newest first
+                    this.products.sort((a, b) => {
+                        const dateA = new Date(a.createdAt).getTime();
+                        const dateB = new Date(b.createdAt).getTime();
+                        return dateB - dateA;
+                    });
+                    
+                    showToast(`Loaded ${this.products.length} products from database`, 'success');
+                } else {
+                    // No products in database, check localStorage
+                    this.loadFromLocalStorage();
+                }
+            } else {
+                // API service not available, use localStorage
+                this.loadFromLocalStorage();
+            }
+        } catch (error) {
+            console.error('Error loading from database:', error);
+            showToast('Using local storage (database unavailable)', 'info');
+            this.loadFromLocalStorage();
+        }
+        
+        this.applyFilters();
+    }
+    
+    loadFromLocalStorage() {
         const savedProducts = localStorage.getItem('inventory_products');
         if (savedProducts) {
             try {
                 const products = JSON.parse(savedProducts);
-                this.products = products.map((p) => (Object.assign(Object.assign({}, p), { lastUpdated: p.updatedAt ? new Date(p.updatedAt) : new Date(), createdAt: p.createdAt ? new Date(p.createdAt) : new Date(), 
-                    // Ensure all required fields have values
-                    material: p.material || 'Not specified', brand: p.brand || '', location: p.location || '', minStock: p.minStock || 10, price: p.price || 0 })));
+                this.products = products.map((p) => (Object.assign(Object.assign({}, p), { 
+                    lastUpdated: p.updatedAt ? new Date(p.updatedAt) : new Date(), 
+                    createdAt: p.createdAt ? new Date(p.createdAt) : new Date(), 
+                    material: p.material || 'Not specified', 
+                    brand: p.brand || '', 
+                    location: p.location || '', 
+                    minStock: p.minStock || 10, 
+                    price: p.price || 0 
+                })));
                 // Sort by creation date - newest first
                 this.products.sort((a, b) => {
                     const dateA = a.createdAt ? a.createdAt.getTime() : 0;
                     const dateB = b.createdAt ? b.createdAt.getTime() : 0;
-                    return dateB - dateA; // Newest first
+                    return dateB - dateA;
                 });
-            }
-            catch (error) {
+            } catch (error) {
                 console.error('Error loading products from localStorage:', error);
                 this.loadSampleData();
             }
-        }
-        else {
+        } else {
             // Load sample data if no saved products
             this.loadSampleData();
         }
-        this.applyFilters();
     }
     loadSampleData() {
         // Sample data with all new fields
@@ -670,32 +708,35 @@ function viewProduct(productId) {
 // Edit product - navigate to edit page
 async function editProduct(productId) {
     try {
-        // Get product data
-        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
-        const product = products.find((p) => p.id === productId);
+        let product = null;
+        
+        // Try to get from database first
+        if (window.apiService) {
+            try {
+                const response = await window.apiService.getProduct(productId);
+                if (response && response.product) {
+                    product = window.apiService.formatProductForFrontend(response.product);
+                }
+            } catch (error) {
+                // Failed to fetch from database, using local data
+            }
+        }
+        
+        // Fallback to localStorage if database not available
+        if (!product) {
+            const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+            product = products.find((p) => p.id === productId);
+        }
+        
         if (!product) {
             showToast('Product not found', 'error');
             return;
         }
+        
         // Store product data for editing
         sessionStorage.setItem('edit_product', JSON.stringify(product));
-        // If backend is available, fetch latest data
-        if (window.location.protocol !== 'file:') {
-            try {
-                const apiUrl = window.location.hostname === 'localhost'
-                    ? `http://localhost:3001/api/products/${productId}`
-                    : `/api/products/${productId}`;
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    const latestProduct = await response.json();
-                    sessionStorage.setItem('edit_product', JSON.stringify(latestProduct));
-                }
-            }
-            catch (error) {
-                console.log('Using local data for editing');
-            }
-        }
-        // Navigate to edit page (or convert create page to edit mode)
+        
+        // Navigate to edit page
         window.location.href = `product-simple.html?edit=${productId}`;
     }
     catch (error) {
@@ -876,39 +917,57 @@ async function showQRCode(productId) {
 }
 // Delete product with confirmation
 async function deleteProduct(productId) {
-    // Get product for display
-    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
-    const product = products.find((p) => p.id === productId);
+    let product = null;
+    
+    // Try to get product details
+    if (window.apiService) {
+        try {
+            const response = await window.apiService.getProduct(productId);
+            if (response && response.product) {
+                product = window.apiService.formatProductForFrontend(response.product);
+            }
+        } catch (error) {
+            // Failed to fetch from database
+        }
+    }
+    
+    // Fallback to localStorage
+    if (!product) {
+        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+        product = products.find((p) => p.id === productId);
+    }
+    
     if (!product) {
         showToast('Product not found', 'error');
         return;
     }
+    
     // Confirm deletion
     if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
         return;
     }
+    
     try {
-        // Delete from backend if available
-        if (window.location.protocol !== 'file:') {
+        let deletedFromDB = false;
+        
+        // Try to delete from database first
+        if (window.apiService) {
             try {
-                const apiUrl = window.location.hostname === 'localhost'
-                    ? `http://localhost:3001/api/products/${productId}`
-                    : `/api/products/${productId}`;
-                const response = await fetch(apiUrl, {
-                    method: 'DELETE'
-                });
-                if (!response.ok) {
-                    throw new Error('Backend deletion failed');
-                }
-            }
-            catch (error) {
-                console.log('Deleting from local storage only');
+                await window.apiService.deleteProduct(productId);
+                deletedFromDB = true;
+                showToast('Product deleted from database', 'success');
+            } catch (error) {
+                console.error('Database deletion failed:', error);
+                showToast('Deleting from local storage only', 'info');
             }
         }
-        // Delete from localStorage
+        
+        // Also delete from localStorage for consistency
+        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
         const updatedProducts = products.filter((p) => p.id !== productId);
         localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
-        // Refresh the page to show updated list
+        
+        // Refresh the page
         showToast('Product deleted successfully', 'success');
         setTimeout(() => {
             window.location.reload();

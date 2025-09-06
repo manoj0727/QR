@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { db } = require('./database-sqlite');
+const databases = require('./database');
 
 // Helper function to generate session ID
 const generateSessionId = () => {
@@ -28,7 +28,7 @@ const verifySession = (req, res, next) => {
         return res.status(401).json({ error: 'No session token provided' });
     }
     
-    db.get(
+    databases.users.db.get(
         `SELECT s.*, u.* FROM user_sessions s 
          JOIN users u ON s.user_id = u.user_id 
          WHERE s.session_id = ? AND s.expires_at > datetime('now') AND u.is_active = 1`,
@@ -68,7 +68,7 @@ router.post('/login', (req, res) => {
     
     const passwordHash = hashPassword(password);
     
-    db.get(
+    databases.users.db.get(
         'SELECT * FROM users WHERE username = ? AND password_hash = ? AND is_active = 1',
         [username, passwordHash],
         (err, user) => {
@@ -84,7 +84,7 @@ router.post('/login', (req, res) => {
             const sessionId = generateSessionId();
             const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
             
-            db.run(
+            databases.users.db.run(
                 `INSERT INTO user_sessions (session_id, user_id, ip_address, user_agent, expires_at) 
                  VALUES (?, ?, ?, ?, ?)`,
                 [sessionId, user.user_id, req.ip, req.headers['user-agent'], expiresAt.toISOString()],
@@ -94,13 +94,13 @@ router.post('/login', (req, res) => {
                     }
                     
                     // Update last login
-                    db.run(
+                    databases.users.db.run(
                         'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE user_id = ?',
                         [user.user_id]
                     );
                     
                     // Log activity
-                    db.run(
+                    databases.users.db.run(
                         `INSERT INTO activity_logs (user_id, action_type, description, ip_address) 
                          VALUES (?, 'LOGIN', 'User logged in', ?)`,
                         [user.user_id, req.ip]
@@ -128,13 +128,13 @@ router.post('/login', (req, res) => {
 router.post('/logout', verifySession, (req, res) => {
     const sessionId = req.headers.authorization?.replace('Bearer ', '');
     
-    db.run('DELETE FROM user_sessions WHERE session_id = ?', [sessionId], (err) => {
+    databases.users.db.run('DELETE FROM user_sessions WHERE session_id = ?', [sessionId], (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to logout' });
         }
         
         // Log activity
-        db.run(
+        databases.users.db.run(
             `INSERT INTO activity_logs (user_id, action_type, description, ip_address) 
              VALUES (?, 'LOGOUT', 'User logged out', ?)`,
             [req.user.user_id, req.ip]
@@ -160,7 +160,7 @@ router.post('/users/create', verifySession, requireAdmin, (req, res) => {
     const userId = generateUserId();
     const passwordHash = hashPassword(password);
     
-    db.run(
+    databases.users.db.run(
         `INSERT INTO users (user_id, username, password_hash, full_name, email, role, department, created_by) 
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [userId, username, passwordHash, full_name, email, role, department, req.user.user_id],
@@ -173,7 +173,7 @@ router.post('/users/create', verifySession, requireAdmin, (req, res) => {
             }
             
             // Log activity
-            db.run(
+            databases.users.db.run(
                 `INSERT INTO activity_logs (user_id, action_type, description, entity_type, entity_id, ip_address) 
                  VALUES (?, 'CREATE_USER', ?, 'USER', ?, ?)`,
                 [req.user.user_id, `Created user: ${username}`, userId, req.ip]
@@ -239,13 +239,13 @@ router.put('/users/:user_id', verifySession, requireAdmin, (req, res) => {
     updateQuery += ' WHERE user_id = ?';
     params.push(user_id);
     
-    db.run(updateQuery, params, (err) => {
+    databases.users.db.run(updateQuery, params, (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to update user' });
         }
         
         // Log activity
-        db.run(
+        databases.users.db.run(
             `INSERT INTO activity_logs (user_id, action_type, description, entity_type, entity_id, ip_address) 
              VALUES (?, 'UPDATE_USER', ?, 'USER', ?, ?)`,
             [req.user.user_id, `Updated user: ${user_id}`, user_id, req.ip]
@@ -263,13 +263,13 @@ router.delete('/users/:user_id', verifySession, requireAdmin, (req, res) => {
         return res.status(400).json({ error: 'Cannot delete admin user' });
     }
     
-    db.run('UPDATE users SET is_active = 0 WHERE user_id = ?', [user_id], (err) => {
+    databases.users.db.run('UPDATE users SET is_active = 0 WHERE user_id = ?', [user_id], (err) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to delete user' });
         }
         
         // Log activity
-        db.run(
+        databases.users.db.run(
             `INSERT INTO activity_logs (user_id, action_type, description, entity_type, entity_id, ip_address) 
              VALUES (?, 'DELETE_USER', ?, 'USER', ?, ?)`,
             [req.user.user_id, `Deactivated user: ${user_id}`, user_id, req.ip]
@@ -311,12 +311,12 @@ router.get('/admin/stats', verifySession, requireAdmin, (req, res) => {
     const stats = {};
     
     // Get user stats
-    db.get('SELECT COUNT(*) as total_users, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_users FROM users', (err, userStats) => {
+    databases.users.db.get('SELECT COUNT(*) as total_users, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_users FROM users', (err, userStats) => {
         if (err) return res.status(500).json({ error: 'Failed to fetch stats' });
         stats.users = userStats;
         
         // Get activity stats for today
-        db.get(
+        databases.users.db.get(
             `SELECT COUNT(*) as today_activities FROM activity_logs 
              WHERE DATE(timestamp) = DATE('now')`,
             (err, activityStats) => {
@@ -324,7 +324,7 @@ router.get('/admin/stats', verifySession, requireAdmin, (req, res) => {
                 stats.today_activities = activityStats.today_activities;
                 
                 // Get active sessions
-                db.get(
+                databases.users.db.get(
                     `SELECT COUNT(*) as active_sessions FROM user_sessions 
                      WHERE expires_at > datetime('now')`,
                     (err, sessionStats) => {

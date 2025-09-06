@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Use SQLite database
-const { db } = require('./database-sqlite');
+const databases = require('./database');
 
 // Helper function to generate unique IDs
 const generateTailorId = () => {
@@ -32,7 +32,7 @@ router.post('/tailors/create', (req, res) => {
 
   const tailor_id = generateTailorId();
 
-  db.run(
+  databases.inventory.db.run(
     `INSERT INTO tailors (tailor_id, name, specialization, contact_number, status) 
      VALUES (?, ?, ?, ?, 'active')`,
     [tailor_id, name, specialization, contact_number],
@@ -63,7 +63,7 @@ router.get('/tailors', (req, res) => {
   
   query += ' ORDER BY created_at DESC';
   
-  db.all(query, params, (err, rows) => {
+  databases.inventory.db.all(query, params, (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -74,7 +74,7 @@ router.get('/tailors', (req, res) => {
 router.get('/tailors/:tailor_id', (req, res) => {
   const { tailor_id } = req.params;
   
-  db.get('SELECT * FROM tailors WHERE tailor_id = ?', [tailor_id], (err, tailor) => {
+  databases.inventory.db.get('SELECT * FROM tailors WHERE tailor_id = ?', [tailor_id], (err, tailor) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -84,7 +84,7 @@ router.get('/tailors/:tailor_id', (req, res) => {
     }
 
     // Get current and completed assignments for this tailor
-    db.all(
+    databases.inventory.db.all(
       `SELECT * FROM work_assignments 
        WHERE tailor_id = ? 
        ORDER BY assigned_date DESC`,
@@ -113,7 +113,7 @@ router.put('/tailors/:tailor_id/status', (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
 
-  db.run(
+  databases.inventory.db.run(
     `UPDATE tailors SET status = ? WHERE tailor_id = ?`,
     [status, tailor_id],
     function(err) {
@@ -149,7 +149,7 @@ router.post('/assignments/create', (req, res) => {
 
   const assignment_id = generateAssignmentId();
 
-  db.run(
+  databases.inventory.db.run(
     `INSERT INTO work_assignments 
      (assignment_id, tailor_id, product_id, garment_type, fabric_type, 
       quantity, expected_date, status, notes) 
@@ -204,7 +204,7 @@ router.get('/assignments', (req, res) => {
   
   query += ' ORDER BY wa.assigned_date DESC';
   
-  db.all(query, params, (err, rows) => {
+  databases.inventory.db.all(query, params, (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -235,7 +235,7 @@ router.put('/assignments/:assignment_id/status', (req, res) => {
   updateQuery += ` WHERE assignment_id = ?`;
   params.push(assignment_id);
 
-  db.run(updateQuery, params, function(err) {
+  databases.inventory.db.run(updateQuery, params, function(err) {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -250,7 +250,7 @@ router.put('/assignments/:assignment_id/status', (req, res) => {
 router.get('/assignments/:assignment_id', (req, res) => {
   const { assignment_id } = req.params;
   
-  db.get(
+  databases.inventory.db.get(
     `SELECT wa.*, t.name as tailor_name, t.contact_number as tailor_contact,
             p.name as product_name, p.type as product_type, p.size as product_size
      FROM work_assignments wa
@@ -284,7 +284,7 @@ router.post('/fabrics/create', (req, res) => {
 
   const fabric_id = generateFabricId(fabric_type);
 
-  db.run(
+  databases.inventory.db.run(
     `INSERT INTO fabrics (fabric_id, fabric_type, color, quantity_meters, location) 
      VALUES (?, ?, ?, ?, ?)`,
     [fabric_id, fabric_type, color, quantity_meters, location],
@@ -320,7 +320,7 @@ router.get('/fabrics', (req, res) => {
   
   query += ' ORDER BY created_at DESC';
   
-  db.all(query, params, (err, rows) => {
+  databases.inventory.db.all(query, params, (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -339,7 +339,7 @@ router.put('/fabrics/:fabric_id/update-quantity', (req, res) => {
   }
 
   // First get current quantity
-  db.get('SELECT quantity_meters FROM fabrics WHERE fabric_id = ?', [fabric_id], (err, fabric) => {
+  databases.inventory.db.get('SELECT quantity_meters FROM fabrics WHERE fabric_id = ?', [fabric_id], (err, fabric) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -364,7 +364,7 @@ router.put('/fabrics/:fabric_id/update-quantity', (req, res) => {
       return res.status(400).json({ error: 'Invalid action. Use add or remove' });
     }
 
-    db.run(
+    databases.inventory.db.run(
       `UPDATE fabrics SET quantity_meters = ? WHERE fabric_id = ?`,
       [newQuantity, fabric_id],
       function(err) {
@@ -385,7 +385,7 @@ router.put('/fabrics/:fabric_id/update-quantity', (req, res) => {
 
 // Dashboard Statistics
 router.get('/dashboard/tailor-stats', (req, res) => {
-  db.all(
+  databases.inventory.db.all(
     `SELECT 
       COUNT(DISTINCT t.tailor_id) as total_tailors,
       COUNT(DISTINCT CASE WHEN t.status = 'active' THEN t.tailor_id END) as active_tailors,
