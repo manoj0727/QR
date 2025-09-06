@@ -1,0 +1,416 @@
+/* Transaction History Styles - Matching Inventory Design */
+
+:root {
+    --primary: #0090f1;
+    --primary-hover: #0077d0;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --dark: #1a1a1a;
+    --gray-900: #111827;
+    --gray-800: #1f2937;
+    --gray-700: #374151;
+    --gray-600: #4b5563;
+    --gray-500: #6b7280;
+    --gray-400: #9ca3af;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --gray-50: #f9fafb;
+    --white: #ffffff;
+    --border: #e5e7eb;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.transaction-container {
+    background: var(--white);
+    min-height: 100vh;
+}
+
+/* Header Section */
+.transaction-header-simple {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.transaction-header-simple h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.transaction-header-simple h2::before {
+    content: "";
+}
+
+.btn-export-simple {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--primary);
+    color: var(--white);
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-export-simple:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: none;
+    box-shadow: none;
+}
+
+/* Filter Bar */
+.transaction-filter-bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(to right, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    flex-wrap: nowrap;
+}
+
+/* Search Box */
+.search-box-trans {
+    position: relative;
+    flex: 0 0 300px;
+}
+
+.search-box-trans i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.search-box-trans input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.search-box-trans input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 144, 241, 0.1);
+}
+
+/* Filter Buttons */
+.filter-trans-group {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--gray-100);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.filter-trans-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-trans-btn:hover {
+    background: white;
+    color: var(--gray-900);
+}
+
+.filter-trans-btn.active {
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Table Wrapper */
+.trans-table-wrapper {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 1.5rem 1.5rem;
+}
+
+/* Table Styles */
+.trans-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.trans-table thead {
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--border);
+}
+
+.trans-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: var(--gray-700);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.trans-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s;
+}
+
+.trans-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+.trans-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.trans-table td {
+    padding: 1rem;
+    color: var(--gray-900);
+    font-size: 0.875rem;
+}
+
+/* Time Info Column */
+.time-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.time-date {
+    font-weight: 500;
+    color: var(--gray-900);
+    font-size: 0.875rem;
+}
+
+.time-hour {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+/* Product Info Column */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.prod-name {
+    font-weight: 500;
+    color: var(--gray-900);
+    font-size: 0.875rem;
+}
+
+.prod-sku {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+/* Transaction Type Badge */
+.trans-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.trans-type-badge.stock-in {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+.trans-type-badge.stock-out {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.trans-type-badge.update {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+}
+
+.trans-type-badge.remove {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+/* Quantity Change Column */
+.qty-change {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.qty-change.green {
+    color: var(--success);
+}
+
+.qty-change.red {
+    color: var(--danger);
+}
+
+.qty-change.blue {
+    color: var(--info);
+}
+
+.qty-change.orange {
+    color: var(--warning);
+}
+
+/* Stock Change Column */
+.stock-before,
+.stock-after {
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.stock-before {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.stock-after {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success);
+}
+
+.trans-table td i.fa-arrow-right {
+    color: var(--gray-400);
+    margin: 0 6px;
+    font-size: 0.75rem;
+}
+
+/* Empty State */
+.trans-empty {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 0 1.5rem;
+}
+
+.trans-empty i {
+    font-size: 3rem;
+    color: var(--gray-300);
+    margin-bottom: 1rem;
+}
+
+.trans-empty h3 {
+    color: var(--gray-900);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.trans-empty p {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .transaction-container {
+        padding: 15px;
+    }
+    
+    .transaction-header-simple {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .transaction-filter-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .search-box-trans {
+        min-width: 100%;
+    }
+    
+    .filter-trans-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .trans-table-wrapper {
+        overflow-x: auto;
+    }
+    
+    .trans-table {
+        min-width: 700px;
+    }
+    
+    .trans-table th,
+    .trans-table td {
+        padding: 12px 10px;
+        font-size: 12px;
+    }
+    
+    .filter-trans-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+
+/* Scrollbar Styling */
+.trans-table-wrapper::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.trans-table-wrapper::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+.trans-table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: 3px;
+}
+
+.trans-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
