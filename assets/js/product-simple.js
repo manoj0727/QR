@@ -262,6 +262,13 @@ class SimpleProductManager {
         return 'PRD-' + Date.now().toString(36).toUpperCase();
     }
 
+    generateUniqueProductId(type, size) {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const typeCode = (type || 'PRODUCT').substring(0, 3).toUpperCase();
+        const sizeCode = (size || 'DEF').substring(0, 2).toUpperCase();
+        return `${typeCode}-${sizeCode}-${timestamp}`;
+    }
+
     async saveProduct() {
         if (!this.validateForm()) {
             return;
@@ -367,11 +374,11 @@ class SimpleProductManager {
             // Determine if this is an update or create
             const isUpdate = this.editingProductId !== undefined;
             
-            // Set appropriate API endpoint
+            // Set appropriate API endpoint - using correct port 3000
             const apiUrl = window.location.hostname === 'localhost' 
                 ? isUpdate 
-                    ? `http://localhost:3001/api/products/${this.editingProductId}`
-                    : 'http://localhost:3001/api/products/create'
+                    ? `https://localhost:3000/api/products/${this.editingProductId}`
+                    : 'https://localhost:3000/api/products/create'
                 : isUpdate
                     ? `/api/products/${this.editingProductId}`
                     : '/api/products/create';
@@ -381,7 +388,13 @@ class SimpleProductManager {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(productData)
+                body: JSON.stringify({
+                    name: productData.name,
+                    type: productData.category,
+                    size: productData.size,
+                    color: productData.color,
+                    initial_quantity: productData.quantity
+                })
             });
             
             if (response.ok) {
@@ -421,12 +434,11 @@ class SimpleProductManager {
             this.qrcode = null;
         }
         
-        // Generate QR data
+        // Generate QR data matching new database schema
         const qrData = JSON.stringify({
-            id: productData.id || this.generateProductId(),
-            sku: productData.sku,
+            product_id: productData.sku || this.generateUniqueProductId(productData.category, productData.size),
             name: productData.name,
-            category: productData.category || '',
+            type: productData.category || '',
             size: productData.size || '',
             color: productData.color || '',
             timestamp: Date.now()

@@ -13,8 +13,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
-// Enable foreign keys
-db.run("PRAGMA foreign_keys = ON");
+// Disable foreign keys during initialization
+db.run("PRAGMA foreign_keys = OFF");
 
 // Initialize database schema
 const initializeDatabase = () => {
@@ -40,22 +40,23 @@ const initializeDatabase = () => {
             }
         });
 
-        // Products table
+        // Products table (updated to match existing code)
         db.run(`
             CREATE TABLE IF NOT EXISTS products (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 product_id TEXT UNIQUE NOT NULL,
-                sku TEXT UNIQUE NOT NULL,
                 name TEXT NOT NULL,
+                type TEXT NOT NULL,
+                size TEXT NOT NULL,
+                color TEXT,
+                quantity INTEGER DEFAULT 0,
+                sku TEXT,
                 description TEXT,
                 category_id INTEGER,
                 brand TEXT,
                 model TEXT,
-                size TEXT,
-                color TEXT,
                 material TEXT,
                 unit TEXT DEFAULT 'piece',
-                quantity INTEGER DEFAULT 0,
                 min_stock_level INTEGER DEFAULT 10,
                 max_stock_level INTEGER DEFAULT 1000,
                 reorder_point INTEGER DEFAULT 20,
@@ -67,7 +68,7 @@ const initializeDatabase = () => {
                 bin_number TEXT,
                 supplier_id INTEGER,
                 manufacturer TEXT,
-                barcode TEXT UNIQUE,
+                barcode TEXT,
                 qr_code TEXT,
                 image_url TEXT,
                 weight DECIMAL(10,3),
@@ -246,13 +247,33 @@ const initializeDatabase = () => {
             else console.log('Stock alerts table ready');
         });
 
-        // QR codes table
+        // Transactions table (compatibility table for existing code)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id TEXT NOT NULL,
+                action TEXT NOT NULL,
+                quantity INTEGER NOT NULL,
+                performed_by TEXT,
+                location TEXT,
+                notes TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+            )
+        `, (err) => {
+            if (err) console.error('Error creating transactions table:', err);
+            else console.log('Transactions table ready');
+        });
+
+        // QR codes table (updated to match existing code expectations)
         db.run(`
             CREATE TABLE IF NOT EXISTS qr_codes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 product_id TEXT UNIQUE NOT NULL,
                 qr_data TEXT NOT NULL,
                 qr_image_base64 TEXT,
+                qr_image_path TEXT,
                 qr_image_url TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -285,7 +306,13 @@ const initializeDatabase = () => {
             )
         `, (err) => {
             if (err) console.error('Error creating warehouses table:', err);
-            else console.log('Warehouses table ready');
+            else {
+                console.log('Warehouses table ready');
+                // Re-enable foreign keys after all tables are created
+                db.run("PRAGMA foreign_keys = ON", (err) => {
+                    if (!err) console.log('Foreign keys re-enabled');
+                });
+            }
         });
     });
 };

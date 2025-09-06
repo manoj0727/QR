@@ -22,9 +22,23 @@ const generateFabricId = (type) => {
   return `FAB-${type.substring(0, 3)}-${timestamp}-${random}`.toUpperCase();
 };
 
-// Tailor Management Routes
-router.post('/tailors/create', (req, res) => {
-  const { name, specialization, contact_number } = req.body;
+// GET all tailors
+router.get('/', (req, res) => {
+  databases.inventory.db.all(
+    `SELECT * FROM tailors ORDER BY created_at DESC`,
+    [],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json(rows || []);
+    }
+  );
+});
+
+// Create new tailor
+router.post('/', (req, res) => {
+  const { name, specialty, experience, rate, phone, email } = req.body;
   
   if (!name) {
     return res.status(400).json({ error: 'Name is required' });
@@ -33,9 +47,9 @@ router.post('/tailors/create', (req, res) => {
   const tailor_id = generateTailorId();
 
   databases.inventory.db.run(
-    `INSERT INTO tailors (tailor_id, name, specialization, contact_number, status) 
-     VALUES (?, ?, ?, ?, 'active')`,
-    [tailor_id, name, specialization, contact_number],
+    `INSERT INTO tailors (tailor_id, name, specialty, experience, rate, phone, email, status) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
+    [tailor_id, name, specialty || 'General', experience || 0, rate || 0, phone || '', email || ''],
     function(err) {
       if (err) {
         return res.status(500).json({ error: err.message });
@@ -45,6 +59,30 @@ router.post('/tailors/create', (req, res) => {
         success: true,
         tailor_id,
         message: 'Tailor registered successfully'
+      });
+    }
+  );
+});
+
+// Delete a tailor
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+  
+  databases.inventory.db.run(
+    `DELETE FROM tailors WHERE tailor_id = ? OR id = ?`,
+    [id, id],
+    function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Tailor not found' });
+      }
+      
+      res.json({
+        success: true,
+        message: 'Tailor deleted successfully'
       });
     }
   );

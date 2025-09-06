@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - QR Inventory System</title>
+    
+    <!-- Original CSS files -->
+    <link rel="stylesheet" href="assets/css/dashboard-modern.css">
+    <link rel="stylesheet" href="assets/css/transaction-history.css">
+    <link rel="stylesheet" href="assets/css/original-styles.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/top-header.css">
+    <link rel="stylesheet" href="assets/css/sidebar-collapse.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered: ', registration))
+                    .catch(error => console.log('SW registration failed: ', error));
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>QR Inventory</h2>
+                <button class="sidebar-collapse-btn" onclick="collapseSidebar()" title="Collapse Menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="#" onclick="showSection('dashboard', event)" class="nav-item active" data-section="dashboard" data-tooltip="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('create-product', event)" class="nav-item" data-section="create-product" data-tooltip="Create Product">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Product</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('scan-qr', event)" class="nav-item" data-section="scan-qr" data-tooltip="Scan QR">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('inventory', event)" class="nav-item" data-section="inventory" data-tooltip="Inventory">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('transactions', event)" class="nav-item" data-section="transactions" data-tooltip="Transactions">
+                        <i class="fas fa-receipt"></i>
+                        <span>Transactions</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('tailor-management', event)" class="nav-item" data-section="tailor-management" data-tooltip="Tailor Mgmt">
+                        <i class="fas fa-users"></i>
+                        <span>Tailor Management</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('reports', event)" class="nav-item" data-section="reports" data-tooltip="Reports">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle-btn" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="header-title">
+                        <h1>QR Inventory System</h1>
+                        <span class="header-subtitle" id="current-page">Dashboard</span>
+                    </div>
+                </div>
+                
+                <div class="header-right">
+                    <button class="header-icon-btn" onclick="toggleFullscreen()" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    
+                    <div class="user-menu-wrapper">
+                        <button class="user-menu-btn" onclick="toggleUserMenu()">
+                            <div class="user-avatar">A</div>
+                            <span class="user-name">Admin</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        
+                        <div class="user-dropdown" id="user-dropdown">
+                            <a href="#" onclick="showProfile()">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="#" onclick="showSettings()">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <hr>
+                            <a href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <div class="section-content">
+                    <div class="dashboard-header">
+                        <h2>Dashboard Overview</h2>
+                        <p>Real-time insights into your inventory system</p>
+                        <div class="header-actions">
+                            <button onclick="refreshDashboard()" class="btn btn-secondary">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button onclick="exportReport()" class="btn btn-primary">
+                                <i class="fas fa-download"></i> Export Report
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Total Products</span>
+                                <span class="stat-value" id="total-products">0</span>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> +12%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Total Items</span>
+                                <span class="stat-value" id="total-items">0</span>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> Updated
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Product Types</span>
+                                <span class="stat-value" id="product-types">0</span>
+                                <span class="stat-change">
+                                    <i class="fas fa-minus"></i> Stable
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-exchange-alt"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Recent Transactions</span>
+                                <span class="stat-value" id="recent-transactions">0</span>
+                                <span class="stat-change positive">
+                                    <i class="fas fa-arrow-up"></i> Active
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="stat-details">
+                                <span class="stat-label">Low Stock Items</span>
+                                <span class="stat-value" id="low-stock">0</span>
+                                <span class="stat-change negative">
+                                    <i class="fas fa-arrow-down"></i> Alert
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3>Inventory Overview</h3>
+                                <div class="card-actions">
+                                    <select class="period-select">
+                                        <option>This Week</option>
+                                        <option>This Month</option>
+                                        <option>This Year</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card small">
+                            <div class="card-header">
+                                <h3>Stock Distribution</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="stockChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary Table -->
+                    <div class="table-card">
+                        <div class="card-header">
+                            <h3>Inventory Summary</h3>
+                            <div class="card-actions">
+                                <button class="btn-text" onclick="showSection('inventory', event)">View All</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="inventory-summary"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn" onclick="showSection('create-product', event)">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Product</span>
+                            </button>
+                            <button class="action-btn" onclick="showSection('scan-qr', event)">
+                                <i class="fas fa-qrcode"></i>
+                                <span>Scan QR</span>
+                            </button>
+                            <button class="action-btn" onclick="exportReport()">
+                                <i class="fas fa-file-export"></i>
+                                <span>Export Report</span>
+                            </button>
+                            <button class="action-btn" onclick="syncData()">
+                                <i class="fas fa-sync"></i>
+                                <span>Sync Data</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Create Product Section -->
+            <div id="create-product" class="section">
+                <iframe src="components/pages/product-simple.html" style="width: 100%; height: calc(100vh - 70px); border: none;"></iframe>
+            </div>
+            
+            <!-- Scan QR Section -->
+            <div id="scan-qr" class="section">
+                <div class="section-content">
+                    <h2>Scan QR Code</h2>
+                    
+                    <div class="scan-options">
+                        <button onclick="startScanner()" class="btn btn-primary">Start Camera Scanner</button>
+                        <button onclick="showManualEntry()" class="btn btn-secondary">Manual Entry</button>
+                    </div>
+                    
+                    <div id="scanner-container" style="display: none;">
+                        <div class="scanner-wrapper">
+                            <p id="camera-info" style="text-align: center; color: #666; margin-bottom: 1rem;">
+                                Requesting camera permission...
+                            </p>
+                            <div class="reader-container">
+                                <div id="reader"></div>
+                            </div>
+                            <div id="camera-loading" style="text-align: center; padding: 2rem; display: none;">
+                                <div class="loading">
+                                    <div class="spinner"></div>
+                                    <p style="margin-top: 1rem;">Initializing camera...</p>
+                                </div>
+                            </div>
+                            <button onclick="stopScanner()" class="btn btn-danger" style="margin-top: 1rem; display: block; margin-left: auto; margin-right: auto;">Stop Scanner</button>
+                        </div>
+                    </div>
+                    
+                    <div id="manual-entry" style="display: none;">
+                        <div class="form-group">
+                            <label for="manual-product-id">Enter Product ID</label>
+                            <input type="text" id="manual-product-id" placeholder="e.g., SHI-M-ABC123">
+                        </div>
+                        <button onclick="manualLookup()" class="btn btn-primary">Lookup Product</button>
+                    </div>
+                    
+                    <div id="scan-result" class="scan-result" style="display: none;">
+                        <div id="product-details"></div>
+                        
+                        <h3>Update Inventory</h3>
+                        <form id="inventory-action-form" class="form">
+                            <div class="form-group">
+                                <label for="action">Action</label>
+                                <select id="action" required>
+                                    <option value="">Select Action</option>
+                                    <option value="IN">Add Items (Stock In)</option>
+                                    <option value="OUT">Remove Items (Stock Out)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="quantity">Quantity</label>
+                                <input type="number" id="quantity" value="1" min="1" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="performed-by">Performed By</label>
+                                <input type="text" id="performed-by" placeholder="Enter your name">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="location">Location (Optional)</label>
+                                <input type="text" id="location" placeholder="e.g., Warehouse A">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="notes">Notes (Optional)</label>
+                                <textarea id="notes" rows="2"></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Update Inventory</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Inventory Section -->
+            <div id="inventory" class="section">
+                <iframe src="components/pages/inventory-advanced.html" style="width: 100%; height: calc(100vh - 70px); border: none;"></iframe>
+            </div>
+            
+            <!-- Transactions Section -->
+            <div id="transactions" class="section">
+                <div class="transactions-container">
+                    <div class="transaction-header">
+                        <div class="header-content">
+                            <h2>Transaction History</h2>
+                            <p class="header-subtitle">Track all inventory movements and operations</p>
+                        </div>
+                        <div class="header-actions">
+                            <button onclick="refreshTransactions()" class="btn btn-outline">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button onclick="exportTransactions()" class="btn btn-outline">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filters-section">
+                        <div class="filter-group">
+                            <label for="date-filter">Date Range</label>
+                            <select id="date-filter" onchange="filterTransactions()">
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month" selected>This Month</option>
+                                <option value="quarter">This Quarter</option>
+                                <option value="year">This Year</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="type-filter">Transaction Type</label>
+                            <select id="type-filter" onchange="filterTransactions()">
+                                <option value="all">All Types</option>
+                                <option value="IN">Stock In</option>
+                                <option value="OUT">Stock Out</option>
+                                <option value="ADJUST">Adjustment</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="status-filter">Status</label>
+                            <select id="status-filter" onchange="filterTransactions()">
+                                <option value="all">All Status</option>
+                                <option value="completed">Completed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                        <div class="search-group">
+                            <input type="text" id="search-transactions" placeholder="Search transactions..." 
+                                   oninput="searchTransactions()">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+
+                    <div class="transactions-content">
+                        <div class="transactions-summary">
+                            <div class="summary-card">
+                                <div class="summary-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="summary-details">
+                                    <span class="summary-label">Total Transactions</span>
+                                    <span class="summary-value" id="total-transactions">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card">
+                                <div class="summary-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                                    <i class="fas fa-arrow-up"></i>
+                                </div>
+                                <div class="summary-details">
+                                    <span class="summary-label">Stock In</span>
+                                    <span class="summary-value" id="stock-in-count">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-card">
+                                <div class="summary-icon" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+                                    <i class="fas fa-arrow-down"></i>
+                                </div>
+                                <div class="summary-details">
+                                    <span class="summary-label">Stock Out</span>
+                                    <span class="summary-value" id="stock-out-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="transactions-list" id="transactions-list">
+                            <div class="transaction-item">
+                                <div class="transaction-header">
+                                    <div class="transaction-info">
+                                        <span class="transaction-id">#TXN-001</span>
+                                        <span class="transaction-date">2024-03-15 10:30 AM</span>
+                                    </div>
+                                    <span class="transaction-type in">Stock In</span>
+                                </div>
+                                <div class="transaction-details">
+                                    <div class="product-info">
+                                        <h4>Cotton T-Shirt - Large</h4>
+                                        <p>Product ID: SHI-L-COT001</p>
+                                    </div>
+                                    <div class="transaction-meta">
+                                        <p><strong>Quantity:</strong> +50 items</p>
+                                        <p><strong>Performed by:</strong> John Doe</p>
+                                        <p><strong>Location:</strong> Main Warehouse</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- More transactions will be loaded here -->
+                        </div>
+
+                        <div class="pagination">
+                            <button onclick="previousPage()" class="btn btn-secondary" id="prev-btn" disabled>
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>
+                            <span class="page-info">
+                                Page <span id="current-page">1</span> of <span id="total-pages">1</span>
+                            </span>
+                            <button onclick="nextPage()" class="btn btn-secondary" id="next-btn">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tailor Management Section -->
+            <div id="tailor-management" class="section">
+                <div class="tailor-management-container">
+                    <div class="tailor-header">
+                        <div class="header-content">
+                            <h2>Tailor Management</h2>
+                            <p class="header-subtitle">Manage tailors, track performance, and oversee operations</p>
+                        </div>
+                        <div class="tailor-stats">
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="total-tailors">0</span>
+                                    <span class="stat-label">Active Tailors</span>
+                                </div>
+                            </div>
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="active-orders">0</span>
+                                    <span class="stat-label">Active Orders</span>
+                                </div>
+                            </div>
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="avg-rating">4.8</span>
+                                    <span class="stat-label">Avg Rating</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modern-tab-nav">
+                        <div class="tab-buttons">
+                            <button class="modern-tab-btn active" data-tab="tailors" onclick="switchTab('tailors')">
+                                <i class="fas fa-users"></i>
+                                <span>Tailors</span>
+                            </button>
+                            <button class="modern-tab-btn" data-tab="orders" onclick="switchTab('orders')">
+                                <i class="fas fa-shopping-bag"></i>
+                                <span>Orders</span>
+                            </button>
+                            <button class="modern-tab-btn" data-tab="performance" onclick="switchTab('performance')">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Performance</span>
+                            </button>
+                            <button class="modern-tab-btn" data-tab="settings" onclick="switchTab('settings')">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="tailors-tab" class="modern-tab-content active">
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-user-plus"></i> Add New Tailor</h3>
+                                    <p>Register a new tailor to the system</p>
+                                </div>
+                                <div class="section-actions">
+                                    <button class="btn btn-outline" onclick="importTailors()">
+                                        <i class="fas fa-upload"></i> Import
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <form class="modern-form" id="add-tailor-form" onsubmit="addTailor(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tailor-name"><i class="fas fa-user"></i> Full Name</label>
+                                        <input type="text" id="tailor-name" name="name" required placeholder="Enter tailor's full name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tailor-phone"><i class="fas fa-phone"></i> Phone Number</label>
+                                        <input type="tel" id="tailor-phone" name="phone" required placeholder="+91 98765 43210">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tailor-email"><i class="fas fa-envelope"></i> Email Address</label>
+                                        <input type="email" id="tailor-email" name="email" placeholder="tailor@example.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tailor-specialty"><i class="fas fa-star"></i> Specialty</label>
+                                        <select id="tailor-specialty" name="specialty">
+                                            <option value="">Select Specialty</option>
+                                            <option value="shirts">Shirts</option>
+                                            <option value="pants">Pants</option>
+                                            <option value="suits">Suits</option>
+                                            <option value="dresses">Dresses</option>
+                                            <option value="alterations">Alterations</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tailor-experience"><i class="fas fa-clock"></i> Experience (Years)</label>
+                                        <input type="number" id="tailor-experience" name="experience" min="0" placeholder="5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tailor-rate"><i class="fas fa-rupee-sign"></i> Hourly Rate</label>
+                                        <input type="number" id="tailor-rate" name="rate" min="0" step="0.01" placeholder="500">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="tailor-address"><i class="fas fa-map-marker-alt"></i> Address</label>
+                                    <textarea id="tailor-address" name="address" rows="3" placeholder="Complete address with pincode"></textarea>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Add Tailor
+                                    </button>
+                                    <button type="reset" class="btn btn-outline">
+                                        <i class="fas fa-undo"></i> Reset Form
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-list"></i> Tailor Directory</h3>
+                                    <p>View and manage all registered tailors</p>
+                                </div>
+                                <div class="section-actions">
+                                    <div class="search-container">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="tailor-search" placeholder="Search tailors..." oninput="searchTailors()">
+                                    </div>
+                                    <div class="filter-group">
+                                        <select id="specialty-filter" onchange="filterTailors()">
+                                            <option value="">All Specialties</option>
+                                            <option value="shirts">Shirts</option>
+                                            <option value="pants">Pants</option>
+                                            <option value="suits">Suits</option>
+                                            <option value="dresses">Dresses</option>
+                                            <option value="alterations">Alterations</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="modern-table-container">
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tailor Details</th>
+                                            <th>Contact</th>
+                                            <th>Specialty</th>
+                                            <th>Experience</th>
+                                            <th>Rate</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tailors-table-body">
+                                        <!-- Tailors will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reports Section -->
+            <div id="reports" class="section">
+                <div class="reports-container">
+                    <div class="reports-header">
+                        <div class="header-content">
+                            <h2>Reports & Analytics</h2>
+                            <p class="header-subtitle">Comprehensive insights and data analysis</p>
+                        </div>
+                        <div class="reports-controls">
+                            <div class="date-range-picker">
+                                <label>Period:</label>
+                                <select id="date-range">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30" selected>Last 30 days</option>
+                                    <option value="90">Last 3 months</option>
+                                    <option value="365">Last year</option>
+                                </select>
+                            </div>
+                            <div class="export-controls">
+                                <button onclick="exportReport('pdf')" class="btn btn-outline">
+                                    <i class="fas fa-file-pdf"></i> Export PDF
+                                </button>
+                                <button onclick="exportReport('excel')" class="btn btn-outline">
+                                    <i class="fas fa-file-excel"></i> Export Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="metric-details">
+                                <h3 id="revenue-metric">₹0</h3>
+                                <p>Total Revenue</p>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i> +12.5%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="metric-details">
+                                <h3 id="orders-metric">0</h3>
+                                <p>Total Orders</p>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i> +8.3%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="metric-details">
+                                <h3 id="customers-metric">0</h3>
+                                <p>Active Customers</p>
+                                <div class="metric-change neutral">
+                                    <i class="fas fa-minus"></i> 0%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-percent"></i>
+                            </div>
+                            <div class="metric-details">
+                                <h3 id="conversion-metric">0%</h3>
+                                <p>Conversion Rate</p>
+                                <div class="metric-change positive">
+                                    <i class="fas fa-arrow-up"></i> +2.1%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-section">
+                        <div class="charts-row">
+                            <div class="chart-card large">
+                                <div class="card-header">
+                                    <h3>Revenue Trends</h3>
+                                    <div class="chart-controls">
+                                        <button class="chart-btn active" data-chart="line">Line</button>
+                                        <button class="chart-btn" data-chart="bar">Bar</button>
+                                        <button class="chart-btn" data-chart="area">Area</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card medium">
+                                <div class="card-header">
+                                    <h3>Category Distribution</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="charts-row">
+                            <div class="chart-card medium">
+                                <div class="card-header">
+                                    <h3>Monthly Performance</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="performanceChart"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="chart-card medium">
+                                <div class="card-header">
+                                    <h3>Top Products</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="productsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-table-card">
+                        <div class="card-header">
+                            <h3>Detailed Analytics</h3>
+                            <div class="table-controls">
+                                <div class="search-container">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="analytics-search" placeholder="Search analytics..." class="analytics-search">
+                                </div>
+                                <select id="analytics-filter">
+                                    <option value="all">All Categories</option>
+                                    <option value="products">Products</option>
+                                    <option value="customers">Customers</option>
+                                    <option value="transactions">Transactions</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="modern-table-container">
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Category</th>
+                                            <th>Revenue</th>
+                                            <th>Orders</th>
+                                            <th>Growth</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="analytics-table-body">
+                                        <!-- Analytics data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="insights-panel">
+                        <div class="insights-header">
+                            <h3><i class="fas fa-lightbulb"></i> AI Insights</h3>
+                            <button onclick="refreshInsights()" class="refresh-insights">
+                                <i class="fas fa-refresh"></i> Refresh Insights
+                            </button>
+                        </div>
+                        
+                        <div class="insights-grid">
+                            <div class="insight-card">
+                                <div class="insight-icon warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Low Stock Alert</h4>
+                                    <p>5 products are running low on stock. Consider restocking soon to avoid shortages.</p>
+                                    <a href="#" onclick="viewProductDetails()">View Products →</a>
+                                </div>
+                            </div>
+
+                            <div class="insight-card">
+                                <div class="insight-icon success">
+                                    <i class="fas fa-trend-up"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Peak Performance</h4>
+                                    <p>Sales increased by 23% compared to last month. Great work!</p>
+                                    <a href="#" onclick="viewTimeAnalytics()">View Analytics →</a>
+                                </div>
+                            </div>
+
+                            <div class="insight-card">
+                                <div class="insight-icon info">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h4>Customer Patterns</h4>
+                                    <p>Peak ordering time is between 2 PM - 4 PM. Optimize staffing accordingly.</p>
+                                    <a href="#" onclick="viewDetails('patterns')">View Details →</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Notification Container -->
+        <div id="notification-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.4/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- Original JavaScript functionality -->
+    <script>
+        // Global variables
+        let html5QrCode;
+        let currentTransactionsPage = 1;
+        let transactionsPerPage = 10;
+        let allTransactions = [];
+        let filteredTransactions = [];
+
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                if (sidebar.classList.contains('active')) {
+                    mainContent.style.marginLeft = '0';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        }
+
+        // Collapse sidebar (shrink)
+        function collapseSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const topHeader = document.querySelector('.top-header');
+            
+            sidebar.classList.toggle('collapsed');
+            
+            // Save state to localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            
+            // Adjust main content and header
+            if (isCollapsed) {
+                if (mainContent) mainContent.style.marginLeft = '70px';
+                if (topHeader) topHeader.style.left = '70px';
+            } else {
+                if (mainContent) mainContent.style.marginLeft = '250px';
+                if (topHeader) topHeader.style.left = '250px';
+            }
+        }
+
+        // Show section
+        function showSection(sectionId, event) {
+            if (event) {
+                event.preventDefault();
+            }
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the target section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Update navigation active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const activeNav = document.querySelector(`[data-section="${sectionId}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+            
+            // Update page title in header
+            const pageTitles = {
+                'dashboard': 'Dashboard',
+                'create-product': 'Create Product',
+                'scan-qr': 'Scan QR Code',
+                'inventory': 'Inventory Management',
+                'transactions': 'Transaction History',
+                'tailor-management': 'Tailor Management',
+                'reports': 'Reports & Analytics'
+            };
+            
+            const currentPage = document.getElementById('current-page');
+            if (currentPage) {
+                currentPage.textContent = pageTitles[sectionId] || 'Dashboard';
+            }
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Initialize section-specific functionality
+            if (sectionId === 'dashboard') {
+                loadDashboardData();
+            } else if (sectionId === 'transactions') {
+                loadTransactions();
+            } else if (sectionId === 'tailor-management') {
+                loadTailors();
+            } else if (sectionId === 'reports') {
+                initReports();
+            }
+        }
+
+        // QR Scanner functions
+        function startScanner() {
+            const scannerContainer = document.getElementById('scanner-container');
+            const cameraInfo = document.getElementById('camera-info');
+            const cameraLoading = document.getElementById('camera-loading');
+            
+            scannerContainer.style.display = 'block';
+            cameraInfo.textContent = 'Initializing camera...';
+            cameraLoading.style.display = 'block';
+
+            html5QrCode = new Html5Qrcode("reader");
+            
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices && devices.length) {
+                    const cameraId = devices[0].id;
+                    html5QrCode.start(
+                        cameraId,
+                        {
+                            fps: 10,
+                            qrbox: { width: 250, height: 250 }
+                        },
+                        (decodedText, decodedResult) => {
+                            onScanSuccess(decodedText);
+                        },
+                        (errorMessage) => {
+                            // console.log(`QR Code scan error: ${errorMessage}`);
+                        }
+                    ).then(() => {
+                        cameraInfo.textContent = 'Camera ready! Point at QR code to scan.';
+                        cameraLoading.style.display = 'none';
+                    }).catch(err => {
+                        cameraInfo.textContent = 'Error starting camera: ' + err;
+                        cameraLoading.style.display = 'none';
+                    });
+                }
+            }).catch(err => {
+                cameraInfo.textContent = 'No cameras found or permission denied.';
+                cameraLoading.style.display = 'none';
+            });
+        }
+
+        function stopScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('scanner-container').style.display = 'none';
+                    showNotification('Scanner stopped', 'info');
+                });
+            }
+        }
+
+        function showManualEntry() {
+            document.getElementById('manual-entry').style.display = 'block';
+        }
+
+        function manualLookup() {
+            const productId = document.getElementById('manual-product-id').value.trim();
+            if (productId) {
+                lookupProduct(productId);
+            } else {
+                showNotification('Please enter a product ID', 'warning');
+            }
+        }
+
+        function onScanSuccess(decodedText) {
+            stopScanner();
+            lookupProduct(decodedText);
+        }
+
+        function lookupProduct(productId) {
+            // Simulate API call to lookup product
+            fetch(`/api/products/${productId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Product not found');
+                    }
+                    return response.json();
+                })
+                .then(product => {
+                    displayProductDetails(product);
+                    document.getElementById('scan-result').style.display = 'block';
+                    showNotification('Product found!', 'success');
+                })
+                .catch(error => {
+                    showNotification('Product not found: ' + error.message, 'error');
+                });
+        }
+
+        function displayProductDetails(product) {
+            const detailsDiv = document.getElementById('product-details');
+            detailsDiv.innerHTML = `
+                <div class="product-card">
+                    <h3>${product.name || 'Unknown Product'}</h3>
+                    <p><strong>Product ID:</strong> ${product.id || product.product_id || 'N/A'}</p>
+                    <p><strong>Current Stock:</strong> ${product.stock_quantity || 0} items</p>
+                    <p><strong>Price:</strong> ₹${product.price || 0}</p>
+                    <p><strong>Category:</strong> ${product.category || 'General'}</p>
+                </div>
+            `;
+        }
+
+        // Inventory action form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const inventoryForm = document.getElementById('inventory-action-form');
+            if (inventoryForm) {
+                inventoryForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(this);
+                    const actionData = {
+                        qr_data: document.getElementById('manual-product-id')?.value || 'scanned-product',
+                        action: formData.get('action') || document.getElementById('action').value,
+                        quantity: parseInt(formData.get('quantity') || document.getElementById('quantity').value),
+                        performed_by: formData.get('performed_by') || document.getElementById('performed-by').value,
+                        location: formData.get('location') || document.getElementById('location').value,
+                        notes: formData.get('notes') || document.getElementById('notes').value
+                    };
+
+                    // Submit to API
+                    fetch('/api/inventory/scan', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(actionData)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.error) {
+                            showNotification('Error: ' + result.error, 'error');
+                        } else {
+                            showNotification('Inventory updated successfully!', 'success');
+                            this.reset();
+                            document.getElementById('scan-result').style.display = 'none';
+                            loadDashboardData(); // Refresh dashboard
+                        }
+                    })
+                    .catch(error => {
+                        showNotification('Network error: ' + error.message, 'error');
+                    });
+                });
+            }
+        });
+
+        // Dashboard functions
+        function loadDashboardData() {
+            // Load dashboard statistics
+            Promise.all([
+                fetch('/api/dashboard/stats').catch(() => ({ ok: false })),
+                fetch('/api/products').catch(() => ({ ok: false })),
+                fetch('/api/transactions?limit=5').catch(() => ({ ok: false }))
+            ]).then(responses => {
+                responses.forEach((response, index) => {
+                    if (response.ok) {
+                        response.json().then(data => {
+                            if (index === 0) updateDashboardStats(data);
+                            else if (index === 1) updateProductStats(data);
+                            else if (index === 2) updateRecentActivity(data);
+                        });
+                    }
+                });
+            });
+        }
+
+        function updateDashboardStats(stats) {
+            if (stats) {
+                document.getElementById('total-products').textContent = stats.totalProducts || 0;
+                document.getElementById('total-items').textContent = stats.totalItems || 0;
+                document.getElementById('product-types').textContent = stats.productTypes || 0;
+                document.getElementById('recent-transactions').textContent = stats.recentTransactions || 0;
+                document.getElementById('low-stock').textContent = stats.lowStock || 0;
+            }
+        }
+
+        function updateProductStats(products) {
+            if (Array.isArray(products)) {
+                document.getElementById('total-products').textContent = products.length;
+                const totalItems = products.reduce((sum, product) => sum + (product.stock_quantity || 0), 0);
+                document.getElementById('total-items').textContent = totalItems;
+                
+                const categories = [...new Set(products.map(p => p.category || 'General'))];
+                document.getElementById('product-types').textContent = categories.length;
+                
+                const lowStock = products.filter(p => (p.stock_quantity || 0) < 10).length;
+                document.getElementById('low-stock').textContent = lowStock;
+            }
+        }
+
+        function updateRecentActivity(transactions) {
+            if (Array.isArray(transactions)) {
+                document.getElementById('recent-transactions').textContent = transactions.length;
+            }
+        }
+
+        function refreshDashboard() {
+            showNotification('Refreshing dashboard...', 'info');
+            loadDashboardData();
+        }
+
+        function exportReport() {
+            showNotification('Generating report...', 'info');
+            // Simulate report generation
+            setTimeout(() => {
+                showNotification('Report generated successfully!', 'success');
+            }, 2000);
+        }
+
+        function syncData() {
+            showNotification('Syncing data...', 'info');
+            setTimeout(() => {
+                showNotification('Data synchronized!', 'success');
+                loadDashboardData();
+            }, 1500);
+        }
+
+        // Transaction functions
+        function loadTransactions() {
+            fetch('/api/transactions')
+                .then(response => response.json())
+                .then(transactions => {
+                    allTransactions = Array.isArray(transactions) ? transactions : [];
+                    filteredTransactions = [...allTransactions];
+                    updateTransactionsSummary();
+                    displayTransactions();
+                })
+                .catch(error => {
+                    console.error('Error loading transactions:', error);
+                    allTransactions = [];
+                    filteredTransactions = [];
+                });
+        }
+
+        function updateTransactionsSummary() {
+            const total = filteredTransactions.length;
+            const stockIn = filteredTransactions.filter(t => t.action === 'IN').length;
+            const stockOut = filteredTransactions.filter(t => t.action === 'OUT').length;
+
+            document.getElementById('total-transactions').textContent = total;
+            document.getElementById('stock-in-count').textContent = stockIn;
+            document.getElementById('stock-out-count').textContent = stockOut;
+        }
+
+        function displayTransactions() {
+            const container = document.getElementById('transactions-list');
+            const startIndex = (currentTransactionsPage - 1) * transactionsPerPage;
+            const endIndex = startIndex + transactionsPerPage;
+            const pageTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+            if (pageTransactions.length === 0) {
+                container.innerHTML = '<div class="no-transactions"><p>No transactions found.</p></div>';
+                return;
+            }
+
+            container.innerHTML = pageTransactions.map(transaction => `
+                <div class="transaction-item">
+                    <div class="transaction-header">
+                        <div class="transaction-info">
+                            <span class="transaction-id">#${transaction.id || 'TXN-' + Math.random().toString(36).substr(2, 9)}</span>
+                            <span class="transaction-date">${new Date(transaction.created_at || Date.now()).toLocaleString()}</span>
+                        </div>
+                        <span class="transaction-type ${(transaction.action || 'in').toLowerCase()}">${transaction.action === 'IN' ? 'Stock In' : 'Stock Out'}</span>
+                    </div>
+                    <div class="transaction-details">
+                        <div class="product-info">
+                            <h4>${transaction.product_name || 'Unknown Product'}</h4>
+                            <p>Product ID: ${transaction.product_id || 'N/A'}</p>
+                        </div>
+                        <div class="transaction-meta">
+                            <p><strong>Quantity:</strong> ${transaction.action === 'OUT' ? '-' : '+'}${transaction.quantity || 0} items</p>
+                            <p><strong>Performed by:</strong> ${transaction.performed_by || 'System'}</p>
+                            ${transaction.location ? `<p><strong>Location:</strong> ${transaction.location}</p>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+            document.getElementById('current-page').textContent = currentTransactionsPage;
+            document.getElementById('total-pages').textContent = totalPages;
+
+            document.getElementById('prev-btn').disabled = currentTransactionsPage <= 1;
+            document.getElementById('next-btn').disabled = currentTransactionsPage >= totalPages;
+        }
+
+        function previousPage() {
+            if (currentTransactionsPage > 1) {
+                currentTransactionsPage--;
+                displayTransactions();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+            if (currentTransactionsPage < totalPages) {
+                currentTransactionsPage++;
+                displayTransactions();
+            }
+        }
+
+        function filterTransactions() {
+            const dateFilter = document.getElementById('date-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+
+            filteredTransactions = allTransactions.filter(transaction => {
+                // Date filtering
+                if (dateFilter !== 'all') {
+                    const transactionDate = new Date(transaction.created_at);
+                    const today = new Date();
+                    const daysDiff = (today - transactionDate) / (1000 * 60 * 60 * 24);
+
+                    switch (dateFilter) {
+                        case 'today':
+                            if (daysDiff > 1) return false;
+                            break;
+                        case 'week':
+                            if (daysDiff > 7) return false;
+                            break;
+                        case 'month':
+                            if (daysDiff > 30) return false;
+                            break;
+                        case 'quarter':
+                            if (daysDiff > 90) return false;
+                            break;
+                        case 'year':
+                            if (daysDiff > 365) return false;
+                            break;
+                    }
+                }
+
+                // Type filtering
+                if (typeFilter !== 'all' && transaction.action !== typeFilter) {
+                    return false;
+                }
+
+                // Status filtering (placeholder since we don't have status field)
+                if (statusFilter !== 'all' && statusFilter !== 'completed') {
+                    return false;
+                }
+
+                return true;
+            });
+
+            currentTransactionsPage = 1;
+            updateTransactionsSummary();
+            displayTransactions();
+        }
+
+        function searchTransactions() {
+            const searchTerm = document.getElementById('search-transactions').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredTransactions = [...allTransactions];
+            } else {
+                filteredTransactions = allTransactions.filter(transaction => 
+                    (transaction.product_name || '').toLowerCase().includes(searchTerm) ||
+                    (transaction.product_id || '').toLowerCase().includes(searchTerm) ||
+                    (transaction.performed_by || '').toLowerCase().includes(searchTerm) ||
+                    (transaction.location || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
+            currentTransactionsPage = 1;
+            updateTransactionsSummary();
+            displayTransactions();
+        }
+
+        function refreshTransactions() {
+            showNotification('Refreshing transactions...', 'info');
+            loadTransactions();
+        }
+
+        function exportTransactions() {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "ID,Product,Action,Quantity,Date,Performed By,Location\n" +
+                filteredTransactions.map(t => 
+                    `${t.id || 'N/A'},${t.product_name || 'Unknown'},${t.action || 'N/A'},${t.quantity || 0},${new Date(t.created_at || Date.now()).toLocaleString()},${t.performed_by || 'System'},${t.location || 'N/A'}`
+                ).join("\n");
+
+            const link = document.createElement("a");
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `transactions-${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Transactions exported successfully!', 'success');
+        }
+
+        // Tailor Management functions
+        let tailors = [];
+
+        function loadTailors() {
+            fetch('/api/tailor')
+                .then(response => response.json())
+                .then(data => {
+                    tailors = Array.isArray(data) ? data : [];
+                    updateTailorStats();
+                    displayTailors();
+                })
+                .catch(error => {
+                    console.error('Error loading tailors:', error);
+                    tailors = [];
+                });
+        }
+
+        function updateTailorStats() {
+            document.getElementById('total-tailors').textContent = tailors.length;
+            document.getElementById('active-orders').textContent = Math.floor(tailors.length * 2.5); // Placeholder
+            document.getElementById('avg-rating').textContent = '4.8'; // Placeholder
+        }
+
+        function displayTailors() {
+            const tbody = document.getElementById('tailors-table-body');
+            
+            if (tailors.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No tailors found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = tailors.map(tailor => `
+                <tr>
+                    <td>
+                        <div class="tailor-info">
+                            <strong>${tailor.name || 'Unknown'}</strong>
+                            <small>ID: ${tailor.id || 'N/A'}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            <div>${tailor.phone || 'N/A'}</div>
+                            <small>${tailor.email || 'N/A'}</small>
+                        </div>
+                    </td>
+                    <td>${tailor.specialty || 'General'}</td>
+                    <td>${tailor.experience || 0} years</td>
+                    <td>₹${tailor.rate || 0}/hr</td>
+                    <td><span class="status-badge active">Active</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="editTailor('${tailor.id}')" class="btn-icon" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteTailor('${tailor.id}')" class="btn-icon" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function addTailor(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const tailorData = Object.fromEntries(formData);
+
+            fetch('/api/tailor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tailorData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showNotification('Error: ' + result.error, 'error');
+                } else {
+                    showNotification('Tailor added successfully!', 'success');
+                    event.target.reset();
+                    loadTailors();
+                }
+            })
+            .catch(error => {
+                showNotification('Network error: ' + error.message, 'error');
+            });
+        }
+
+        function editTailor(tailorId) {
+            showNotification('Edit functionality coming soon', 'info');
+        }
+
+        function deleteTailor(tailorId) {
+            if (confirm('Are you sure you want to delete this tailor?')) {
+                fetch(`/api/tailor/${tailorId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        showNotification('Error: ' + result.error, 'error');
+                    } else {
+                        showNotification('Tailor deleted successfully!', 'success');
+                        loadTailors();
+                    }
+                })
+                .catch(error => {
+                    showNotification('Network error: ' + error.message, 'error');
+                });
+            }
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.modern-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.modern-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        function searchTailors() {
+            const searchTerm = document.getElementById('tailor-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#tailors-table-body tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        }
+
+        function filterTailors() {
+            const specialty = document.getElementById('specialty-filter').value;
+            const rows = document.querySelectorAll('#tailors-table-body tr');
+
+            rows.forEach(row => {
+                if (specialty === '' || row.textContent.includes(specialty)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function importTailors() {
+            showNotification('Import functionality coming soon', 'info');
+        }
+
+        // Reports functions
+        function initReports() {
+            updateReportsMetrics();
+            updateInsights();
+        }
+
+        function updateReportsMetrics() {
+            // Simulate loading metrics
+            document.getElementById('revenue-metric').textContent = '₹' + (Math.random() * 100000).toFixed(0);
+            document.getElementById('orders-metric').textContent = Math.floor(Math.random() * 500);
+            document.getElementById('customers-metric').textContent = Math.floor(Math.random() * 100);
+            document.getElementById('conversion-metric').textContent = (Math.random() * 10).toFixed(1) + '%';
+        }
+
+        function updateInsights() {
+            // Placeholder insights update
+            showNotification('Insights updated', 'success');
+        }
+
+        function exportReport(format) {
+            if (format === 'pdf') {
+                showNotification('PDF export functionality will be implemented soon', 'info');
+            } else if (format === 'excel') {
+                showNotification('Report exported successfully!', 'success');
+            }
+        }
+
+        function refreshInsights() {
+            updateInsights();
+            updateReportsMetrics();
+            showNotification('Insights refreshed!', 'success');
+        }
+
+        function viewProductDetails() {
+            showNotification('Product details functionality coming soon', 'info');
+        }
+
+        function viewTimeAnalytics() {
+            showNotification('Time analytics functionality coming soon', 'info');
+        }
+
+        function viewDetails(id) {
+            showNotification(`Viewing details for ${id}`, 'info');
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container') || createNotificationContainer();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas fa-${getNotificationIcon(type)}"></i>
+                    <span>${message}</span>
+                </div>
+                <button class="notification-close" onclick="closeNotification(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    closeNotification(notification.querySelector('.notification-close'));
+                }
+            }, 5000);
+        }
+
+        function createNotificationContainer() {
+            const container = document.createElement('div');
+            container.id = 'notification-container';
+            container.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success': return 'check-circle';
+                case 'error': return 'exclamation-circle';
+                case 'warning': return 'exclamation-triangle';
+                default: return 'info-circle';
+            }
+        }
+
+        function closeNotification(button) {
+            const notification = button.closest('.notification');
+            if (notification) {
+                notification.style.animation = 'slideOut 0.3s ease-in-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }
+
+        // Header Functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('active');
+            
+            // Close on outside click
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('.user-menu-wrapper')) {
+                    dropdown.classList.remove('active');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function globalSearch(searchTerm) {
+            // Implement global search functionality
+            console.log('Searching for:', searchTerm);
+            // You can add search logic here
+        }
+
+        function showProfile() {
+            showNotification('Profile page coming soon', 'info');
+        }
+
+        function showSettings() {
+            showNotification('Settings panel coming soon', 'info');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...', 'info');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
+            }
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load initial data
+            showSection('dashboard');
+            
+            // Restore sidebar collapsed state
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.querySelector('.main-content');
+                const topHeader = document.querySelector('.top-header');
+                
+                sidebar.classList.add('collapsed');
+                if (mainContent) mainContent.style.marginLeft = '70px';
+                if (topHeader) topHeader.style.left = '70px';
+            }
+            
+            // Handle responsive sidebar
+            window.addEventListener('resize', function() {
+                const sidebar = document.querySelector('.sidebar');
+                const mainContent = document.querySelector('.main-content');
+                
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('active');
+                    mainContent.style.marginLeft = '';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Add notification styles
+            if (!document.getElementById('notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    .notification {
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                        margin-bottom: 10px;
+                        padding: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        animation: slideIn 0.3s ease-out;
+                        border-left: 4px solid #3b82f6;
+                    }
+                    
+                    .notification-success { border-left-color: #10b981; }
+                    .notification-error { border-left-color: #ef4444; }
+                    .notification-warning { border-left-color: #f59e0b; }
+                    
+                    .notification-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        flex: 1;
+                    }
+                    
+                    .notification-close {
+                        background: none;
+                        border: none;
+                        cursor: pointer;
+                        padding: 4px;
+                        color: #6b7280;
+                    }
+                    
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        });
+    </script>
+</body>
+</html>
