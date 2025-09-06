@@ -904,6 +904,352 @@
         function syncData() {
             alert('Syncing data...');
         }
+        
+        // ============= TRANSACTION HISTORY FUNCTIONALITY =============
+        
+        // Transaction storage
+        let allTransactions = [];
+        let filteredTransactions = [];
+        let currentTransactionFilter = 'all';
+        
+        // Initialize transaction system
+        function initTransactionSystem() {
+            loadTransactionData();
+            setupTransactionListeners();
+            updateTransactionDisplay();
+        }
+        
+        // Load transactions from localStorage
+        function loadTransactionData() {
+            const stored = localStorage.getItem('transaction_history');
+            if (stored) {
+                allTransactions = JSON.parse(stored);
+                // Ensure dates are Date objects
+                allTransactions = allTransactions.map(t => ({
+                    ...t,
+                    timestamp: new Date(t.timestamp)
+                }));
+            } else {
+                // Generate sample data if none exists
+                generateSampleTransactions();
+            }
+            filteredTransactions = [...allTransactions];
+        }
+        
+        // Generate sample transactions for demo
+        function generateSampleTransactions() {
+            const products = [
+                { name: 'Blue Cotton Shirt', sku: 'BCS-M-001' },
+                { name: 'Black Denim Jeans', sku: 'BDJ-L-002' },
+                { name: 'Red Polo Shirt', sku: 'RPS-S-003' },
+                { name: 'Gray Hoodie', sku: 'GH-XL-004' },
+                { name: 'White T-Shirt', sku: 'WTS-M-005' }
+            ];
+            
+            const users = ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams'];
+            const types = ['stock-in', 'stock-out', 'update', 'remove'];
+            
+            allTransactions = [];
+            
+            // Generate 15 sample transactions
+            for (let i = 0; i < 15; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const product = products[Math.floor(Math.random() * products.length)];
+                const stockBefore = Math.floor(Math.random() * 150) + 50;
+                const quantity = Math.floor(Math.random() * 30) + 1;
+                
+                let stockAfter = stockBefore;
+                if (type === 'stock-in') {
+                    stockAfter = stockBefore + quantity;
+                } else if (type === 'stock-out' || type === 'remove') {
+                    stockAfter = Math.max(0, stockBefore - quantity);
+                }
+                
+                allTransactions.push({
+                    id: `TRX-${String(i + 1).padStart(6, '0')}`,
+                    type: type,
+                    product: product,
+                    quantity: quantity,
+                    stockBefore: stockBefore,
+                    stockAfter: stockAfter,
+                    user: users[Math.floor(Math.random() * users.length)],
+                    timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+                });
+            }
+            
+            // Sort by newest first
+            allTransactions.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Save to localStorage
+            saveTransactions();
+        }
+        
+        // Save transactions to localStorage
+        function saveTransactions() {
+            localStorage.setItem('transaction_history', JSON.stringify(allTransactions));
+        }
+        
+        // Add new transaction
+        function addTransaction(type, productData, quantity, user = 'Current User') {
+            const transaction = {
+                id: `TRX-${String(allTransactions.length + 1).padStart(6, '0')}`,
+                type: type,
+                product: {
+                    name: productData.name,
+                    sku: productData.sku
+                },
+                quantity: quantity,
+                stockBefore: productData.currentStock || 0,
+                stockAfter: calculateNewStock(type, productData.currentStock || 0, quantity),
+                user: user,
+                timestamp: new Date()
+            };
+            
+            allTransactions.unshift(transaction);
+            saveTransactions();
+            updateTransactionDisplay();
+            
+            return transaction;
+        }
+        
+        // Calculate new stock based on transaction type
+        function calculateNewStock(type, currentStock, quantity) {
+            switch(type) {
+                case 'stock-in':
+                    return currentStock + quantity;
+                case 'stock-out':
+                case 'remove':
+                    return Math.max(0, currentStock - quantity);
+                case 'update':
+                    return currentStock;
+                default:
+                    return currentStock;
+            }
+        }
+        
+        // Filter transactions by type
+        function filterByType(type) {
+            currentTransactionFilter = type;
+            
+            // Update button states
+            document.querySelectorAll('.filter-pills-trans .pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Apply filter
+            if (type === 'all') {
+                filteredTransactions = [...allTransactions];
+            } else {
+                // Map filter values to transaction types
+                const typeMap = {
+                    'in': 'stock-in',
+                    'out': 'stock-out',
+                    'update': 'update',
+                    'remove': 'remove'
+                };
+                filteredTransactions = allTransactions.filter(t => t.type === typeMap[type]);
+            }
+            
+            updateTransactionDisplay();
+        }
+        
+        // Search transactions
+        function searchTransactions() {
+            const searchTerm = document.getElementById('search-transactions')?.value.toLowerCase() || '';
+            
+            if (!searchTerm) {
+                filteredTransactions = currentTransactionFilter === 'all' 
+                    ? [...allTransactions]
+                    : allTransactions.filter(t => t.type === currentTransactionFilter);
+            } else {
+                filteredTransactions = allTransactions.filter(t => 
+                    t.id.toLowerCase().includes(searchTerm) ||
+                    t.product.name.toLowerCase().includes(searchTerm) ||
+                    t.product.sku.toLowerCase().includes(searchTerm) ||
+                    t.user.toLowerCase().includes(searchTerm)
+                );
+                
+                // Apply type filter if active
+                if (currentTransactionFilter !== 'all') {
+                    const typeMap = {
+                        'in': 'stock-in',
+                        'out': 'stock-out',
+                        'update': 'update',
+                        'remove': 'remove'
+                    };
+                    filteredTransactions = filteredTransactions.filter(t => 
+                        t.type === typeMap[currentTransactionFilter]
+                    );
+                }
+            }
+            
+            updateTransactionDisplay();
+        }
+        
+        // Update transaction display
+        function updateTransactionDisplay() {
+            const tbody = document.getElementById('trans-tbody');
+            if (!tbody) return;
+            
+            if (filteredTransactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: #9ca3af;">
+                            No transactions found
+                        </td>
+                    </tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = filteredTransactions.map(createTransactionRow).join('');
+        }
+        
+        // Create transaction row HTML
+        function createTransactionRow(transaction) {
+            const typeConfig = {
+                'stock-in': { 
+                    badge: 'stock-in', 
+                    icon: 'arrow-down', 
+                    text: 'Stock In', 
+                    sign: '+',
+                    color: 'positive'
+                },
+                'stock-out': { 
+                    badge: 'stock-out', 
+                    icon: 'arrow-up', 
+                    text: 'Stock Out', 
+                    sign: '-',
+                    color: 'negative'
+                },
+                'update': { 
+                    badge: 'updated', 
+                    icon: 'edit', 
+                    text: 'Updated', 
+                    sign: '',
+                    color: 'neutral'
+                },
+                'remove': { 
+                    badge: 'removed', 
+                    icon: 'trash', 
+                    text: 'Removed', 
+                    sign: '-',
+                    color: 'negative'
+                }
+            };
+            
+            const config = typeConfig[transaction.type] || typeConfig['update'];
+            const date = new Date(transaction.timestamp);
+            const dateStr = date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+            const timeStr = date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            return `
+                <tr>
+                    <td>${transaction.id}</td>
+                    <td>
+                        <div class="time-info">
+                            <span class="date">${dateStr}</span>
+                            <span class="time">${timeStr}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="product-info">
+                            <span class="prod-name">${transaction.product.name}</span>
+                            <span class="prod-sku">${transaction.product.sku}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${config.badge}">
+                            <i class="fas fa-${config.icon}"></i> ${config.text}
+                        </span>
+                    </td>
+                    <td class="qty-change ${config.color}">
+                        ${config.sign}${transaction.quantity}
+                    </td>
+                    <td>
+                        <span class="stock-before">${transaction.stockBefore}</span>
+                        <i class="fas fa-arrow-right"></i>
+                        <span class="stock-after">${transaction.stockAfter}</span>
+                    </td>
+                    <td>${transaction.user}</td>
+                </tr>`;
+        }
+        
+        // Export transactions to CSV
+        function exportTransactions() {
+            if (filteredTransactions.length === 0) {
+                alert('No transactions to export');
+                return;
+            }
+            
+            // Create CSV content
+            const headers = ['Transaction ID', 'Date', 'Time', 'Product', 'SKU', 'Type', 'Quantity', 'Stock Before', 'Stock After', 'User'];
+            const rows = filteredTransactions.map(t => {
+                const date = new Date(t.timestamp);
+                return [
+                    t.id,
+                    date.toLocaleDateString(),
+                    date.toLocaleTimeString(),
+                    t.product.name,
+                    t.product.sku,
+                    t.type.toUpperCase().replace('-', ' '),
+                    t.quantity,
+                    t.stockBefore,
+                    t.stockAfter,
+                    t.user
+                ];
+            });
+            
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transactions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            // Show success message
+            alert('Transactions exported successfully!');
+        }
+        
+        // Setup event listeners
+        function setupTransactionListeners() {
+            // Search input
+            const searchInput = document.getElementById('search-transactions');
+            if (searchInput) {
+                searchInput.addEventListener('input', searchTransactions);
+            }
+        }
+        
+        // Initialize when the transactions section is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hook into the section display
+            const originalShowSection = window.showSection;
+            window.showSection = function(sectionId, event) {
+                if (originalShowSection) {
+                    originalShowSection(sectionId, event);
+                }
+                
+                if (sectionId === 'transactions') {
+                    initTransactionSystem();
+                }
+            };
+        });
+        
+        // Public API for adding transactions from other parts of the app
+        window.recordTransaction = function(type, productData, quantity, user) {
+            return addTransaction(type, productData, quantity, user);
+        };
     </script>
 </body>
 </html>
