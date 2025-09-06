@@ -595,6 +595,16 @@ body {
     border-color: var(--gray-300);
 }
 
+.action-btn.danger {
+    color: #DC2626;
+}
+
+.action-btn.danger:hover {
+    background: #FEE2E2;
+    color: #991B1B;
+    border-color: #FCA5A5;
+}
+
 .dropdown {
     position: relative;
 }

@@ -9,7 +9,73 @@ class SimpleProductManager {
 
     init() {
         this.attachEventListeners();
-        this.loadDraftIfExists();
+        this.checkEditMode();
+        // Only load draft and set defaults if not editing
+        if (!this.checkEditMode()) {
+            this.loadDraftIfExists();
+            this.setDefaultValues();
+        }
+    }
+    
+    setDefaultValues() {
+        // Set default values only for new products
+        const quantityField = document.getElementById('initial-quantity');
+        if (quantityField && !quantityField.value) {
+            quantityField.value = '0';
+        }
+    }
+    
+    checkEditMode() {
+        // Check if we're in edit mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+        
+        if (editId) {
+            // Load product data for editing
+            const editData = sessionStorage.getItem('edit_product');
+            if (editData) {
+                const product = JSON.parse(editData);
+                this.loadProductForEdit(product);
+                
+                // Update page title and header
+                document.querySelector('.product-header h1').textContent = 'Edit Product';
+                const submitBtn = document.querySelector('.btn-submit');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="fas fa-save"></i> Update Product';
+                }
+                
+                // Store the product ID for update
+                this.editingProductId = product.id;
+                return true; // Return true when in edit mode
+            }
+        }
+        return false; // Return false when not in edit mode
+    }
+    
+    loadProductForEdit(product) {
+        // Store the original product data for reference
+        this.originalProductData = { ...product };
+        
+        // Populate all form fields with product data
+        document.getElementById('product-name').value = product.name || '';
+        document.getElementById('product-sku').value = product.sku || '';
+        document.getElementById('product-price').value = product.price !== undefined ? product.price : '';
+        document.getElementById('product-category').value = product.category || '';
+        document.getElementById('product-size').value = product.size || '';
+        document.getElementById('product-color').value = product.color || '';
+        document.getElementById('product-description').value = product.description || '';
+        // Keep existing quantity, don't default to 0
+        document.getElementById('initial-quantity').value = product.quantity !== undefined ? product.quantity : 0;
+        document.getElementById('min-stock').value = product.minStock !== undefined ? product.minStock : 10;
+        document.getElementById('location').value = product.location || '';
+        document.getElementById('product-material').value = product.material || '';
+        document.getElementById('product-brand').value = product.brand || '';
+        
+        // Load image if exists
+        if (product.image) {
+            this.imageData = product.image;
+            this.displayImage(product.image);
+        }
     }
 
     attachEventListeners() {
@@ -155,23 +221,31 @@ class SimpleProductManager {
             this.autoGenerateSKU();
         }
         
+        // Start with original data if editing, otherwise empty object
+        const baseData = this.editingProductId && this.originalProductData ? 
+            { ...this.originalProductData } : {};
+        
+        // Get current form values
+        const currentQuantity = parseInt(document.getElementById('initial-quantity').value);
+        
         const formData = {
-            id: this.generateProductId(),
+            ...baseData, // Preserve all original fields
+            id: this.editingProductId || this.generateProductId(),
             name: document.getElementById('product-name').value,
             sku: document.getElementById('product-sku').value,
-            price: parseFloat(document.getElementById('product-price').value) || 0,
+            price: parseFloat(document.getElementById('product-price').value) || baseData.price || 0,
             category: document.getElementById('product-category').value,
             size: document.getElementById('product-size').value,
             color: document.getElementById('product-color').value,
             description: document.getElementById('product-description').value,
-            quantity: parseInt(document.getElementById('initial-quantity').value),
-            minStock: parseInt(document.getElementById('min-stock').value) || 10,
-            location: document.getElementById('location').value,
+            quantity: isNaN(currentQuantity) ? (baseData.quantity || 0) : currentQuantity,
+            minStock: parseInt(document.getElementById('min-stock').value) || baseData.minStock || 10,
+            location: document.getElementById('location').value || baseData.location || '',
             material: document.getElementById('product-material').value,
-            brand: document.getElementById('product-brand').value,
-            image: this.imageData,
-            status: this.calculateStatus(parseInt(document.getElementById('initial-quantity').value)),
-            createdAt: new Date().toISOString(),
+            brand: document.getElementById('product-brand').value || baseData.brand || '',
+            image: this.imageData || baseData.image,
+            status: this.calculateStatus(isNaN(currentQuantity) ? (baseData.quantity || 0) : currentQuantity),
+            createdAt: baseData.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };
         
@@ -195,28 +269,48 @@ class SimpleProductManager {
 
         const productData = this.collectFormData();
         
+        // If editing, preserve the original ID and creation date
+        if (this.editingProductId) {
+            productData.id = this.editingProductId;
+            const existingProducts = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+            const existingProduct = existingProducts.find(p => p.id === this.editingProductId);
+            if (existingProduct && existingProduct.createdAt) {
+                productData.createdAt = existingProduct.createdAt;
+            }
+        }
+        
         try {
             // Save to localStorage (simulating database)
             await this.saveToLocalStorage(productData);
             
-            // Generate final QR Code and show QR section
-            this.generateQRCode(productData);
-            
-            // Show QR section
-            document.getElementById('qr-section').style.display = 'block';
-            
-            // Scroll to QR section
-            document.getElementById('qr-section').scrollIntoView({ behavior: 'smooth' });
+            // Only generate QR for new products, not when editing
+            if (!this.editingProductId) {
+                // Generate final QR Code and show QR section
+                this.generateQRCode(productData);
+                
+                // Show QR section
+                document.getElementById('qr-section').style.display = 'block';
+                
+                // Scroll to QR section
+                document.getElementById('qr-section').scrollIntoView({ behavior: 'smooth' });
+            }
             
             // Show success message
-            this.showToast('✓ Product Created Successfully!', 'success');
-            
-            // Don't reset the form - keep data for potential adjustments
-            // Only update the SKU for the next product to avoid duplicates
-            setTimeout(() => {
-                // Generate new SKU for next product to avoid duplicates
-                this.generateSKU();
-            }, 500);
+            if (this.editingProductId) {
+                this.showToast('✓ Product Updated Successfully!', 'success');
+                // Redirect to inventory after successful edit
+                setTimeout(() => {
+                    window.location.href = 'inventory-advanced.html';
+                }, 1000);
+            } else {
+                this.showToast('✓ Product Created Successfully!', 'success');
+                // Don't reset the form - keep data for potential adjustments
+                // Only update the SKU for the next product to avoid duplicates
+                setTimeout(() => {
+                    // Generate new SKU for next product to avoid duplicates
+                    this.generateSKU();
+                }, 500);
+            }
             
         } catch (error) {
             console.error('Error saving product:', error);
@@ -228,17 +322,29 @@ class SimpleProductManager {
         // Get existing products
         let products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
         
-        // Check for duplicate SKU
-        const existingProduct = products.find(p => p.sku === productData.sku);
-        if (existingProduct) {
-            // Generate new SKU if duplicate
-            const timestamp = Date.now().toString(36).toUpperCase();
-            productData.sku = productData.sku + '-' + timestamp;
-            this.showToast('SKU was modified to avoid duplication', 'info');
+        if (this.editingProductId) {
+            // Update existing product
+            const index = products.findIndex(p => p.id === this.editingProductId);
+            if (index !== -1) {
+                products[index] = productData;
+                this.showToast('Product updated successfully', 'success');
+            } else {
+                // If not found, add as new
+                products.push(productData);
+            }
+        } else {
+            // Check for duplicate SKU only for new products
+            const existingProduct = products.find(p => p.sku === productData.sku);
+            if (existingProduct) {
+                // Generate new SKU if duplicate
+                const timestamp = Date.now().toString(36).toUpperCase();
+                productData.sku = productData.sku + '-' + timestamp;
+                this.showToast('SKU was modified to avoid duplication', 'info');
+            }
+            
+            // Add new product
+            products.push(productData);
         }
-        
-        // Add new product
-        products.push(productData);
         
         // Save back to localStorage
         localStorage.setItem('inventory_products', JSON.stringify(products));
@@ -258,13 +364,20 @@ class SimpleProductManager {
         }
         
         try {
-            // Try localhost first for development
+            // Determine if this is an update or create
+            const isUpdate = this.editingProductId !== undefined;
+            
+            // Set appropriate API endpoint
             const apiUrl = window.location.hostname === 'localhost' 
-                ? 'http://localhost:3001/api/products/create'
-                : '/api/products/create';
+                ? isUpdate 
+                    ? `http://localhost:3001/api/products/${this.editingProductId}`
+                    : 'http://localhost:3001/api/products/create'
+                : isUpdate
+                    ? `/api/products/${this.editingProductId}`
+                    : '/api/products/create';
                 
             const response = await fetch(apiUrl, {
-                method: 'POST',
+                method: isUpdate ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },

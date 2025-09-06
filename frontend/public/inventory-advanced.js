@@ -316,6 +316,7 @@ class InventoryManager {
         const imageDisplay = product.image
             ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px;\\'>No Image</span>'">`
             : '<span style="color: #999; font-size: 11px;">No Image</span>';
+        // Show only important columns: ID, Image, Name, Category, Quantity, Price, Status, Actions
         return `
             <tr data-id="${product.id}">
                 <td class="checkbox-col">
@@ -332,21 +333,9 @@ class InventoryManager {
                 <td class="product-name">
                     <div class="name-cell">
                         <span class="name">${product.name}</span>
-                        <span class="sub-info">${product.description || product.category + ' Collection'}</span>
+                        <span class="sub-info">${product.category}</span>
                     </div>
                 </td>
-                <td class="category">
-                    <span class="category-badge">${product.category}</span>
-                </td>
-                <td class="size">${product.size}</td>
-                <td class="color">
-                    <div class="color-display">
-                        <span class="color-dot" style="background: ${this.getColorHex(product.color)}; ${this.getColorBorder(product.color)}"></span>
-                        ${product.color}
-                    </div>
-                </td>
-                <td class="material">${product.material}</td>
-                <td class="brand">${product.brand || '-'}</td>
                 <td class="quantity">
                     <div class="stock-info">
                         <span class="stock-number ${product.quantity < (product.minStock || 20) ? 'low' : ''}">${product.quantity}</span>
@@ -355,18 +344,13 @@ class InventoryManager {
                         </div>
                     </div>
                 </td>
+                <td class="price">₹${product.price.toFixed(0)}</td>
                 <td class="status">
                     <span class="status-badge ${product.status}">${this.formatStatus(product.status)}</span>
                 </td>
-                <td class="price">₹${product.price.toFixed(0)}</td>
-                <td class="location">${product.location || '-'}</td>
-                <td class="last-updated">
-                    <span class="date">${this.formatDate(product.lastUpdated)}</span>
-                    <span class="time">${this.formatTime(product.lastUpdated)}</span>
-                </td>
                 <td class="actions-col">
                     <div class="actions">
-                        <button class="action-btn" title="View" onclick="viewProduct('${product.id}')">
+                        <button class="action-btn" title="View All Details" onclick="viewProduct('${product.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="action-btn" title="Edit" onclick="editProduct('${product.id}')">
@@ -375,18 +359,9 @@ class InventoryManager {
                         <button class="action-btn" title="QR Code" onclick="showQRCode('${product.id}')">
                             <i class="fas fa-qrcode"></i>
                         </button>
-                        <div class="dropdown">
-                            <button class="action-btn" title="More">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu">
-                                <a href="#">Duplicate</a>
-                                <a href="#">Print Label</a>
-                                <a href="#">View History</a>
-                                <div class="divider"></div>
-                                <a href="#" class="danger">Delete</a>
-                            </div>
-                        </div>
+                        <button class="action-btn danger" title="Delete" onclick="deleteProduct('${product.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -593,7 +568,593 @@ class InventoryManager {
         return date.toLocaleTimeString('en-US', options);
     }
 }
+// View product - expand row inline to show details (no popup)
+function viewProduct(productId) {
+    const row = document.querySelector(`tr[data-id="${productId}"]`);
+    if (!row)
+        return;
+    // Check if details row already exists
+    const nextRow = row.nextElementSibling;
+    if (nextRow && nextRow.classList.contains('details-row')) {
+        // Toggle visibility
+        nextRow.remove();
+        return;
+    }
+    // Get product data
+    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+    const product = products.find((p) => p.id === productId);
+    if (!product)
+        return;
+    // Create expanded details row
+    const detailsRow = document.createElement('tr');
+    detailsRow.className = 'details-row';
+    detailsRow.innerHTML = `
+        <td colspan="8" class="details-cell">
+            <div class="product-details-expanded">
+                <div class="details-header">
+                    <h3>Product Details: ${product.name}</h3>
+                    <button onclick="this.closest('tr').remove()" class="close-details">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Product ID:</label>
+                        <span>${product.id}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>SKU:</label>
+                        <span>${product.sku}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Category:</label>
+                        <span>${product.category}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Size:</label>
+                        <span>${product.size}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Color:</label>
+                        <span>${product.color}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Material:</label>
+                        <span>${product.material || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Brand:</label>
+                        <span>${product.brand || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Price:</label>
+                        <span>₹${product.price || 0}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Stock:</label>
+                        <span>${product.quantity}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Min Stock:</label>
+                        <span>${product.minStock || 10}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Location:</label>
+                        <span>${product.location || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span class="status-badge ${product.status}">${product.status.replace('-', ' ')}</span>
+                    </div>
+                    ${product.description ? `
+                    <div class="detail-item full-width">
+                        <label>Description:</label>
+                        <span>${product.description}</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-item">
+                        <label>Created:</label>
+                        <span>${new Date(product.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Updated:</label>
+                        <span>${new Date(product.updatedAt || product.lastUpdated).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    `;
+    // Insert after current row
+    row.insertAdjacentElement('afterend', detailsRow);
+}
+// Edit product - navigate to edit page
+async function editProduct(productId) {
+    try {
+        // Get product data
+        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+        const product = products.find((p) => p.id === productId);
+        if (!product) {
+            showToast('Product not found', 'error');
+            return;
+        }
+        // Store product data for editing
+        sessionStorage.setItem('edit_product', JSON.stringify(product));
+        // If backend is available, fetch latest data
+        if (window.location.protocol !== 'file:') {
+            try {
+                const apiUrl = window.location.hostname === 'localhost'
+                    ? `http://localhost:3001/api/products/${productId}`
+                    : `/api/products/${productId}`;
+                const response = await fetch(apiUrl);
+                if (response.ok) {
+                    const latestProduct = await response.json();
+                    sessionStorage.setItem('edit_product', JSON.stringify(latestProduct));
+                }
+            }
+            catch (error) {
+                console.log('Using local data for editing');
+            }
+        }
+        // Navigate to edit page (or convert create page to edit mode)
+        window.location.href = `product-simple.html?edit=${productId}`;
+    }
+    catch (error) {
+        console.error('Error editing product:', error);
+        showToast('Error editing product', 'error');
+    }
+}
+// Generate and show QR Code in new window
+async function showQRCode(productId) {
+    try {
+        // Get product data
+        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+        const product = products.find((p) => p.id === productId);
+        if (!product) {
+            showToast('Product not found', 'error');
+            return;
+        }
+        // Create QR data with only important info
+        const qrData = JSON.stringify({
+            id: product.id,
+            sku: product.sku,
+            name: product.name,
+            price: product.price,
+            qty: product.quantity
+        });
+        // Open new window for QR code
+        const qrWindow = window.open('', '_blank', 'width=400,height=500,toolbar=no,menubar=no');
+        if (!qrWindow) {
+            showToast('Please allow popups for QR code display', 'error');
+            return;
+        }
+        // Write HTML content to new window
+        qrWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>QR Code - ${product.sku}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                        margin: 0;
+                        background: #f9f9f9;
+                    }
+                    .qr-container {
+                        background: white;
+                        padding: 30px;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        text-align: center;
+                    }
+                    h2 {
+                        margin: 0 0 20px 0;
+                        color: #333;
+                        font-size: 20px;
+                    }
+                    #qrcode {
+                        margin: 20px auto;
+                        padding: 15px;
+                        background: white;
+                        border: 1px solid #ddd;
+                    }
+                    .product-info {
+                        margin-top: 20px;
+                        padding: 15px;
+                        background: #f5f5f5;
+                        border-radius: 5px;
+                        text-align: left;
+                    }
+                    .info-row {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 5px 0;
+                        font-size: 14px;
+                    }
+                    .info-label {
+                        font-weight: bold;
+                        color: #666;
+                    }
+                    .info-value {
+                        color: #333;
+                    }
+                    .actions {
+                        margin-top: 20px;
+                        display: flex;
+                        gap: 10px;
+                        justify-content: center;
+                    }
+                    button {
+                        padding: 10px 20px;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        transition: opacity 0.2s;
+                    }
+                    button:hover {
+                        opacity: 0.8;
+                    }
+                    .print-btn {
+                        background: #10b981;
+                        color: white;
+                    }
+                    .download-btn {
+                        background: #3b82f6;
+                        color: white;
+                    }
+                    .close-btn {
+                        background: #6b7280;
+                        color: white;
+                    }
+                </style>
+                <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+            </head>
+            <body>
+                <div class="qr-container">
+                    <h2>Product QR Code</h2>
+                    <div id="qrcode"></div>
+                    <div class="product-info">
+                        <div class="info-row">
+                            <span class="info-label">Product:</span>
+                            <span class="info-value">${product.name}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SKU:</span>
+                            <span class="info-value">${product.sku}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Price:</span>
+                            <span class="info-value">₹${product.price || 0}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Stock:</span>
+                            <span class="info-value">${product.quantity} units</span>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="print-btn" onclick="window.print()">Print</button>
+                        <button class="download-btn" onclick="downloadQR()">Download</button>
+                        <button class="close-btn" onclick="window.close()">Close</button>
+                    </div>
+                </div>
+                <script>
+                    // Generate QR code
+                    const qrcode = new QRCode(document.getElementById("qrcode"), {
+                        text: '${qrData.replace(/'/g, "\\'")}',
+                        width: 200,
+                        height: 200,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    
+                    // Download function
+                    function downloadQR() {
+                        const canvas = document.querySelector('#qrcode canvas');
+                        if (canvas) {
+                            const link = document.createElement('a');
+                            link.download = 'QR-${product.sku}.png';
+                            link.href = canvas.toDataURL();
+                            link.click();
+                        }
+                    }
+                </script>
+            </body>
+            </html>
+        `);
+        showToast('QR Code opened in new window', 'success');
+    }
+    catch (error) {
+        console.error('Error generating QR code:', error);
+        showToast('Error generating QR code', 'error');
+    }
+}
+// Delete product with confirmation
+async function deleteProduct(productId) {
+    // Get product for display
+    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+    const product = products.find((p) => p.id === productId);
+    if (!product) {
+        showToast('Product not found', 'error');
+        return;
+    }
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+        return;
+    }
+    try {
+        // Delete from backend if available
+        if (window.location.protocol !== 'file:') {
+            try {
+                const apiUrl = window.location.hostname === 'localhost'
+                    ? `http://localhost:3001/api/products/${productId}`
+                    : `/api/products/${productId}`;
+                const response = await fetch(apiUrl, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    throw new Error('Backend deletion failed');
+                }
+            }
+            catch (error) {
+                console.log('Deleting from local storage only');
+            }
+        }
+        // Delete from localStorage
+        const updatedProducts = products.filter((p) => p.id !== productId);
+        localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
+        // Refresh the page to show updated list
+        showToast('Product deleted successfully', 'success');
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    }
+    catch (error) {
+        console.error('Error deleting product:', error);
+        showToast('Error deleting product', 'error');
+    }
+}
+// Toast notification function
+function showToast(message, type = 'success') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    // Set color based on type
+    if (type === 'error') {
+        toast.style.background = '#DC2626';
+    }
+    else if (type === 'info') {
+        toast.style.background = '#3B82F6';
+    }
+    else {
+        toast.style.background = '#10B981';
+    }
+    // Add icon
+    const icon = type === 'error' ? 'fa-exclamation-circle' :
+        type === 'info' ? 'fa-info-circle' : 'fa-check-circle';
+    toast.innerHTML = `
+        <i class="fas ${icon}"></i>
+        <span>${message}</span>
+    `;
+    document.body.appendChild(toast);
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .details-row {
+        background: #F9FAFB;
+    }
+    
+    .details-cell {
+        padding: 0 !important;
+    }
+    
+    .product-details-expanded {
+        padding: 20px;
+        background: white;
+        margin: 10px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .details-header h3 {
+        margin: 0;
+        color: #1F2937;
+        font-size: 18px;
+    }
+    
+    .close-details {
+        background: none;
+        border: none;
+        color: #6B7280;
+        cursor: pointer;
+        font-size: 20px;
+        padding: 5px;
+    }
+    
+    .close-details:hover {
+        color: #DC2626;
+    }
+    
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .detail-item.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .detail-item label {
+        font-size: 12px;
+        color: #6B7280;
+        font-weight: 500;
+    }
+    
+    .detail-item span {
+        font-size: 14px;
+        color: #1F2937;
+    }
+`;
+document.head.appendChild(style);
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     new InventoryManager();
+    // Handle dropdown menu for more actions
+    document.addEventListener('click', (e) => {
+        var _a, _b, _c;
+        const target = e.target;
+        const dropdown = target.closest('.dropdown');
+        if (dropdown) {
+            const menu = dropdown.querySelector('.dropdown-menu');
+            if (menu) {
+                // Toggle menu
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+                // Handle menu item clicks
+                if (target.tagName === 'A') {
+                    e.preventDefault();
+                    const row = target.closest('tr');
+                    const productId = row === null || row === void 0 ? void 0 : row.getAttribute('data-id');
+                    if (productId) {
+                        if (target.classList.contains('danger')) {
+                            deleteProduct(productId);
+                        }
+                        else if ((_a = target.textContent) === null || _a === void 0 ? void 0 : _a.includes('Duplicate')) {
+                            // Duplicate functionality
+                            duplicateProduct(productId);
+                        }
+                        else if ((_b = target.textContent) === null || _b === void 0 ? void 0 : _b.includes('Print')) {
+                            // Print label
+                            printLabel(productId);
+                        }
+                        else if ((_c = target.textContent) === null || _c === void 0 ? void 0 : _c.includes('History')) {
+                            // View history
+                            viewHistory(productId);
+                        }
+                    }
+                    menu.style.display = 'none';
+                }
+            }
+        }
+        else {
+            // Close all dropdowns when clicking outside
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
 });
+// Additional helper functions
+function duplicateProduct(productId) {
+    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+    const product = products.find((p) => p.id === productId);
+    if (product) {
+        const newProduct = Object.assign(Object.assign({}, product), { id: 'PRD-' + Date.now().toString(36).toUpperCase(), sku: product.sku + '-COPY-' + Date.now().toString(36).substring(-4).toUpperCase(), name: product.name + ' (Copy)', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+        products.unshift(newProduct);
+        localStorage.setItem('inventory_products', JSON.stringify(products));
+        showToast('Product duplicated successfully', 'success');
+        setTimeout(() => window.location.reload(), 1000);
+    }
+}
+function printLabel(productId) {
+    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+    const product = products.find((p) => p.id === productId);
+    if (product) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Product Label - ${product.sku}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .label { border: 2px solid #000; padding: 20px; width: 300px; }
+                        h2 { margin: 0 0 10px 0; }
+                        .info { margin: 5px 0; }
+                        .barcode { margin-top: 15px; text-align: center; font-family: monospace; font-size: 24px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="label">
+                        <h2>${product.name}</h2>
+                        <div class="info"><strong>SKU:</strong> ${product.sku}</div>
+                        <div class="info"><strong>Size:</strong> ${product.size}</div>
+                        <div class="info"><strong>Color:</strong> ${product.color}</div>
+                        <div class="info"><strong>Price:</strong> ₹${product.price}</div>
+                        <div class="barcode">||||| ${product.sku} |||||</div>
+                    </div>
+                    <script>window.print(); setTimeout(() => window.close(), 1000);</script>
+                </body>
+                </html>
+            `);
+        }
+    }
+}
+function viewHistory(productId) {
+    showToast('Product history feature coming soon', 'info');
+}
