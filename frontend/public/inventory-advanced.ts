@@ -1262,19 +1262,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Clear all filters function
-function clearAllFilters(): void {
-    // Reset all filter inputs
-    (document.getElementById('status-filter') as HTMLSelectElement).value = 'all';
-    (document.getElementById('category-filter') as HTMLSelectElement).value = 'all';
-    (document.getElementById('search-input') as HTMLInputElement).value = '';
-    (document.getElementById('date-from') as HTMLInputElement).value = '';
-    (document.getElementById('date-to') as HTMLInputElement).value = '';
-    
-    // Trigger filter update
-    const event = new Event('change');
-    document.getElementById('status-filter')?.dispatchEvent(event);
-}
 
 // Additional helper functions
 function duplicateProduct(productId: string): void {

@@ -157,6 +157,7 @@ body {
     align-items: center;
     gap: 1rem;
     flex-wrap: nowrap;
+    justify-content: flex-start;
 }
 
 /* Premium Search Box */
@@ -263,55 +264,6 @@ body {
     margin: 0 4px;
 }
 
-/* Clear Filters Button */
-.clear-filters-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.clear-filters-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-/* View Toggle */
-.view-toggle {
-    display: flex;
-    background: #f3f4f6;
-    border-radius: 8px;
-    padding: 3px;
-}
-
-.view-btn {
-    padding: 7px 12px;
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    font-size: 14px;
-}
-
-.view-btn.active {
-    background: white;
-    color: #667eea;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.view-btn:hover:not(.active) {
-    color: #374151;
-}
 
 /* Hide old filter bar */
 .filter-bar {

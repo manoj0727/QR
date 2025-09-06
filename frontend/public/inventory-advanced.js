@@ -1109,19 +1109,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-// Clear all filters function
-function clearAllFilters() {
-    var _a;
-    // Reset all filter inputs
-    document.getElementById('status-filter').value = 'all';
-    document.getElementById('category-filter').value = 'all';
-    document.getElementById('search-input').value = '';
-    document.getElementById('date-from').value = '';
-    document.getElementById('date-to').value = '';
-    // Trigger filter update
-    const event = new Event('change');
-    (_a = document.getElementById('status-filter')) === null || _a === void 0 ? void 0 : _a.dispatchEvent(event);
-}
 // Additional helper functions
 function duplicateProduct(productId) {
     const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
