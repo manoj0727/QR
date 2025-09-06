@@ -341,7 +341,7 @@ class InventoryManager {
                 <td class="size">${product.size}</td>
                 <td class="color">
                     <div class="color-display">
-                        <span class="color-dot" style="background: ${this.getColorHex(product.color)};"></span>
+                        <span class="color-dot" style="background: ${this.getColorHex(product.color)}; ${this.getColorBorder(product.color)}"></span>
                         ${product.color}
                     </div>
                 </td>
@@ -482,16 +482,96 @@ class InventoryManager {
         if (emptyState)
             emptyState.style.display = 'block';
     }
+    getColorBorder(color) {
+        const colorLower = color.toLowerCase().trim();
+        // Add border for white and light colors for visibility
+        if (colorLower === 'white' || colorLower.includes('white') ||
+            colorLower === 'cream' || colorLower === 'ivory' ||
+            colorLower === 'beige' || colorLower === 'yellow' ||
+            colorLower.includes('light')) {
+            return 'border: 1px solid #D1D5DB;';
+        }
+        return '';
+    }
     getColorHex(color) {
+        // Convert to lowercase for better matching
+        const colorLower = color.toLowerCase().trim();
         const colors = {
-            'Blue': '#2196f3',
-            'Black': '#000000',
-            'Red': '#ef4444',
-            'White': '#ffffff',
-            'Green': '#22c55e',
-            'Yellow': '#f59e0b'
+            // Basic colors
+            'blue': '#2196F3',
+            'black': '#000000',
+            'red': '#DC2626',
+            'white': '#FFFFFF',
+            'green': '#16A34A',
+            'yellow': '#FFC107',
+            'orange': '#FF6B35',
+            'purple': '#9333EA',
+            'pink': '#EC4899',
+            'brown': '#92400E',
+            'grey': '#6B7280',
+            'gray': '#6B7280',
+            // Extended colors
+            'navy': '#1E3A8A',
+            'navy blue': '#1E3A8A',
+            'dark blue': '#1E40AF',
+            'light blue': '#60A5FA',
+            'sky blue': '#38BDF8',
+            'royal blue': '#2563EB',
+            'dark red': '#991B1B',
+            'maroon': '#7F1D1D',
+            'light red': '#FCA5A5',
+            'wine': '#881337',
+            'dark green': '#14532D',
+            'light green': '#86EFAC',
+            'olive': '#65A30D',
+            'mint': '#6EE7B7',
+            'lime': '#84CC16',
+            'gold': '#F59E0B',
+            'golden': '#F59E0B',
+            'silver': '#9CA3AF',
+            'beige': '#D4A574',
+            'cream': '#FEF3C7',
+            'ivory': '#FFF7ED',
+            'violet': '#7C3AED',
+            'indigo': '#4F46E5',
+            'lavender': '#C7D2FE',
+            'magenta': '#D946EF',
+            'fuchsia': '#D946EF',
+            'teal': '#0D9488',
+            'cyan': '#06B6D4',
+            'turquoise': '#14B8A6',
+            'aqua': '#06B6D4',
+            'coral': '#FB923C',
+            'salmon': '#FDA4AF',
+            'peach': '#FED7AA',
+            'khaki': '#D97706',
+            'charcoal': '#1F2937',
+            'ash': '#9CA3AF',
+            'smoke': '#E5E7EB',
+            // Multi-word colors
+            'off white': '#FAF9F6',
+            'off-white': '#FAF9F6',
+            'dark gray': '#4B5563',
+            'light gray': '#D1D5DB',
+            'dark grey': '#4B5563',
+            'light grey': '#D1D5DB'
         };
-        return colors[color] || '#6b7280';
+        // Check exact match first
+        if (colors[colorLower]) {
+            return colors[colorLower];
+        }
+        // Check if the color contains any known color word
+        for (const [key, value] of Object.entries(colors)) {
+            if (colorLower.includes(key) || key.includes(colorLower)) {
+                return value;
+            }
+        }
+        // For white color, add border
+        if (colorLower === 'white' || colorLower.includes('white')) {
+            return '#FFFFFF';
+        }
+        // Default gray if no match
+        return '#6B7280';
     }
     formatStatus(status) {
         return status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
