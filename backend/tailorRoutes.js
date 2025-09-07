@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-// Use SQLite database
 const databases = require('./database');
 
 // Helper function to generate unique IDs
@@ -13,432 +12,159 @@ const generateTailorId = () => {
 const generateAssignmentId = () => {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
-  return `WRK-${timestamp}-${random}`.toUpperCase();
+  return `ASN-${timestamp}-${random}`.toUpperCase();
 };
 
-const generateFabricId = (type) => {
+const generateNotificationId = () => {
   const timestamp = Date.now().toString(36);
   const random = Math.random().toString(36).substring(2, 8);
-  return `FAB-${type.substring(0, 3)}-${timestamp}-${random}`.toUpperCase();
+  return `NOT-${timestamp}-${random}`.toUpperCase();
 };
 
-// GET all tailors
-router.get('/', (req, res) => {
-  databases.inventory.db.all(
-    `SELECT * FROM tailors ORDER BY created_at DESC`,
-    [],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json(rows || []);
-    }
-  );
-});
-
-// Create new tailor
-router.post('/', (req, res) => {
-  const { name, specialty, experience, rate, phone, email } = req.body;
-  
-  if (!name) {
-    return res.status(400).json({ error: 'Name is required' });
+// Register new tailor
+router.post('/register', async (req, res) => {
+  try {
+    const result = await databases.tailors.registerTailor(req.body);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  const tailor_id = generateTailorId();
-
-  databases.inventory.db.run(
-    `INSERT INTO tailors (tailor_id, name, specialty, experience, rate, phone, email, status) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-    [tailor_id, name, specialty || 'General', experience || 0, rate || 0, phone || '', email || ''],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      res.json({
-        success: true,
-        tailor_id,
-        message: 'Tailor registered successfully'
-      });
-    }
-  );
 });
 
-// Delete a tailor
-router.delete('/:id', (req, res) => {
-  const { id } = req.params;
-  
-  databases.inventory.db.run(
-    `DELETE FROM tailors WHERE tailor_id = ? OR id = ?`,
-    [id, id],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Tailor not found' });
-      }
-      
-      res.json({
-        success: true,
-        message: 'Tailor deleted successfully'
-      });
-    }
-  );
-});
-
-router.get('/tailors', (req, res) => {
-  const { status } = req.query;
-  
-  let query = 'SELECT * FROM tailors';
-  let params = [];
-  
-  if (status) {
-    query += ' WHERE status = ?';
-    params.push(status);
+// Authenticate tailor login
+router.post('/login', async (req, res) => {
+  try {
+    const result = await databases.tailors.authenticateTailor(req.body.username, req.body.password);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
-  
-  query += ' ORDER BY created_at DESC';
-  
-  databases.inventory.db.all(query, params, (err, rows) => {
+});
+
+// Get all tailors
+router.get('/all', (req, res) => {
+  databases.tailors.getAllTailors((err, tailors) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+    res.json(tailors || []);
   });
 });
 
-router.get('/tailors/:tailor_id', (req, res) => {
-  const { tailor_id } = req.params;
-  
-  databases.inventory.db.get('SELECT * FROM tailors WHERE tailor_id = ?', [tailor_id], (err, tailor) => {
+// Get tailor by ID
+router.get('/:id', (req, res) => {
+  databases.tailors.getTailorById(req.params.id, (err, tailor) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    
     if (!tailor) {
       return res.status(404).json({ error: 'Tailor not found' });
     }
-
-    // Get current and completed assignments for this tailor
-    databases.inventory.db.all(
-      `SELECT * FROM work_assignments 
-       WHERE tailor_id = ? 
-       ORDER BY assigned_date DESC`,
-      [tailor_id],
-      (err, assignments) => {
-        if (err) {
-          return res.status(500).json({ error: err.message });
-        }
-
-        res.json({
-          tailor,
-          assignments,
-          current_assignments: assignments.filter(a => a.status === 'assigned' || a.status === 'in_progress').length,
-          completed_assignments: assignments.filter(a => a.status === 'completed').length
-        });
-      }
-    );
+    res.json(tailor);
   });
 });
 
-router.put('/tailors/:tailor_id/status', (req, res) => {
-  const { tailor_id } = req.params;
-  const { status } = req.body;
-  
-  if (!['active', 'inactive', 'on_leave'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
-  }
+// Create assignment
+router.post('/assignments', (req, res) => {
+  const assignmentData = {
+    assignment_id: generateAssignmentId(),
+    ...req.body
+  };
 
-  databases.inventory.db.run(
-    `UPDATE tailors SET status = ? WHERE tailor_id = ?`,
-    [status, tailor_id],
+  databases.tailors.createAssignment(assignmentData, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+
+// Get assignments for a tailor
+router.get('/:id/assignments', (req, res) => {
+  databases.tailors.getAssignmentsByTailor(req.params.id, (err, assignments) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(assignments || []);
+  });
+});
+
+// Update assignment status
+router.put('/assignments/:id/status', (req, res) => {
+  databases.tailors.updateAssignmentStatus(req.params.id, req.body.status, req.body.notes || '', (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+
+// Send notification
+router.post('/notifications', (req, res) => {
+  const notificationData = {
+    notification_id: generateNotificationId(),
+    ...req.body
+  };
+
+  databases.tailors.sendNotification(notificationData, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+
+// Get notifications for a tailor
+router.get('/:id/notifications', (req, res) => {
+  databases.tailors.getNotificationsByTailor(req.params.id, (err, notifications) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(notifications || []);
+  });
+});
+
+// Mark notification as read
+router.put('/notifications/:id/read', (req, res) => {
+  databases.tailors.db.run(
+    'UPDATE notifications SET is_read = 1 WHERE notification_id = ?',
+    [req.params.id],
     function(err) {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-
-      res.json({
-        success: true,
-        message: 'Tailor status updated'
-      });
+      res.json({ success: true, message: 'Notification marked as read' });
     }
   );
 });
 
-// Work Assignment Routes
-router.post('/assignments/create', (req, res) => {
-  const { 
-    tailor_id, 
-    product_id, 
-    garment_type, 
-    fabric_type, 
-    quantity, 
-    expected_date,
-    notes 
-  } = req.body;
+// Dashboard stats for admin
+router.get('/stats/dashboard', (req, res) => {
+  const stats = {};
   
-  if (!tailor_id || !garment_type || !fabric_type || !quantity) {
-    return res.status(400).json({ 
-      error: 'Tailor, garment type, fabric type, and quantity are required' 
-    });
-  }
-
-  const assignment_id = generateAssignmentId();
-
-  databases.inventory.db.run(
-    `INSERT INTO work_assignments 
-     (assignment_id, tailor_id, product_id, garment_type, fabric_type, 
-      quantity, expected_date, status, notes) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'assigned', ?)`,
-    [assignment_id, tailor_id, product_id, garment_type, fabric_type, 
-     quantity, expected_date, notes],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      res.json({
-        success: true,
-        assignment_id,
-        message: 'Work assigned successfully'
-      });
-    }
-  );
-});
-
-router.get('/assignments', (req, res) => {
-  const { tailor_id, status, from_date, to_date } = req.query;
-  
-  let query = `
-    SELECT wa.*, t.name as tailor_name, p.name as product_name 
-    FROM work_assignments wa
-    JOIN tailors t ON wa.tailor_id = t.tailor_id
-    LEFT JOIN products p ON wa.product_id = p.product_id
-    WHERE 1=1
-  `;
-  let params = [];
-  
-  if (tailor_id) {
-    query += ' AND wa.tailor_id = ?';
-    params.push(tailor_id);
-  }
-  
-  if (status) {
-    query += ' AND wa.status = ?';
-    params.push(status);
-  }
-  
-  if (from_date) {
-    query += ' AND wa.assigned_date >= ?';
-    params.push(from_date);
-  }
-  
-  if (to_date) {
-    query += ' AND wa.assigned_date <= ?';
-    params.push(to_date);
-  }
-  
-  query += ' ORDER BY wa.assigned_date DESC';
-  
-  databases.inventory.db.all(query, params, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
-router.put('/assignments/:assignment_id/status', (req, res) => {
-  const { assignment_id } = req.params;
-  const { status, notes } = req.body;
-  
-  if (!['assigned', 'in_progress', 'completed', 'cancelled'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
-  }
-
-  let updateQuery = `UPDATE work_assignments SET status = ?`;
-  let params = [status];
-
-  if (status === 'completed') {
-    updateQuery += `, completed_date = CURRENT_TIMESTAMP`;
-  }
-
-  if (notes) {
-    updateQuery += `, notes = ?`;
-    params.push(notes);
-  }
-
-  updateQuery += ` WHERE assignment_id = ?`;
-  params.push(assignment_id);
-
-  databases.inventory.db.run(updateQuery, params, function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-
-    res.json({
-      success: true,
-      message: 'Assignment status updated'
-    });
-  });
-});
-
-router.get('/assignments/:assignment_id', (req, res) => {
-  const { assignment_id } = req.params;
-  
-  databases.inventory.db.get(
-    `SELECT wa.*, t.name as tailor_name, t.contact_number as tailor_contact,
-            p.name as product_name, p.type as product_type, p.size as product_size
-     FROM work_assignments wa
-     JOIN tailors t ON wa.tailor_id = t.tailor_id
-     LEFT JOIN products p ON wa.product_id = p.product_id
-     WHERE wa.assignment_id = ?`,
-    [assignment_id],
-    (err, assignment) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
+  // Get total tailors
+  databases.tailors.db.get(
+    'SELECT COUNT(*) as total, COUNT(CASE WHEN status = "active" THEN 1 END) as active FROM tailors',
+    (err, tailorStats) => {
+      if (err) return res.status(500).json({ error: err.message });
       
-      if (!assignment) {
-        return res.status(404).json({ error: 'Assignment not found' });
-      }
-
-      res.json(assignment);
-    }
-  );
-});
-
-// Fabric Management Routes
-router.post('/fabrics/create', (req, res) => {
-  const { fabric_type, color, quantity_meters, location } = req.body;
-  
-  if (!fabric_type || !quantity_meters) {
-    return res.status(400).json({ 
-      error: 'Fabric type and quantity are required' 
-    });
-  }
-
-  const fabric_id = generateFabricId(fabric_type);
-
-  databases.inventory.db.run(
-    `INSERT INTO fabrics (fabric_id, fabric_type, color, quantity_meters, location) 
-     VALUES (?, ?, ?, ?, ?)`,
-    [fabric_id, fabric_type, color, quantity_meters, location],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-
-      res.json({
-        success: true,
-        fabric_id,
-        message: 'Fabric added successfully'
-      });
-    }
-  );
-});
-
-router.get('/fabrics', (req, res) => {
-  const { fabric_type, location } = req.query;
-  
-  let query = 'SELECT * FROM fabrics WHERE 1=1';
-  let params = [];
-  
-  if (fabric_type) {
-    query += ' AND fabric_type = ?';
-    params.push(fabric_type);
-  }
-  
-  if (location) {
-    query += ' AND location = ?';
-    params.push(location);
-  }
-  
-  query += ' ORDER BY created_at DESC';
-  
-  databases.inventory.db.all(query, params, (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});
-
-router.put('/fabrics/:fabric_id/update-quantity', (req, res) => {
-  const { fabric_id } = req.params;
-  const { quantity_meters, action } = req.body;
-  
-  if (!quantity_meters || !action) {
-    return res.status(400).json({ 
-      error: 'Quantity and action (add/remove) are required' 
-    });
-  }
-
-  // First get current quantity
-  databases.inventory.db.get('SELECT quantity_meters FROM fabrics WHERE fabric_id = ?', [fabric_id], (err, fabric) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    
-    if (!fabric) {
-      return res.status(404).json({ error: 'Fabric not found' });
-    }
-
-    let newQuantity = parseFloat(fabric.quantity_meters);
-    if (action === 'add') {
-      newQuantity += parseFloat(quantity_meters);
-    } else if (action === 'remove') {
-      newQuantity -= parseFloat(quantity_meters);
-      if (newQuantity < 0) {
-        return res.status(400).json({ 
-          error: 'Insufficient fabric quantity',
-          current: fabric.quantity_meters,
-          requested: quantity_meters
-        });
-      }
-    } else {
-      return res.status(400).json({ error: 'Invalid action. Use add or remove' });
-    }
-
-    databases.inventory.db.run(
-      `UPDATE fabrics SET quantity_meters = ? WHERE fabric_id = ?`,
-      [newQuantity, fabric_id],
-      function(err) {
-        if (err) {
-          return res.status(500).json({ error: err.message });
+      stats.tailors = tailorStats;
+      
+      // Get assignment stats
+      databases.tailors.db.get(
+        `SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+          COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
+          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed
+        FROM assignments`,
+        (err, assignmentStats) => {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          stats.assignments = assignmentStats;
+          res.json(stats);
         }
-
-        res.json({
-          success: true,
-          message: 'Fabric quantity updated',
-          previous_quantity: fabric.quantity_meters,
-          new_quantity: newQuantity
-        });
-      }
-    );
-  });
-});
-
-// Dashboard Statistics
-router.get('/dashboard/tailor-stats', (req, res) => {
-  databases.inventory.db.all(
-    `SELECT 
-      COUNT(DISTINCT t.tailor_id) as total_tailors,
-      COUNT(DISTINCT CASE WHEN t.status = 'active' THEN t.tailor_id END) as active_tailors,
-      COUNT(DISTINCT wa.assignment_id) as total_assignments,
-      COUNT(DISTINCT CASE WHEN wa.status = 'assigned' THEN wa.assignment_id END) as pending_assignments,
-      COUNT(DISTINCT CASE WHEN wa.status = 'in_progress' THEN wa.assignment_id END) as in_progress_assignments,
-      COUNT(DISTINCT CASE WHEN wa.status = 'completed' THEN wa.assignment_id END) as completed_assignments
-     FROM tailors t
-     LEFT JOIN work_assignments wa ON t.tailor_id = wa.tailor_id`,
-    [],
-    (err, stats) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json(stats[0]);
+      );
     }
   );
 });

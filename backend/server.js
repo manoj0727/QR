@@ -12,6 +12,7 @@ const path = require('path');
 const databases = require('./database/index.js');
 const { generateProductQR, generateUniqueProductId } = require('./qrGenerator');
 const tailorRoutes = require('./tailorRoutes');
+const employeeRoutes = require('./employeeRoutes');
 const { router: authRoutes } = require('./authRoutes');
 const { validateOnStartup } = require('./routeValidator');
 
@@ -76,6 +77,9 @@ app.use('/api/auth', authRoutes);
 
 // Mount tailor management routes
 app.use('/api/tailor', tailorRoutes);
+
+// Mount employee management routes
+app.use('/api/employee', employeeRoutes);
 
 app.post('/api/products/create', async (req, res) => {
   const { name, type, size, color, initial_quantity = 0 } = req.body;
@@ -601,6 +605,7 @@ httpsServer.listen(PORT, '0.0.0.0', () => {
   console.log('\n🔐 Registered API Routes:');
   console.log('  ✓ /api/auth/* - Authentication endpoints');
   console.log('  ✓ /api/tailor/* - Tailor management');
+  console.log('  ✓ /api/employee/* - Employee management');
   console.log('  ✓ /api/products/* - Product management');
   console.log('  ✓ /api/inventory/* - Inventory operations');
   console.log('  ✓ /api/transactions - Transaction logs');
