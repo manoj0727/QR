@@ -244,36 +244,59 @@ class EmployeeDashboard {
         return icons[type] || 'circle';
     }
 
-    // Show tab
-    showTab(tabName) {
-        this.currentTab = tabName;
+    // Show section
+    showSection(sectionName) {
+        // Hide all sections
+        document.querySelectorAll('.section-container').forEach(section => {
+            section.classList.remove('active');
+        });
+        
+        // Show the selected section
+        const section = document.getElementById(`${sectionName}-section`);
+        if (section) {
+            section.classList.add('active');
+        }
         
         // Update tab buttons
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         
-        const activeBtn = document.querySelector(`[onclick*="${tabName}"]`);
+        const activeBtn = document.querySelector(`[onclick*="showSection('${sectionName}')"]`);
         if (activeBtn) {
             activeBtn.classList.add('active');
         }
-
-        // Update tab content
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
         
-        const tabContent = document.getElementById(`${tabName}-tab`);
-        if (tabContent) {
-            tabContent.classList.add('active');
-            
-            // Load data based on tab
-            if (tabName === 'notifications') {
-                this.loadNotifications();
-            } else if (tabName === 'activities') {
+        // Load data based on section
+        switch(sectionName) {
+            case 'dashboard':
                 this.loadActivities();
-            }
+                break;
+            case 'create-product':
+                // Reload iframe to reset form
+                const iframe = document.querySelector('#create-product-section iframe');
+                if (iframe) {
+                    iframe.src = iframe.src;
+                }
+                break;
+            case 'scan-qr':
+                this.initializeScanner();
+                break;
+            case 'inventory':
+                this.loadInventory();
+                break;
+            case 'notifications':
+                this.loadNotifications();
+                break;
+            case 'activities':
+                this.loadActivities();
+                break;
         }
+    }
+
+    // Show tab (legacy support)
+    showTab(tabName) {
+        this.showSection(tabName);
     }
 
     // Mark notification as read
@@ -362,7 +385,7 @@ class EmployeeDashboard {
                 throw new Error('No camera devices found');
             }
 
-            await this.scanner.decodeFromVideoDevice(devices[0].deviceId, videoElement, (result, err) => {
+            await this.scanner.decodeFromVideoDevice(devices[0].deviceId, videoElement, (result) => {
                 if (result) {
                     this.handleScanResult(result.text);
                     this.stopScanner();

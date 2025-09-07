@@ -7,6 +7,22 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/employee-styles.css">
+    <style>
+        .section-container {
+            display: none;
+            padding: 20px;
+        }
+        .section-container.active {
+            display: block;
+        }
+        .product-iframe {
+            width: 100%;
+            min-height: 800px;
+            border: none;
+            background: white;
+            border-radius: 12px;
+        }
+    </style>
 </head>
 <body class="dashboard-page">
     <!-- Header -->
@@ -86,7 +102,7 @@
                 </div>
                 <h3>Create QR Code</h3>
                 <p>Generate QR codes for new products and add them to the inventory system.</p>
-                <button class="action-btn" id="create-qr-btn">
+                <button class="action-btn" onclick="dashboard.showSection('create-product')">
                     <i class="fas fa-plus"></i> Create QR Code
                 </button>
             </div>
@@ -96,7 +112,7 @@
                 </div>
                 <h3>Scan QR Code</h3>
                 <p>Scan QR codes to update inventory, track stock movements and manage items.</p>
-                <button class="action-btn" id="scan-qr-btn">
+                <button class="action-btn" onclick="dashboard.showSection('scan-qr')">
                     <i class="fas fa-camera"></i> Scan QR Code
                 </button>
             </div>
@@ -106,7 +122,7 @@
                 </div>
                 <h3>View Inventory</h3>
                 <p>Browse and search the complete inventory database to check stock levels.</p>
-                <button class="action-btn" id="view-inventory-btn">
+                <button class="action-btn" onclick="dashboard.showSection('inventory')">
                     <i class="fas fa-eye"></i> View Inventory
                 </button>
             </div>
@@ -114,16 +130,155 @@
 
         <!-- Section Tabs -->
         <div class="section-tabs">
-            <button class="tab-btn active" onclick="dashboard.showTab('notifications')">
+            <button class="tab-btn active" onclick="dashboard.showSection('dashboard')">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="tab-btn" onclick="dashboard.showSection('create-product')">
+                <i class="fas fa-plus-circle"></i> Create Product
+            </button>
+            <button class="tab-btn" onclick="dashboard.showSection('scan-qr')">
+                <i class="fas fa-qrcode"></i> Scan QR
+            </button>
+            <button class="tab-btn" onclick="dashboard.showSection('inventory')">
+                <i class="fas fa-boxes"></i> Inventory
+            </button>
+            <button class="tab-btn" onclick="dashboard.showSection('notifications')">
                 <i class="fas fa-bell"></i> Notifications
             </button>
-            <button class="tab-btn" onclick="dashboard.showTab('activities')">
-                <i class="fas fa-history"></i> Recent Activities
+            <button class="tab-btn" onclick="dashboard.showSection('activities')">
+                <i class="fas fa-history"></i> Activities
             </button>
         </div>
 
-        <!-- Notifications Tab -->
-        <div id="notifications-tab" class="tab-content active">
+        <!-- Dashboard Section (default view) -->
+        <div id="dashboard-section" class="section-container active">
+            <!-- Recent activities and notifications will show here -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Activities</h2>
+                </div>
+                <div class="activities-list" id="recent-activities">
+                    <!-- Activities will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Product Section -->
+        <div id="create-product-section" class="section-container">
+            <iframe src="../components/pages/product-simple.html" class="product-iframe"></iframe>
+        </div>
+
+        <!-- Scan QR Section -->
+        <div id="scan-qr-section" class="section-container">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Scan QR Code</h2>
+                </div>
+                <div class="scanner-container" style="background: white; padding: 30px; border-radius: 12px;">
+                    <div id="scanner-video-container" style="background: #000; border-radius: 8px; height: 400px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+                        <video id="scanner-video" style="width: 100%; max-width: 600px;"></video>
+                        <div id="scanner-placeholder" style="text-align: center; color: white;">
+                            <i class="fas fa-camera" style="font-size: 48px; margin-bottom: 10px;"></i>
+                            <p>Camera will appear here</p>
+                        </div>
+                    </div>
+                    <div class="scanner-controls" style="text-align: center; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="dashboard.startScanner()">
+                            <i class="fas fa-camera"></i> Start Scanner
+                        </button>
+                        <button class="btn btn-secondary" onclick="dashboard.stopScanner()">
+                            <i class="fas fa-stop"></i> Stop Scanner
+                        </button>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h4>Manual Entry</h4>
+                        <input type="text" id="manual-qr-input" placeholder="Enter product ID or scan QR code" 
+                               style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 15px;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label>Action</label>
+                                <select id="stock-action" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                                    <option value="IN">Stock In</option>
+                                    <option value="OUT">Stock Out</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Quantity</label>
+                                <input type="number" id="stock-quantity" value="1" min="1" 
+                                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
+                            <div>
+                                <label>&nbsp;</label>
+                                <button class="btn btn-primary" onclick="dashboard.updateStock()" style="width: 100%;">
+                                    <i class="fas fa-save"></i> Update Stock
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <textarea id="stock-notes" placeholder="Optional notes..." 
+                                  style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-height: 80px;"></textarea>
+                    </div>
+                    
+                    <div id="scan-result" style="display: none; margin-top: 20px; padding: 20px; background: #d4edda; border-radius: 8px;">
+                        <h3>Scanned Product</h3>
+                        <div class="product-info">
+                            <p><strong>Product ID:</strong> <span id="scanned-product-id"></span></p>
+                            <p><strong>Name:</strong> <span id="scanned-product-name"></span></p>
+                            <p><strong>Type:</strong> <span id="scanned-product-type"></span></p>
+                            <p><strong>Current Stock:</strong> <span id="scanned-product-stock"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory-section" class="section-container">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Inventory Management</h2>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 12px;">
+                    <div class="inventory-filters" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <input type="text" id="inventory-search" placeholder="Search products..." 
+                               onkeyup="dashboard.filterInventory()"
+                               style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <select id="inventory-type-filter" onchange="dashboard.filterInventory()"
+                                style="padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="">All Types</option>
+                            <option value="Shirt">Shirt</option>
+                            <option value="Pant">Pant</option>
+                            <option value="Jacket">Jacket</option>
+                            <option value="Suit">Suit</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="inventory-table-container" style="overflow-x: auto;">
+                        <table class="inventory-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Product ID</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Name</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Type</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Size</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Color</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Quantity</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-list">
+                                <!-- Inventory items will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div id="notifications-section" class="section-container">
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">My Notifications</h2>
@@ -134,133 +289,14 @@
             </div>
         </div>
 
-        <!-- Activities Tab -->
-        <div id="activities-tab" class="tab-content">
+        <!-- Activities Section -->
+        <div id="activities-section" class="section-container">
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">Recent Activities</h2>
                 </div>
                 <div class="activities-list" id="activities-list">
                     <!-- Activities will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Code Generation Modal (Using iframe like admin) -->
-    <div id="qr-modal" class="modal">
-        <div class="modal-content modal-xl">
-            <div class="modal-header">
-                <h2 class="modal-title">Create Product & Generate QR Code</h2>
-                <button class="close-btn" onclick="dashboard.closeQRModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <iframe id="product-iframe" src="../components/pages/product-simple.html" 
-                        style="width: 100%; height: 600px; border: none;"></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Scanner Modal -->
-    <div id="scanner-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Scan QR Code</h2>
-                <button class="close-btn" onclick="dashboard.closeScannerModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="scanner-container">
-                    <div id="scanner-video-container">
-                        <video id="scanner-video" style="width: 100%;"></video>
-                    </div>
-                    <div class="scanner-controls">
-                        <button class="btn btn-primary" onclick="dashboard.startScanner()">
-                            <i class="fas fa-camera"></i> Start Scanner
-                        </button>
-                        <button class="btn btn-secondary" onclick="dashboard.stopScanner()">
-                            <i class="fas fa-stop"></i> Stop Scanner
-                        </button>
-                    </div>
-                </div>
-                <div id="scan-result" style="display: none;">
-                    <h3>Scanned Product</h3>
-                    <div class="product-info">
-                        <p><strong>Product ID:</strong> <span id="scanned-product-id"></span></p>
-                        <p><strong>Name:</strong> <span id="scanned-product-name"></span></p>
-                        <p><strong>Type:</strong> <span id="scanned-product-type"></span></p>
-                        <p><strong>Current Stock:</strong> <span id="scanned-product-stock"></span></p>
-                    </div>
-                    <div class="stock-update-form">
-                        <h4>Update Stock</h4>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Action</label>
-                                <select id="stock-action">
-                                    <option value="IN">Stock In</option>
-                                    <option value="OUT">Stock Out</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Quantity</label>
-                                <input type="number" id="stock-quantity" min="1" value="1">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes</label>
-                            <textarea id="stock-notes" placeholder="Optional notes..."></textarea>
-                        </div>
-                        <button class="btn btn-primary" onclick="dashboard.updateStock()">
-                            <i class="fas fa-save"></i> Update Stock
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Inventory Modal -->
-    <div id="inventory-modal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h2 class="modal-title">Inventory Management</h2>
-                <button class="close-btn" onclick="dashboard.closeInventoryModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="inventory-filters">
-                    <input type="text" id="inventory-search" placeholder="Search products..." 
-                           onkeyup="dashboard.filterInventory()">
-                    <select id="inventory-type-filter" onchange="dashboard.filterInventory()">
-                        <option value="">All Types</option>
-                        <option value="Shirt">Shirt</option>
-                        <option value="Pant">Pant</option>
-                        <option value="Jacket">Jacket</option>
-                        <option value="Suit">Suit</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="inventory-table-container">
-                    <table class="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>Product ID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Size</th>
-                                <th>Color</th>
-                                <th>Quantity</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-list">
-                            <!-- Inventory items will be loaded here -->
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -281,10 +317,6 @@
         // Global functions for backward compatibility
         function logout() {
             dashboard.handleLogout();
-        }
-
-        function showTab(tabName) {
-            dashboard.showTab(tabName);
         }
     </script>
 </body>
