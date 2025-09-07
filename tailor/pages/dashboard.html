@@ -11,9 +11,26 @@
         const isLoggedIn = sessionStorage.getItem('isLoggedIn');
         const userType = sessionStorage.getItem('userType');
         
+        console.log('=== TAILOR DASHBOARD CHECK ===');
+        console.log('Is logged in:', isLoggedIn);
+        console.log('User type:', userType);
+        
+        const baseUrl = window.location.origin;
+        
         if (!isLoggedIn) {
             // Redirect to unified login page if not logged in
-            window.location.href = '../../unified-login.html';
+            console.log('Not logged in - redirecting to login');
+            window.location.href = baseUrl + '/unified-login.html';
+        } else if (userType !== 'tailor') {
+            // This is not a tailor, redirect to appropriate dashboard
+            console.log('Not a tailor (userType:', userType, ') - redirecting');
+            if (userType === 'admin') {
+                window.location.href = baseUrl + '/index.html';
+            } else {
+                window.location.href = baseUrl + '/employee/pages/dashboard.html';
+            }
+        } else {
+            console.log('Tailor authenticated - showing dashboard');
         }
     </script>
     

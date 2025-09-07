@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            background: #10b981;
+            color: white;
+        }
+        .error {
+            background: #ef4444;
+            color: white;
+        }
+        .info {
+            background: #3b82f6;
+            color: white;
+        }
+        .debug {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Simple Test Login</h1>
+        
+        <div class="message info">
+            This is a simplified login page for testing
+        </div>
+
+        <form id="testLoginForm">
+            <input type="text" id="username" placeholder="Username (try: tailor1)" required>
+            <input type="password" id="password" placeholder="Any password" required>
+            <button type="submit">Login</button>
+        </form>
+
+        <div id="output" class="debug" style="display:none;"></div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Show that JavaScript is working
+        console.log('Simple test login page loaded');
+        
+        // Debug output
+        const output = document.getElementById('output');
+        const result = document.getElementById('result');
+        
+        function log(message) {
+            console.log(message);
+            output.style.display = 'block';
+            output.textContent += message + '\n';
+        }
+        
+        // Check localStorage for tailors
+        log('=== Checking LocalStorage ===');
+        const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+        log('Tailors found: ' + tailors.length);
+        if (tailors.length > 0) {
+            log('Available tailor usernames:');
+            tailors.forEach(t => log('  - ' + t.username));
+        } else {
+            log('No tailors in localStorage!');
+            log('Adding test tailors...');
+            
+            // Add test tailors
+            const testTailors = [
+                { username: 'tailor1', name: 'Test Tailor 1', role: 'tailor' },
+                { username: 'tailor2', name: 'Test Tailor 2', role: 'tailor' },
+                { username: 'johntailor', name: 'John Tailor', role: 'tailor' }
+            ];
+            localStorage.setItem('tailorsList', JSON.stringify(testTailors));
+            log('Added 3 test tailors');
+        }
+        
+        // Simple role detection
+        function detectRole(username) {
+            const user = username.toLowerCase();
+            
+            // Check tailors list
+            const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+            const isTailor = tailors.some(t => t.username.toLowerCase() === user);
+            
+            if (isTailor) return 'tailor';
+            if (user.includes('admin')) return 'admin';
+            if (user.includes('tailor')) return 'tailor';
+            return 'employee';
+        }
+        
+        // Form submission
+        document.getElementById('testLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            log('\n=== Login Attempt ===');
+            log('Username: ' + username);
+            log('Password: ' + password);
+            
+            const role = detectRole(username);
+            log('Detected role: ' + role);
+            
+            // Store in session
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userType', role);
+            sessionStorage.setItem('currentUser', username);
+            
+            log('Session data saved');
+            
+            // Determine redirect URL
+            const baseUrl = window.location.origin;
+            let targetUrl = '';
+            
+            switch(role) {
+                case 'admin':
+                    targetUrl = baseUrl + '/index.html';
+                    break;
+                case 'tailor':
+                    targetUrl = baseUrl + '/tailor/pages/dashboard.html';
+                    break;
+                default:
+                    targetUrl = baseUrl + '/employee/pages/dashboard.html';
+            }
+            
+            log('Target URL: ' + targetUrl);
+            
+            // Show success and redirect options
+            result.innerHTML = `
+                <div class="message success">
+                    ✅ Login successful!<br>
+                    Role: ${role}
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <p>Click below to go to your dashboard:</p>
+                    <a href="${targetUrl}" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 5px;">
+                        Go to ${role} Dashboard
+                    </a>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="window.location.href='${targetUrl}'" style="background: #10b981;">
+                        Auto Redirect (JavaScript)
+                    </button>
+                </div>
+            `;
+            
+            log('\nManual links created - click to navigate');
+            
+            // Try auto redirect after 3 seconds
+            setTimeout(() => {
+                log('\nAttempting auto-redirect...');
+                try {
+                    window.location.href = targetUrl;
+                } catch (error) {
+                    log('Redirect error: ' + error.message);
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

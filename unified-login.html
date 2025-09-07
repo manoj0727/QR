@@ -273,6 +273,21 @@
     </div>
 
     <script>
+        // Test if JavaScript is working
+        console.log('=== PAGE LOADED - JAVASCRIPT RUNNING ===');
+        window.addEventListener('load', function() {
+            console.log('Window loaded');
+            
+            // Check if form exists
+            const form = document.getElementById('loginForm');
+            if (form) {
+                console.log('Login form found');
+            } else {
+                console.error('Login form NOT found!');
+                alert('Error: Login form not found on page');
+            }
+        });
+        
         // Encryption configuration
         const ENCRYPTION_KEY = 'QR-SYSTEM-2024-SECURE-KEY-256BIT';
         const IV_LENGTH = 16;
@@ -352,12 +367,34 @@
             }
         }
         
-        // User role detection based on username patterns or predefined mappings
+        // User role detection - check stored users and tailors
         function detectUserRole(username) {
             // Convert username to lowercase for case-insensitive comparison
             const user = username.toLowerCase();
             
-            // Predefined user mappings (can be replaced with API call)
+            console.log('=== DETECTING USER ROLE ===');
+            console.log('Username:', user);
+            
+            // First check localStorage for registered tailors
+            const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+            console.log('Tailors in localStorage:', tailors);
+            const isTailor = tailors.some(t => t.username && t.username.toLowerCase() === user);
+            console.log('Is tailor?', isTailor);
+            if (isTailor) {
+                console.log('Returning role: tailor');
+                return 'tailor';
+            }
+            
+            // Check localStorage for registered employees/users
+            const employees = JSON.parse(localStorage.getItem('employeesList') || '[]');
+            console.log('Employees in localStorage:', employees);
+            const employee = employees.find(e => e.username && e.username.toLowerCase() === user);
+            if (employee) {
+                console.log('Found employee, role:', employee.role || 'employee');
+                return employee.role || 'employee';
+            }
+            
+            // Predefined user mappings (fallback)
             const userRoles = {
                 // Admin users
                 'admin': 'admin',
@@ -377,29 +414,38 @@
             
             // Check direct mapping
             if (userRoles[user]) {
+                console.log('Found in predefined mappings:', userRoles[user]);
                 return userRoles[user];
             }
             
             // Check patterns
             if (user.includes('admin') || user.includes('mgr')) {
+                console.log('Pattern match: admin');
                 return 'admin';
             } else if (user.includes('emp') || user.includes('staff')) {
+                console.log('Pattern match: employee');
                 return 'employee';
             } else if (user.includes('tailor') || user.includes('design')) {
+                console.log('Pattern match: tailor');
                 return 'tailor';
             }
             
             // Default role for unrecognized users
+            console.log('No match found - defaulting to employee');
             return 'employee'; // Default to employee role
         }
         
         // Enhanced login form handler with encryption
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            console.log('=== FORM SUBMITTED ===');
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
+            
+            console.log('Form data:', { username, password, remember });
             
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
@@ -416,65 +462,73 @@
             }
             
             // Auto-detect user role based on username
-            const userType = detectUserRole(username);
+            let userType = 'employee'; // default
+            try {
+                userType = detectUserRole(username);
+                console.log('Detected user type:', userType);
+            } catch (error) {
+                console.error('Error detecting user role:', error);
+                alert('Error detecting user role: ' + error.message);
+                userType = 'employee'; // fallback
+            }
             
-            // Generate salt for password hashing
-            const salt = generateIV();
-            const hashedPassword = hashPassword(password, salt);
-            
-            // Create secure session token
-            const sessionToken = generateSessionToken();
+            // Simplified session data (like the working test)
             const timestamp = Date.now();
-            
-            // Prepare encrypted user data
             const userData = {
                 username: username,
                 userType: userType,
-                hashedPassword: hashedPassword,
-                salt: salt,
-                sessionToken: sessionToken,
-                timestamp: timestamp,
-                expiresAt: timestamp + (24 * 60 * 60 * 1000) // 24 hours
+                timestamp: timestamp
             };
             
             // Show success message
             successMessage.textContent = 'Authenticating securely...';
             successMessage.style.display = 'block';
             
-            // Store encrypted login info if remember me is checked
+            // Store login info if remember me is checked
             if (remember) {
-                const encryptedUser = encryptData(username);
-                localStorage.setItem('rememberedUser', encryptedUser);
+                localStorage.setItem('rememberedUser', username);
             } else {
                 localStorage.removeItem('rememberedUser');
             }
             
-            // Store encrypted session data
-            setSecureSession('userData', userData);
-            setSecureSession('sessionToken', sessionToken);
-            
-            // Store basic session flags (not sensitive)
+            // Store session data (simplified like the working test)
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userType', userType);
             sessionStorage.setItem('currentUser', username);
+            localStorage.setItem('userData', JSON.stringify(userData));
             
             successMessage.textContent = `Login successful! Welcome ${username} (${userType})`;
             
-            // Redirect based on detected user type
+            console.log('=== REDIRECT LOGIC ===');
+            console.log('User type detected:', userType);
+            console.log('Username:', username);
+            
+            // Redirect based on detected user type (simplified like the working test)
             setTimeout(() => {
+                console.log('=== STARTING REDIRECT ===');
+                console.log('Redirecting based on userType:', userType);
+                
+                // Get the base URL
+                const baseUrl = window.location.origin;
+                let targetUrl = '';
+                
                 switch(userType) {
                     case 'admin':
-                        window.location.href = './index.html';
-                        break;
-                    case 'employee':
-                        window.location.href = './employee/pages/dashboard.html';
+                        targetUrl = baseUrl + '/index.html';
                         break;
                     case 'tailor':
-                        window.location.href = './tailor/pages/dashboard.html';
+                        targetUrl = baseUrl + '/tailor/pages/dashboard.html';
                         break;
+                    case 'employee':
                     default:
-                        window.location.href = './employee/pages/dashboard.html';
+                        targetUrl = baseUrl + '/employee/pages/dashboard.html';
+                        break;
                 }
+                
+                console.log('Redirecting to:', targetUrl);
+                
+                // Simple redirect (this works in the test page)
+                window.location.href = targetUrl;
             }, 1500);
         });
         

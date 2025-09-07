@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Test Tailor</title>
+</head>
+<body>
+    <h2>Quick Tailor Setup</h2>
+    <button onclick="addTestTailor()">Add Test Tailor to LocalStorage</button>
+    <div id="result"></div>
+    
+    <script>
+    function addTestTailor() {
+        const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+        
+        // Add test tailors
+        const testTailors = [
+            { username: 'tailor1', name: 'Test Tailor 1', role: 'tailor' },
+            { username: 'tailor2', name: 'Test Tailor 2', role: 'tailor' },
+            { username: 'johntailor', name: 'John Tailor', role: 'tailor' }
+        ];
+        
+        testTailors.forEach(tailor => {
+            if (!tailors.find(t => t.username === tailor.username)) {
+                tailors.push(tailor);
+            }
+        });
+        
+        localStorage.setItem('tailorsList', JSON.stringify(tailors));
+        
+        document.getElementById('result').innerHTML = `
+            <h3>Test tailors added successfully!</h3>
+            <p>You can now login with:</p>
+            <ul>
+                <li>Username: tailor1 (any password)</li>
+                <li>Username: tailor2 (any password)</li>
+                <li>Username: johntailor (any password)</li>
+            </ul>
+            <p>Current tailors in localStorage: ${tailors.length}</p>
+        `;
+    }
+    </script>
+</body>
+</html>

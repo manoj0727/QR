@@ -7,6 +7,7 @@
     
     <!-- Original CSS files -->
     <link rel="stylesheet" href="assets/css/modern-dashboard.css">
+    <link rel="stylesheet" href="assets/css/realtime-tracking.css">
     <link rel="stylesheet" href="assets/css/dashboard-modern.css">
     <link rel="stylesheet" href="assets/css/transaction-history.css">
     <link rel="stylesheet" href="assets/css/original-styles.css">
@@ -155,15 +156,6 @@
                 <div class="section-content">
                     <div class="dashboard-header">
                         <h2>Dashboard Overview</h2>
-                        <p>Real-time insights into your inventory system</p>
-                        <div class="header-actions">
-                            <button onclick="refreshDashboard()" class="btn btn-secondary">
-                                <i class="fas fa-sync-alt"></i> Refresh
-                            </button>
-                            <button onclick="exportReport()" class="btn btn-primary">
-                                <i class="fas fa-download"></i> Export Report
-                            </button>
-                        </div>
                     </div>
                     
                     <!-- Stats Grid -->
@@ -234,63 +226,85 @@
                         </div>
                     </div>
                     
-                    <!-- Charts Row -->
-                    <div class="charts-row">
-                        <div class="chart-card">
-                            <div class="card-header">
-                                <h3>Inventory Overview</h3>
-                                <!-- Period selector removed -->
+                    <!-- Real-time User Activity Tracking -->
+                    <div class="realtime-tracking-section">
+                        <h3 class="section-header">
+                            <i class="fas fa-users-cog"></i> Real-time User Activity
+                            <span class="live-indicator">
+                                <span class="pulse"></span> LIVE
+                            </span>
+                        </h3>
+                        
+                        <div class="tracking-grid">
+                            <!-- Currently Online Users -->
+                            <div class="tracking-card">
+                                <div class="tracking-header">
+                                    <h4><i class="fas fa-circle text-success"></i> Currently Online</h4>
+                                    <span class="user-count" id="online-count">0</span>
+                                </div>
+                                <div class="online-users-list" id="online-users">
+                                    <!-- Will be populated dynamically -->
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <canvas id="salesChart"></canvas>
+                            
+                            <!-- Recent Login Activity -->
+                            <div class="tracking-card">
+                                <div class="tracking-header">
+                                    <h4><i class="fas fa-sign-in-alt"></i> Recent Logins</h4>
+                                    <button class="btn-small" onclick="clearLoginHistory()">Clear</button>
+                                </div>
+                                <div class="activity-log" id="login-activity">
+                                    <!-- Will be populated dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- Employee Product Tracking -->
+                            <div class="tracking-card wide">
+                                <div class="tracking-header">
+                                    <h4><i class="fas fa-chart-bar"></i> Employee Product Activity</h4>
+                                    <select id="activity-period" onchange="updateProductTracking(this.value)">
+                                        <option value="today">Today</option>
+                                        <option value="week">This Week</option>
+                                        <option value="month">This Month</option>
+                                    </select>
+                                </div>
+                                <div class="product-tracking-table">
+                                    <table class="tracking-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Role</th>
+                                                <th>Products Added</th>
+                                                <th>Last Activity</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="product-tracking-body">
+                                            <!-- Will be populated dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="chart-card small">
-                            <div class="card-header">
-                                <h3>Stock Distribution</h3>
+                        <!-- Live Activity Feed -->
+                        <div class="live-feed-section">
+                            <div class="feed-header">
+                                <h4><i class="fas fa-stream"></i> Live Activity Feed</h4>
+                                <div class="feed-controls">
+                                    <button class="filter-btn active" data-filter="all">All</button>
+                                    <button class="filter-btn" data-filter="login">Logins</button>
+                                    <button class="filter-btn" data-filter="logout">Logouts</button>
+                                    <button class="filter-btn" data-filter="products">Products</button>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <canvas id="stockChart"></canvas>
+                            <div class="live-feed" id="live-activity-feed">
+                                <!-- Will be populated dynamically -->
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Summary Table -->
-                    <div class="table-card">
-                        <div class="card-header">
-                            <h3>Inventory Summary</h3>
-                            <div class="card-actions">
-                                <button class="btn-text" onclick="showSection('inventory', event)">View All</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="inventory-summary"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="quick-actions">
-                        <h3>Quick Actions</h3>
-                        <div class="action-buttons">
-                            <button class="action-btn" onclick="showSection('create-product', event)">
-                                <i class="fas fa-plus"></i>
-                                <span>Add Product</span>
-                            </button>
-                            <button class="action-btn" onclick="showSection('scan-qr', event)">
-                                <i class="fas fa-qrcode"></i>
-                                <span>Scan QR</span>
-                            </button>
-                            <button class="action-btn" onclick="exportReport()">
-                                <i class="fas fa-file-export"></i>
-                                <span>Export Report</span>
-                            </button>
-                            <button class="action-btn" onclick="syncData()">
-                                <i class="fas fa-sync"></i>
-                                <span>Sync Data</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
             
@@ -909,9 +923,6 @@
                             <button onclick="showNotificationModal()" class="btn btn-secondary">
                                 <i class="fas fa-paper-plane"></i> Send Notification
                             </button>
-                            <button onclick="refreshEmployeeData()" class="btn btn-outline">
-                                <i class="fas fa-sync-alt"></i> Refresh
-                            </button>
                         </div>
                     </div>
                     
@@ -1417,24 +1428,276 @@
             }
         }
 
+        // Real-time User Activity Tracking Functions
+        let onlineUsers = [];
+        let activityFeed = [];
+        let productTracking = {};
+
+        // Initialize real-time tracking
+        function initializeRealtimeTracking() {
+            loadOnlineUsers();
+            loadLoginActivity(); 
+            loadProductTracking();
+            loadActivityFeed();
+            
+            // Set up real-time updates
+            setInterval(checkOnlineUsers, 5000); // Check every 5 seconds for real-time updates
+            setInterval(updateActivityFeed, 3000); // Update feed every 3 seconds
+            
+            // Listen for storage events for cross-tab communication
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'userActivities' || e.key === 'onlineUsers' || e.key === 'productTracking') {
+                    loadOnlineUsers();
+                    loadLoginActivity();
+                    loadActivityFeed();
+                    loadProductTracking();
+                }
+            });
+        }
+
+        // Track activity using SessionManager
+        function trackUserActivity(type, user, description) {
+            SessionManager.logActivity(type, description, user);
+            
+            // Trigger update
+            loadActivityFeed();
+        }
+
+        // Load online users from SessionManager
+        function loadOnlineUsers() {
+            // Get online users from SessionManager
+            onlineUsers = SessionManager.getOnlineUsers();
+            
+            // Clean up old sessions
+            SessionManager.cleanupOldSessions();
+            
+            updateOnlineUsersDisplay();
+        }
+
+        // Update online users display
+        function updateOnlineUsersDisplay() {
+            const container = document.getElementById('online-users');
+            const count = document.getElementById('online-count');
+            
+            if (!container) return;
+            
+            count.textContent = onlineUsers.length;
+            
+            if (onlineUsers.length === 0) {
+                container.innerHTML = '<div class="no-users">No users currently online</div>';
+                return;
+            }
+            
+            container.innerHTML = onlineUsers.map(user => `
+                <div class="online-user-item">
+                    <div class="user-info">
+                        <div class="user-avatar">${(user.name || user.username || 'U').charAt(0).toUpperCase()}</div>
+                        <div class="user-details">
+                            <span class="user-name">${user.name || user.username}</span>
+                            <span class="user-role">${user.role}</span>
+                        </div>
+                    </div>
+                    <div class="user-status">
+                        <span class="login-time">${SessionManager.getTimeAgo(user.loginTime)}</span>
+                        <span class="status-dot"></span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load login activity from SessionManager
+        function loadLoginActivity() {
+            const activities = SessionManager.getActivities(20);
+            const loginActivities = activities
+                .filter(a => a.type === 'login' || a.type === 'logout')
+                .slice(0, 10); // Last 10 login/logout activities
+            
+            const container = document.getElementById('login-activity');
+            if (!container) return;
+            
+            if (loginActivities.length === 0) {
+                container.innerHTML = '<div class="no-activity">No recent login activity</div>';
+                return;
+            }
+            
+            container.innerHTML = loginActivities.map(activity => {
+                const isLogin = activity.type === 'login';
+                return `
+                    <div class="log-item ${isLogin ? 'login' : 'logout'}">
+                        <i class="fas fa-${isLogin ? 'sign-in-alt' : 'sign-out-alt'} log-icon ${isLogin ? 'login' : 'logout'}"></i>
+                        <div class="log-content">
+                            <span class="log-user">${activity.user?.name || activity.user?.username || 'Unknown'}</span> ${activity.description}
+                            <div class="log-time">${SessionManager.getTimeAgo(activity.timestamp)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load product tracking data from SessionManager
+        function loadProductTracking() {
+            // Get product tracking from SessionManager
+            const storedTracking = SessionManager.getProductTracking();
+            const onlineUsersList = SessionManager.getOnlineUsers();
+            
+            // Update with online status
+            Object.keys(storedTracking).forEach(userId => {
+                const isOnline = onlineUsersList.some(u => u.id === userId);
+                storedTracking[userId].isOnline = isOnline;
+            });
+            
+            productTracking = storedTracking;
+            updateProductTrackingDisplay();
+        }
+        
+        // Track product addition
+        function trackProductAddition(user, productCount = 1) {
+            const userId = user.id || user.username;
+            const userName = user.name || user.username;
+            
+            // Use SessionManager to track product addition
+            SessionManager.trackProductAddition(userId, userName, productCount);
+            
+            // Update display
+            loadProductTracking();
+            loadActivityFeed();
+        }
+
+        // Update product tracking display
+        function updateProductTrackingDisplay() {
+            const tbody = document.getElementById('product-tracking-body');
+            if (!tbody) return;
+            
+            const trackingData = Object.values(productTracking);
+            
+            if (trackingData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No product activity data available</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = trackingData.map(user => `
+                <tr>
+                    <td class="employee-name">${user.name}</td>
+                    <td><span class="role-badge employee">Employee</span></td>
+                    <td><span class="product-count">${user.todayProducts || 0}</span></td>
+                    <td>${SessionManager.getTimeAgo(user.lastUpdate)}</td>
+                    <td>
+                        <span class="status-${user.isOnline ? 'online' : 'offline'}">
+                            <i class="fas fa-circle"></i> ${user.isOnline ? 'Online' : 'Offline'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="view-details-btn" onclick="viewUserDetails('${user.id}')">
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update product tracking based on period
+        function updateProductTracking(period) {
+            // Simulate filtering by period
+            console.log('Updating product tracking for period:', period);
+            loadProductTracking(); // Reload with filtered data
+        }
+
+        // Load activity feed from SessionManager
+        function loadActivityFeed() {
+            activityFeed = SessionManager.getActivities(20);
+            updateActivityFeedDisplay('all');
+        }
+
+        // Update activity feed display
+        function updateActivityFeedDisplay(filter) {
+            const container = document.getElementById('live-activity-feed');
+            if (!container) return;
+            
+            let filteredFeed = activityFeed;
+            if (filter !== 'all') {
+                filteredFeed = activityFeed.filter(item => {
+                    if (filter === 'login') return item.type === 'login';
+                    if (filter === 'logout') return item.type === 'logout';
+                    if (filter === 'products') return item.type === 'product';
+                    return true;
+                });
+            }
+            
+            if (filteredFeed.length === 0) {
+                container.innerHTML = '<div class="no-activity">No activity to display</div>';
+                return;
+            }
+            
+            container.innerHTML = filteredFeed.map(item => `
+                <div class="feed-item">
+                    <div class="feed-icon ${item.type === 'product' ? 'product' : item.type}">
+                        <i class="fas fa-${item.type === 'login' ? 'sign-in-alt' : item.type === 'logout' ? 'sign-out-alt' : 'box'}"></i>
+                    </div>
+                    <div class="feed-content">
+                        <div class="feed-title">${item.user?.name || item.user?.username || 'System'}</div>
+                        <div class="feed-description">${item.description}</div>
+                        <div class="feed-timestamp">${SessionManager.getTimeAgo(item.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Check online users and cleanup old sessions
+        function checkOnlineUsers() {
+            SessionManager.cleanupOldSessions();
+            loadOnlineUsers();
+        }
+
+        // Update activity feed from SessionManager
+        function updateActivityFeed() {
+            loadActivityFeed();
+        }
+
+        // Clear login history
+        function clearLoginHistory() {
+            if (confirm('Are you sure you want to clear the login history?')) {
+                document.getElementById('login-activity').innerHTML = '<div class="no-activity">Login history cleared</div>';
+                showNotification('Login history cleared successfully', 'success');
+            }
+        }
+
+        // View user details
+        function viewUserDetails(userName) {
+            showNotification(`Viewing details for ${userName}`, 'info');
+            // This would open a modal or navigate to user details page
+        }
+
+        // Format time helper
+        // Format time using SessionManager.getTimeAgo
+        function formatTime(timestamp) {
+            return SessionManager.getTimeAgo(timestamp);
+        }
+
+        // Initialize real-time tracking on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for filter buttons
+            setTimeout(() => {
+                const filterButtons = document.querySelectorAll('.feed-controls .filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        updateActivityFeedDisplay(this.dataset.filter);
+                    });
+                });
+                
+                // Initialize real-time tracking
+                initializeRealtimeTracking();
+            }, 1500);
+        });
+
         function updateRecentActivity(transactions) {
             if (Array.isArray(transactions)) {
                 document.getElementById('recent-transactions').textContent = transactions.length;
             }
         }
 
-        function refreshDashboard() {
-            showNotification('Refreshing dashboard...', 'info');
-            loadDashboardData();
-        }
 
-        function exportReport() {
-            showNotification('Generating report...', 'info');
-            // Simulate report generation
-            setTimeout(() => {
-                showNotification('Report generated successfully!', 'success');
-            }, 2000);
-        }
 
         function syncData() {
             showNotification('Syncing data...', 'info');
@@ -1803,19 +2066,6 @@
             }
         }
 
-        function refreshTransactions() {
-            showNotification('Refreshing transactions...', 'info');
-            // Add loading animation to refresh button
-            const refreshBtn = document.querySelector('.trans-refresh');
-            if (refreshBtn) {
-                const icon = refreshBtn.querySelector('i');
-                if (icon) {
-                    icon.classList.add('fa-spin');
-                    setTimeout(() => icon.classList.remove('fa-spin'), 1000);
-                }
-            }
-            loadTransactions();
-        }
         
         // Add new function for updating transactions per page
         function updateTransPerPage() {
@@ -1859,6 +2109,15 @@
                 .then(response => response.json())
                 .then(data => {
                     tailors = Array.isArray(data) ? data : [];
+                    
+                    // Store tailors in localStorage for login detection
+                    const tailorsList = tailors.map(t => ({
+                        username: t.username,
+                        name: t.name,
+                        role: 'tailor'
+                    }));
+                    localStorage.setItem('tailorsList', JSON.stringify(tailorsList));
+                    
                     updateTailorStats();
                     displayTailors();
                 })
@@ -1944,6 +2203,15 @@
                 if (result.error) {
                     showNotification('Error: ' + result.error, 'error');
                 } else {
+                    // Store tailor in localStorage for login detection
+                    const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+                    tailors.push({
+                        username: tailorData.username,
+                        name: tailorData.name,
+                        role: 'tailor'
+                    });
+                    localStorage.setItem('tailorsList', JSON.stringify(tailors));
+                    
                     showNotification(
                         `Tailor registered successfully! Login credentials - Username: ${result.credentials.username}, Password: ${result.credentials.password}`, 
                         'success'
@@ -2566,10 +2834,6 @@
                 employees.map(emp => `<option value="${emp.employee_id}">${emp.name}</option>`).join('');
         }
         
-        function refreshEmployeeData() {
-            showNotification('Refreshing employee data...', 'info');
-            loadEmployees();
-        }
         
         function viewEmployeeDetails(employeeId) {
             const employee = employees.find(emp => emp.employee_id === employeeId);
@@ -2921,19 +3185,7 @@
             initReports();
         }
 
-        function exportReport(format) {
-            if (format === 'pdf') {
-                showNotification('PDF export functionality will be implemented soon', 'info');
-            } else if (format === 'excel') {
-                showNotification('Report exported successfully!', 'success');
-            }
-        }
 
-        function refreshInsights() {
-            updateInsights();
-            updateReportsMetrics();
-            showNotification('Insights refreshed!', 'success');
-        }
 
         function viewProductDetails() {
             showNotification('Product details functionality coming soon', 'info');

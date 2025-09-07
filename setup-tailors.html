@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Tailors for Testing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .success {
+            background: #10b981;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info {
+            background: #3b82f6;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .current-data {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .warning {
+            background: #fbbf24;
+            color: #7c2d12;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧵 Tailor Account Setup for Testing</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Info:</strong> This page helps you set up tailor accounts in localStorage so they can be properly recognized during login.
+        </div>
+
+        <h2>Current Tailors in LocalStorage:</h2>
+        <div class="current-data">
+            <pre id="current-tailors">Loading...</pre>
+        </div>
+
+        <h2>Actions:</h2>
+        <button onclick="addTestTailors()">Add Test Tailors</button>
+        <button onclick="clearTailors()">Clear All Tailors</button>
+        <button onclick="addCustomTailor()">Add Custom Tailor</button>
+        <button onclick="refreshDisplay()">Refresh Display</button>
+
+        <div id="result"></div>
+
+        <h2>How to Test:</h2>
+        <ol>
+            <li>Click "Add Test Tailors" to add sample tailor accounts</li>
+            <li>Go to the <a href="/unified-login.html">Login Page</a></li>
+            <li>Login with one of the tailor usernames (any password will work for testing)</li>
+            <li>Open browser console (F12) to see the debug logs</li>
+            <li>You should be redirected to <code>/tailor/pages/dashboard.html</code></li>
+        </ol>
+
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Make sure to open the browser console to see what's happening during login!
+        </div>
+    </div>
+
+    <script>
+        // Display current tailors on page load
+        window.onload = function() {
+            refreshDisplay();
+        };
+
+        function refreshDisplay() {
+            const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+            document.getElementById('current-tailors').textContent = JSON.stringify(tailors, null, 2);
+            
+            if (tailors.length === 0) {
+                document.getElementById('current-tailors').textContent = 'No tailors found in localStorage';
+            }
+        }
+
+        function addTestTailors() {
+            const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+            
+            // Test tailors to add
+            const testTailors = [
+                { username: 'tailor1', name: 'John Tailor', role: 'tailor' },
+                { username: 'tailor2', name: 'Jane Designer', role: 'tailor' },
+                { username: 'designer1', name: 'Bob Designer', role: 'tailor' },
+                { username: 'johntailor', name: 'John Smith (Tailor)', role: 'tailor' },
+                { username: 'testuser', name: 'Test Tailor User', role: 'tailor' }
+            ];
+            
+            // Add each tailor if not already exists
+            testTailors.forEach(newTailor => {
+                if (!tailors.find(t => t.username === newTailor.username)) {
+                    tailors.push(newTailor);
+                }
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('tailorsList', JSON.stringify(tailors));
+            
+            // Show success message
+            document.getElementById('result').innerHTML = `
+                <div class="success">
+                    <h3>✅ Test tailors added successfully!</h3>
+                    <p>You can now login with any of these usernames:</p>
+                    <ul>
+                        ${testTailors.map(t => `<li><strong>${t.username}</strong> - ${t.name}</li>`).join('')}
+                    </ul>
+                    <p>Total tailors in localStorage: ${tailors.length}</p>
+                </div>
+            `;
+            
+            refreshDisplay();
+        }
+
+        function clearTailors() {
+            localStorage.removeItem('tailorsList');
+            document.getElementById('result').innerHTML = `
+                <div class="warning">
+                    <h3>🗑️ All tailors cleared from localStorage!</h3>
+                </div>
+            `;
+            refreshDisplay();
+        }
+
+        function addCustomTailor() {
+            const username = prompt('Enter tailor username:');
+            if (!username) return;
+            
+            const name = prompt('Enter tailor full name:');
+            if (!name) return;
+            
+            const tailors = JSON.parse(localStorage.getItem('tailorsList') || '[]');
+            
+            // Check if already exists
+            if (tailors.find(t => t.username === username)) {
+                alert('This username already exists!');
+                return;
+            }
+            
+            // Add new tailor
+            tailors.push({
+                username: username,
+                name: name,
+                role: 'tailor'
+            });
+            
+            localStorage.setItem('tailorsList', JSON.stringify(tailors));
+            
+            document.getElementById('result').innerHTML = `
+                <div class="success">
+                    <h3>✅ Custom tailor added!</h3>
+                    <p>Username: <strong>${username}</strong></p>
+                    <p>Name: ${name}</p>
+                </div>
+            `;
+            
+            refreshDisplay();
+        }
+    </script>
+</body>
+</html>
