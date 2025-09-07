@@ -3,39 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tailor Dashboard - QR Inventory System</title>
-    
-    <!-- Login Check and Session Management -->
-    <script>
-        // Check if user is logged in
-        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-        const userType = sessionStorage.getItem('userType');
-        const currentUser = sessionStorage.getItem('currentUser');
-        
-        console.log('=== TAILOR DASHBOARD CHECK ===');
-        console.log('Is logged in:', isLoggedIn);
-        console.log('User type:', userType);
-        console.log('Current user:', currentUser);
-        
-        const baseUrl = window.location.origin;
-        
-        if (!isLoggedIn) {
-            // Redirect to unified login page if not logged in
-            console.log('Not logged in - redirecting to login');
-            window.location.href = baseUrl + '/unified-login.html';
-        } else if (userType !== 'tailor') {
-            // This is not a tailor, redirect to appropriate dashboard
-            console.log('Not a tailor (userType:', userType, ') - redirecting');
-            if (userType === 'admin') {
-                window.location.href = baseUrl + '/index.html';
-            } else {
-                window.location.href = baseUrl + '/employee/pages/dashboard.html';
-            }
-        } else {
-            console.log('Tailor authenticated - showing dashboard');
-        }
-    </script>
-    
+    <title>Tailor Management System - Standalone</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -540,10 +508,10 @@
             </div>
             <div class="user-info">
                 <div class="user-details">
-                    <div class="user-name" id="user-display-name">Loading...</div>
-                    <div class="user-role">Tailor</div>
+                    <div class="user-name">John Tailor</div>
+                    <div class="user-role">Master Tailor</div>
                 </div>
-                <div class="user-avatar" id="user-avatar">T</div>
+                <div class="user-avatar">JT</div>
                 <button class="logout-btn" onclick="handleLogout()">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
@@ -560,7 +528,7 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="total-assignments">0</h3>
+                    <h3 id="total-assignments">8</h3>
                     <p>Total Assignments</p>
                 </div>
             </div>
@@ -569,7 +537,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="pending-tasks">0</h3>
+                    <h3 id="pending-tasks">3</h3>
                     <p>Pending Tasks</p>
                 </div>
             </div>
@@ -578,7 +546,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="completed-tasks">0</h3>
+                    <h3 id="completed-tasks">5</h3>
                     <p>Completed</p>
                 </div>
             </div>
@@ -587,7 +555,7 @@
                     <i class="fas fa-star"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="rating-score">4.8</h3>
+                    <h3>4.8</h3>
                     <p>Rating</p>
                 </div>
             </div>
@@ -601,7 +569,7 @@
                 </button>
                 <button class="tab-btn" onclick="switchTab('notifications')">
                     <i class="fas fa-bell"></i> Notifications
-                    <span class="badge" id="notification-badge" style="display: none;">0</span>
+                    <span class="badge" id="notification-badge">2</span>
                 </button>
                 <button class="tab-btn" onclick="switchTab('history')">
                     <i class="fas fa-history"></i> Work History
@@ -628,36 +596,130 @@
                             </tr>
                         </thead>
                         <tbody id="assignments-tbody">
-                            <!-- Assignments will be loaded here -->
+                            <tr>
+                                <td class="order-number">ORD-2024-001</td>
+                                <td>Custom Suit - Navy Blue</td>
+                                <td>1</td>
+                                <td><span class="priority-badge urgent">Urgent</span></td>
+                                <td>Dec 15, 2024</td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td>
+                                    <button class="action-btn accept" onclick="acceptAssignment('ORD-2024-001')">Accept</button>
+                                    <button class="action-btn" onclick="viewDetails('ORD-2024-001')">Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="order-number">ORD-2024-002</td>
+                                <td>Wedding Dress Alterations</td>
+                                <td>1</td>
+                                <td><span class="priority-badge high">High</span></td>
+                                <td>Dec 20, 2024</td>
+                                <td><span class="status-badge in-progress">In Progress</span></td>
+                                <td>
+                                    <button class="action-btn complete" onclick="completeAssignment('ORD-2024-002')">Complete</button>
+                                    <button class="action-btn" onclick="viewDetails('ORD-2024-002')">Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="order-number">ORD-2024-003</td>
+                                <td>Trouser Hemming</td>
+                                <td>3</td>
+                                <td><span class="priority-badge normal">Normal</span></td>
+                                <td>Dec 25, 2024</td>
+                                <td><span class="status-badge in-progress">In Progress</span></td>
+                                <td>
+                                    <button class="action-btn complete" onclick="completeAssignment('ORD-2024-003')">Complete</button>
+                                    <button class="action-btn" onclick="viewDetails('ORD-2024-003')">Details</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="order-number">ORD-2024-004</td>
+                                <td>Shirt Tailoring</td>
+                                <td>5</td>
+                                <td><span class="priority-badge low">Low</span></td>
+                                <td>Dec 30, 2024</td>
+                                <td><span class="status-badge pending">Pending</span></td>
+                                <td>
+                                    <button class="action-btn accept" onclick="acceptAssignment('ORD-2024-004')">Accept</button>
+                                    <button class="action-btn" onclick="viewDetails('ORD-2024-004')">Details</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <div id="no-assignments" class="empty-state" style="display: none;">
-                        <i class="fas fa-clipboard-list"></i>
-                        <p>No assignments yet</p>
-                    </div>
                 </div>
 
                 <!-- Notifications Tab -->
                 <div class="tab-panel" id="notifications-panel">
                     <h2 style="margin-bottom: 1.5rem;">Notifications</h2>
-                    <div class="notifications-list" id="notifications-list">
-                        <!-- Notifications will be loaded here -->
-                    </div>
-                    <div id="no-notifications" class="empty-state" style="display: none;">
-                        <i class="fas fa-bell"></i>
-                        <p>No notifications</p>
+                    <div class="notifications-list">
+                        <div class="notification-item urgent unread">
+                            <div class="notification-header">
+                                <div class="notification-title">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Urgent Assignment
+                                </div>
+                                <div class="notification-time">2 hours ago</div>
+                            </div>
+                            <div class="notification-message">
+                                You have a new urgent assignment for a custom suit. Please review and accept as soon as possible.
+                            </div>
+                        </div>
+                        <div class="notification-item assignment unread">
+                            <div class="notification-header">
+                                <div class="notification-title">
+                                    <i class="fas fa-clipboard-check"></i>
+                                    New Assignment
+                                </div>
+                                <div class="notification-time">5 hours ago</div>
+                            </div>
+                            <div class="notification-message">
+                                New shirt tailoring order has been assigned to you. Quantity: 5 pieces.
+                            </div>
+                        </div>
+                        <div class="notification-item info">
+                            <div class="notification-header">
+                                <div class="notification-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    System Update
+                                </div>
+                                <div class="notification-time">Yesterday</div>
+                            </div>
+                            <div class="notification-message">
+                                The system will undergo maintenance on December 25th from 2:00 AM to 4:00 AM.
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Work History Tab -->
                 <div class="tab-panel" id="history-panel">
                     <h2 style="margin-bottom: 1.5rem;">Work History</h2>
-                    <div class="history-timeline" id="history-timeline">
-                        <!-- History will be loaded here -->
-                    </div>
-                    <div id="no-history" class="empty-state" style="display: none;">
-                        <i class="fas fa-history"></i>
-                        <p>No work history yet</p>
+                    <div class="history-timeline">
+                        <div class="history-item">
+                            <div class="history-date">December 10, 2024</div>
+                            <div class="history-title">Completed: Business Suit</div>
+                            <div class="history-details">Order #ORD-2024-098 • Completed on time • Customer Rating: 5/5</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-date">December 8, 2024</div>
+                            <div class="history-title">Completed: Dress Alterations</div>
+                            <div class="history-details">Order #ORD-2024-095 • 2 days early • Customer Rating: 5/5</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-date">December 5, 2024</div>
+                            <div class="history-title">Completed: Trouser Set</div>
+                            <div class="history-details">Order #ORD-2024-089 • Quantity: 4 • Customer Rating: 4/5</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-date">December 2, 2024</div>
+                            <div class="history-title">Completed: Wedding Suit</div>
+                            <div class="history-details">Order #ORD-2024-085 • Rush order completed • Customer Rating: 5/5</div>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-date">November 28, 2024</div>
+                            <div class="history-title">Completed: Casual Shirts</div>
+                            <div class="history-details">Order #ORD-2024-079 • Quantity: 6 • Customer Rating: 5/5</div>
+                        </div>
                     </div>
                 </div>
 
@@ -666,11 +728,11 @@
                     <h2 style="margin-bottom: 1.5rem;">Profile Information</h2>
                     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
                         <div style="text-align: center;">
-                            <div id="profile-avatar" style="width: 150px; height: 150px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                                T
+                            <div style="width: 150px; height: 150px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                                JT
                             </div>
-                            <h3 id="profile-name">Loading...</h3>
-                            <p style="color: #6b7280;">Tailor</p>
+                            <h3>John Tailor</h3>
+                            <p style="color: #6b7280;">Master Tailor</p>
                             <div style="margin-top: 1rem;">
                                 <span style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 0.875rem;">
                                     <i class="fas fa-check-circle"></i> Active
@@ -679,32 +741,36 @@
                         </div>
                         <div>
                             <div style="margin-bottom: 1.5rem;">
-                                <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Username</label>
-                                <div style="color: #1a1d23;" id="profile-username">Loading...</div>
+                                <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Full Name</label>
+                                <div style="color: #1a1d23;">John Tailor</div>
                             </div>
                             <div style="margin-bottom: 1.5rem;">
                                 <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Email</label>
-                                <div style="color: #1a1d23;" id="profile-email">tailor@example.com</div>
+                                <div style="color: #1a1d23;">john.tailor@example.com</div>
                             </div>
                             <div style="margin-bottom: 1.5rem;">
                                 <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Phone</label>
-                                <div style="color: #1a1d23;" id="profile-phone">+1 (555) 123-4567</div>
+                                <div style="color: #1a1d23;">+1 (555) 123-4567</div>
                             </div>
                             <div style="margin-bottom: 1.5rem;">
                                 <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Specialization</label>
-                                <div style="color: #1a1d23;" id="profile-specialization">Suits, Alterations</div>
+                                <div style="color: #1a1d23;">Suits, Wedding Dresses, Alterations</div>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Experience</label>
+                                <div style="color: #1a1d23;">15 Years</div>
                             </div>
                             <div style="margin-bottom: 1.5rem;">
                                 <label style="font-weight: 600; color: #6b7280; display: block; margin-bottom: 4px;">Performance</label>
                                 <div style="display: flex; gap: 2rem;">
                                     <div>
-                                        <strong id="ontime-rate">98%</strong> On-time Delivery
+                                        <strong>98%</strong> On-time Delivery
                                     </div>
                                     <div>
-                                        <strong id="customer-rating">4.8/5</strong> Customer Rating
+                                        <strong>4.8/5</strong> Customer Rating
                                     </div>
                                     <div>
-                                        <strong id="total-completed">0</strong> Orders Completed
+                                        <strong>245</strong> Orders Completed
                                     </div>
                                 </div>
                             </div>
@@ -716,25 +782,6 @@
     </div>
 
     <script>
-        // Initialize user info from session
-        window.addEventListener('DOMContentLoaded', function() {
-            const currentUser = sessionStorage.getItem('currentUser') || 'Tailor';
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            
-            // Update user display
-            document.getElementById('user-display-name').textContent = currentUser;
-            document.getElementById('user-avatar').textContent = currentUser.charAt(0).toUpperCase();
-            document.getElementById('profile-name').textContent = currentUser;
-            document.getElementById('profile-username').textContent = currentUser;
-            document.getElementById('profile-avatar').textContent = currentUser.charAt(0).toUpperCase();
-            
-            // Load data from localStorage
-            loadAssignments();
-            loadNotifications();
-            loadHistory();
-            updateStats();
-        });
-        
         // Tab switching
         function switchTab(tabName) {
             // Remove active class from all tabs and panels
@@ -746,189 +793,54 @@
             document.getElementById(tabName + '-panel').classList.add('active');
         }
         
-        // Load assignments from localStorage
-        function loadAssignments() {
-            const assignments = JSON.parse(localStorage.getItem('tailorAssignments') || '[]');
-            const tbody = document.getElementById('assignments-tbody');
-            const emptyState = document.getElementById('no-assignments');
-            
-            if (assignments.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.style.display = 'block';
-                // Add demo data
-                const demoAssignments = [
-                    {
-                        id: 'ORD-2024-001',
-                        product: 'Custom Suit - Navy Blue',
-                        quantity: 1,
-                        priority: 'urgent',
-                        deadline: 'Dec 15, 2024',
-                        status: 'pending'
-                    },
-                    {
-                        id: 'ORD-2024-002',
-                        product: 'Wedding Dress Alterations',
-                        quantity: 1,
-                        priority: 'high',
-                        deadline: 'Dec 20, 2024',
-                        status: 'in-progress'
-                    }
-                ];
-                localStorage.setItem('tailorAssignments', JSON.stringify(demoAssignments));
-                loadAssignments(); // Reload with demo data
-            } else {
-                emptyState.style.display = 'none';
-                tbody.innerHTML = assignments.map(assignment => `
-                    <tr>
-                        <td class="order-number">${assignment.id}</td>
-                        <td>${assignment.product}</td>
-                        <td>${assignment.quantity}</td>
-                        <td><span class="priority-badge ${assignment.priority}">${assignment.priority}</span></td>
-                        <td>${assignment.deadline}</td>
-                        <td><span class="status-badge ${assignment.status.replace(' ', '-')}">${assignment.status}</span></td>
-                        <td>
-                            ${assignment.status === 'pending' ? 
-                                `<button class="action-btn accept" onclick="acceptAssignment('${assignment.id}')">Accept</button>` :
-                                assignment.status === 'in-progress' ?
-                                `<button class="action-btn complete" onclick="completeAssignment('${assignment.id}')">Complete</button>` :
-                                `<span style="color: #059669;">Completed</span>`
-                            }
-                            <button class="action-btn" onclick="viewDetails('${assignment.id}')">Details</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-        }
-        
-        // Load notifications from localStorage
-        function loadNotifications() {
-            const notifications = JSON.parse(localStorage.getItem('tailorNotifications') || '[]');
-            const notificationsList = document.getElementById('notifications-list');
-            const emptyState = document.getElementById('no-notifications');
-            const badge = document.getElementById('notification-badge');
-            
-            if (notifications.length === 0) {
-                notificationsList.innerHTML = '';
-                emptyState.style.display = 'block';
-                badge.style.display = 'none';
-            } else {
-                emptyState.style.display = 'none';
-                const unreadCount = notifications.filter(n => n.unread).length;
-                if (unreadCount > 0) {
-                    badge.style.display = 'inline-block';
-                    badge.textContent = unreadCount;
-                } else {
-                    badge.style.display = 'none';
-                }
-                
-                notificationsList.innerHTML = notifications.map(notification => `
-                    <div class="notification-item ${notification.type} ${notification.unread ? 'unread' : ''}" onclick="markAsRead('${notification.id}')">
-                        <div class="notification-header">
-                            <div class="notification-title">
-                                <i class="fas fa-${notification.type === 'urgent' ? 'exclamation-circle' : 
-                                                   notification.type === 'assignment' ? 'clipboard-check' : 
-                                                   'info-circle'}"></i>
-                                ${notification.title}
-                            </div>
-                            <div class="notification-time">${notification.time}</div>
-                        </div>
-                        <div class="notification-message">${notification.message}</div>
-                    </div>
-                `).join('');
-            }
-        }
-        
-        // Load work history from localStorage
-        function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('tailorHistory') || '[]');
-            const timeline = document.getElementById('history-timeline');
-            const emptyState = document.getElementById('no-history');
-            
-            if (history.length === 0) {
-                timeline.innerHTML = '';
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
-                timeline.innerHTML = history.map(item => `
-                    <div class="history-item">
-                        <div class="history-date">${item.date}</div>
-                        <div class="history-title">${item.title}</div>
-                        <div class="history-details">${item.details}</div>
-                    </div>
-                `).join('');
-            }
-        }
-        
         // Accept assignment
         function acceptAssignment(orderId) {
-            const assignments = JSON.parse(localStorage.getItem('tailorAssignments') || '[]');
-            const assignment = assignments.find(a => a.id === orderId);
-            if (assignment) {
-                assignment.status = 'in-progress';
-                localStorage.setItem('tailorAssignments', JSON.stringify(assignments));
-                loadAssignments();
-                showNotification('Assignment accepted successfully!', 'success');
-                updateStats();
-            }
+            const row = event.target.closest('tr');
+            const statusBadge = row.querySelector('.status-badge');
+            statusBadge.textContent = 'In Progress';
+            statusBadge.className = 'status-badge in-progress';
+            
+            event.target.textContent = 'Complete';
+            event.target.className = 'action-btn complete';
+            event.target.onclick = () => completeAssignment(orderId);
+            
+            showNotification('Assignment accepted successfully!', 'success');
+            updateStats();
         }
         
         // Complete assignment
         function completeAssignment(orderId) {
-            const assignments = JSON.parse(localStorage.getItem('tailorAssignments') || '[]');
-            const assignment = assignments.find(a => a.id === orderId);
-            if (assignment) {
-                assignment.status = 'completed';
-                localStorage.setItem('tailorAssignments', JSON.stringify(assignments));
-                
-                // Add to history
-                const history = JSON.parse(localStorage.getItem('tailorHistory') || '[]');
-                history.unshift({
-                    date: new Date().toLocaleDateString(),
-                    title: `Completed: ${assignment.product}`,
-                    details: `Order #${assignment.id} • Completed on time`
-                });
-                localStorage.setItem('tailorHistory', JSON.stringify(history));
-                
-                loadAssignments();
-                loadHistory();
-                showNotification('Assignment marked as completed!', 'success');
-                updateStats();
-            }
+            const row = event.target.closest('tr');
+            const statusBadge = row.querySelector('.status-badge');
+            statusBadge.textContent = 'Completed';
+            statusBadge.className = 'status-badge completed';
+            
+            event.target.disabled = true;
+            event.target.textContent = 'Completed';
+            
+            showNotification('Assignment marked as completed!', 'success');
+            updateStats();
         }
         
         // View details
         function viewDetails(orderId) {
-            alert(`Order Details: ${orderId}\n\nThis would show:\n- Customer information\n- Measurements\n- Special instructions\n- Materials\n- Reference images`);
-        }
-        
-        // Mark notification as read
-        function markAsRead(notificationId) {
-            const notifications = JSON.parse(localStorage.getItem('tailorNotifications') || '[]');
-            const notification = notifications.find(n => n.id === notificationId);
-            if (notification && notification.unread) {
-                notification.unread = false;
-                localStorage.setItem('tailorNotifications', JSON.stringify(notifications));
-                loadNotifications();
-            }
+            alert(`Viewing details for order: ${orderId}\n\nThis would open a detailed view with:\n- Customer information\n- Measurements\n- Special instructions\n- Materials\n- Reference images`);
         }
         
         // Update stats
         function updateStats() {
-            const assignments = JSON.parse(localStorage.getItem('tailorAssignments') || '[]');
-            const history = JSON.parse(localStorage.getItem('tailorHistory') || '[]');
-            
+            const rows = document.querySelectorAll('.assignments-table tbody tr');
             let pending = 0, inProgress = 0, completed = 0;
             
-            assignments.forEach(assignment => {
-                if (assignment.status === 'pending') pending++;
-                else if (assignment.status === 'in-progress') inProgress++;
-                else if (assignment.status === 'completed') completed++;
+            rows.forEach(row => {
+                const status = row.querySelector('.status-badge').textContent.toLowerCase();
+                if (status.includes('pending')) pending++;
+                else if (status.includes('progress')) inProgress++;
+                else if (status.includes('completed')) completed++;
             });
             
-            document.getElementById('total-assignments').textContent = assignments.length;
             document.getElementById('pending-tasks').textContent = pending;
-            document.getElementById('completed-tasks').textContent = completed + history.length;
-            document.getElementById('total-completed').textContent = completed + history.length;
+            document.getElementById('completed-tasks').textContent = completed;
         }
         
         // Show notification
@@ -958,16 +870,10 @@
         // Handle logout
         function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                // Clear session
-                sessionStorage.clear();
-                
-                // Track logout in real-time tracking if SessionManager exists
-                if (window.SessionManager) {
-                    SessionManager.endSession();
-                }
-                
-                // Redirect to login
-                window.location.href = window.location.origin + '/unified-login.html';
+                showNotification('Logging out...', 'info');
+                setTimeout(() => {
+                    alert('Logged out successfully!');
+                }, 1000);
             }
         }
         
@@ -996,13 +902,6 @@
         
         // Initialize
         updateStats();
-        
-        // Auto-refresh data every 30 seconds
-        setInterval(() => {
-            loadAssignments();
-            loadNotifications();
-            updateStats();
-        }, 30000);
     </script>
 </body>
 </html>
