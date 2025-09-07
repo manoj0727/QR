@@ -418,14 +418,16 @@
 }
 
 .reports-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: white;
+    color: #1a1d23;
     padding: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
 }
 
 .reports-controls {

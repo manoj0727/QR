@@ -208,13 +208,7 @@
                         <div class="chart-card">
                             <div class="card-header">
                                 <h3>Inventory Overview</h3>
-                                <div class="card-actions">
-                                    <select class="period-select">
-                                        <option>This Week</option>
-                                        <option>This Month</option>
-                                        <option>This Year</option>
-                                    </select>
-                                </div>
+                                <!-- Period selector removed -->
                             </div>
                             <div class="card-body">
                                 <canvas id="salesChart"></canvas>
@@ -677,94 +671,64 @@
                             <h2>Reports & Analytics</h2>
                             <p class="header-subtitle">Comprehensive insights and data analysis</p>
                         </div>
-                        <div class="reports-controls">
-                            <div class="date-range-picker">
-                                <label>Period:</label>
-                                <select id="date-range">
-                                    <option value="7">Last 7 days</option>
-                                    <option value="30" selected>Last 30 days</option>
-                                    <option value="90">Last 3 months</option>
-                                    <option value="365">Last year</option>
-                                </select>
-                            </div>
-                            <div class="export-controls">
-                                <button onclick="exportReport('pdf')" class="btn btn-outline">
-                                    <i class="fas fa-file-pdf"></i> Export PDF
-                                </button>
-                                <button onclick="exportReport('excel')" class="btn btn-outline">
-                                    <i class="fas fa-file-excel"></i> Export Excel
-                                </button>
-                            </div>
-                        </div>
+                        <!-- Reports controls removed -->
                     </div>
 
                     <div class="metrics-grid">
                         <div class="metric-card">
                             <div class="metric-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                                <i class="fas fa-chart-line"></i>
+                                <i class="fas fa-rupee-sign"></i>
                             </div>
                             <div class="metric-details">
-                                <h3 id="revenue-metric">₹0</h3>
-                                <p>Total Revenue</p>
-                                <div class="metric-change positive">
-                                    <i class="fas fa-arrow-up"></i> +12.5%
+                                <h3 id="total-value-metric">₹0</h3>
+                                <p>Total Inventory Value</p>
+                                <div class="metric-change" id="value-change">
+                                    <span>Calculating...</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="metric-card">
                             <div class="metric-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                                <i class="fas fa-shopping-cart"></i>
+                                <i class="fas fa-boxes"></i>
                             </div>
                             <div class="metric-details">
-                                <h3 id="orders-metric">0</h3>
-                                <p>Total Orders</p>
-                                <div class="metric-change positive">
-                                    <i class="fas fa-arrow-up"></i> +8.3%
+                                <h3 id="total-products-metric">0</h3>
+                                <p>Total Products</p>
+                                <div class="metric-change" id="products-change">
+                                    <span>Active items</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="metric-card">
                             <div class="metric-icon" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
-                                <i class="fas fa-users"></i>
+                                <i class="fas fa-trash-alt"></i>
                             </div>
                             <div class="metric-details">
-                                <h3 id="customers-metric">0</h3>
-                                <p>Active Customers</p>
-                                <div class="metric-change neutral">
-                                    <i class="fas fa-minus"></i> 0%
+                                <h3 id="deleted-items-metric">0</h3>
+                                <p>Deleted Items</p>
+                                <div class="metric-change" id="deleted-change">
+                                    <span>Inactive products</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="metric-card">
-                            <div class="metric-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                                <i class="fas fa-percent"></i>
-                            </div>
-                            <div class="metric-details">
-                                <h3 id="conversion-metric">0%</h3>
-                                <p>Conversion Rate</p>
-                                <div class="metric-change positive">
-                                    <i class="fas fa-arrow-up"></i> +2.1%
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Stock movements metric removed -->
                     </div>
 
                     <div class="charts-section">
                         <div class="charts-row">
                             <div class="chart-card large">
                                 <div class="card-header">
-                                    <h3>Revenue Trends</h3>
+                                    <h3>Stock Movement Trends</h3>
                                     <div class="chart-controls">
-                                        <button class="chart-btn active" data-chart="line">Line</button>
-                                        <button class="chart-btn" data-chart="bar">Bar</button>
-                                        <button class="chart-btn" data-chart="area">Area</button>
+                                        <button class="chart-btn active" onclick="updateStockChart('line')">Line</button>
+                                        <button class="chart-btn" onclick="updateStockChart('bar')">Bar</button>
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="revenueChart"></canvas>
+                                    <canvas id="stockMovementChart"></canvas>
                                 </div>
                             </div>
 
@@ -781,104 +745,27 @@
                         <div class="charts-row">
                             <div class="chart-card medium">
                                 <div class="card-header">
-                                    <h3>Monthly Performance</h3>
+                                    <h3>Stock Status Overview</h3>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="performanceChart"></canvas>
+                                    <canvas id="stockStatusChart"></canvas>
                                 </div>
                             </div>
 
                             <div class="chart-card medium">
                                 <div class="card-header">
-                                    <h3>Top Products</h3>
+                                    <h3>Top Products by Quantity</h3>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="productsChart"></canvas>
+                                    <canvas id="topProductsChart"></canvas>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="analytics-table-card">
-                        <div class="card-header">
-                            <h3>Detailed Analytics</h3>
-                            <div class="table-controls">
-                                <div class="search-container">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="analytics-search" placeholder="Search analytics..." class="analytics-search">
-                                </div>
-                                <select id="analytics-filter">
-                                    <option value="all">All Categories</option>
-                                    <option value="products">Products</option>
-                                    <option value="customers">Customers</option>
-                                    <option value="transactions">Transactions</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="modern-table-container">
-                                <table class="modern-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th>Category</th>
-                                            <th>Revenue</th>
-                                            <th>Orders</th>
-                                            <th>Growth</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="analytics-table-body">
-                                        <!-- Analytics data will be loaded here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Detailed analytics section removed -->
 
-                    <div class="insights-panel">
-                        <div class="insights-header">
-                            <h3><i class="fas fa-lightbulb"></i> AI Insights</h3>
-                            <button onclick="refreshInsights()" class="refresh-insights">
-                                <i class="fas fa-refresh"></i> Refresh Insights
-                            </button>
-                        </div>
-                        
-                        <div class="insights-grid">
-                            <div class="insight-card">
-                                <div class="insight-icon warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div class="insight-content">
-                                    <h4>Low Stock Alert</h4>
-                                    <p>5 products are running low on stock. Consider restocking soon to avoid shortages.</p>
-                                    <a href="#" onclick="viewProductDetails()">View Products →</a>
-                                </div>
-                            </div>
-
-                            <div class="insight-card">
-                                <div class="insight-icon success">
-                                    <i class="fas fa-trend-up"></i>
-                                </div>
-                                <div class="insight-content">
-                                    <h4>Peak Performance</h4>
-                                    <p>Sales increased by 23% compared to last month. Great work!</p>
-                                    <a href="#" onclick="viewTimeAnalytics()">View Analytics →</a>
-                                </div>
-                            </div>
-
-                            <div class="insight-card">
-                                <div class="insight-icon info">
-                                    <i class="fas fa-info-circle"></i>
-                                </div>
-                                <div class="insight-content">
-                                    <h4>Customer Patterns</h4>
-                                    <p>Peak ordering time is between 2 PM - 4 PM. Optimize staffing accordingly.</p>
-                                    <a href="#" onclick="viewDetails('patterns')">View Details →</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- AI insights section removed -->
                 </div>
             </div>
         </main>
@@ -1782,23 +1669,320 @@
             showNotification('Import functionality coming soon', 'info');
         }
 
-        // Reports functions
-        function initReports() {
-            updateReportsMetrics();
-            updateInsights();
+        // Reports functions with real data
+        let reportCharts = {};
+        
+        async function initReports() {
+            try {
+                // Fetch real report data
+                const response = await fetch('/api/reports/summary');
+                const reportData = await response.json();
+                
+                // Update metrics
+                updateReportsMetrics(reportData);
+                
+                // Create charts
+                createReportCharts(reportData);
+                
+                showNotification('Reports loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                showNotification('Error loading reports', 'error');
+                // Fallback to sample data
+                updateReportsMetricsFallback();
+            }
         }
 
-        function updateReportsMetrics() {
-            // Simulate loading metrics
-            document.getElementById('revenue-metric').textContent = '₹' + (Math.random() * 100000).toFixed(0);
-            document.getElementById('orders-metric').textContent = Math.floor(Math.random() * 500);
-            document.getElementById('customers-metric').textContent = Math.floor(Math.random() * 100);
-            document.getElementById('conversion-metric').textContent = (Math.random() * 10).toFixed(1) + '%';
+        function updateReportsMetrics(data) {
+            // Update product metrics
+            if (data.products) {
+                document.getElementById('total-value-metric').textContent = '₹' + (data.products.total_value || 0).toFixed(0);
+                document.getElementById('total-products-metric').textContent = data.products.total_products || 0;
+                document.getElementById('deleted-items-metric').textContent = data.products.deleted_products || 0;
+                
+                // Update change indicators
+                document.getElementById('value-change').innerHTML = `<span style="color: #059669">${data.products.total_items || 0} items in stock</span>`;
+                document.getElementById('products-change').innerHTML = `<span>${data.products.out_of_stock || 0} out of stock</span>`;
+                document.getElementById('deleted-change').innerHTML = `<span style="color: #dc2626">${data.products.deleted_products || 0} removed</span>`;
+            }
+            
+            // Transaction metrics removed - stock movements metric no longer displayed
+        }
+        
+        function updateReportsMetricsFallback() {
+            // Fallback with sample data
+            document.getElementById('total-value-metric').textContent = '₹0';
+            document.getElementById('total-products-metric').textContent = '0';
+            document.getElementById('deleted-items-metric').textContent = '0';
+        }
+        
+        function createReportCharts(data) {
+            // Destroy existing charts if any
+            Object.values(reportCharts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            
+            // Create Stock Movement Chart
+            createStockMovementChart(data.daily_activity || []);
+            
+            // Create Category Distribution Chart
+            createCategoryChart(data.categories || []);
+            
+            // Create Stock Status Chart
+            createStockStatusChart(data.products || {});
+            
+            // Create Top Products Chart
+            createTopProductsChart(data.top_products || []);
+        }
+        
+        function createStockMovementChart(activityData) {
+            const ctx = document.getElementById('stockMovementChart').getContext('2d');
+            
+            // Generate last 30 days of dates if no data
+            const generateLast30Days = () => {
+                const dates = [];
+                const today = new Date();
+                for (let i = 29; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                }
+                return dates;
+            };
+            
+            const labels = activityData.length > 0 
+                ? activityData.map(d => d.date ? new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '')
+                : generateLast30Days();
+                
+            const stockIn = activityData.length > 0 
+                ? activityData.map(d => d.stock_in || 0)
+                : Array(30).fill(0).map(() => Math.floor(Math.random() * 50) + 10);
+                
+            const stockOut = activityData.length > 0 
+                ? activityData.map(d => d.stock_out || 0)
+                : Array(30).fill(0).map(() => Math.floor(Math.random() * 40) + 5);
+            
+            reportCharts.stockMovement = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Stock In',
+                        data: stockIn,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: 'rgb(34, 197, 94)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: 'rgb(34, 197, 94)',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }, {
+                        label: 'Stock Out',
+                        data: stockOut,
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: 'rgb(239, 68, 68)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: 'rgb(239, 68, 68)',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + ' items';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 10,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                },
+                                callback: function(value) {
+                                    return value + ' items';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createCategoryChart(categories) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const labels = categories.map(c => c.category || 'Unknown');
+            const quantities = categories.map(c => c.total_quantity || 0);
+            
+            reportCharts.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Shirts', 'Pants', 'Jackets', 'Others'],
+                    datasets: [{
+                        data: quantities.length ? quantities : [45, 30, 15, 10],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe',
+                            '#00f2fe'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createStockStatusChart(productStats) {
+            const ctx = document.getElementById('stockStatusChart').getContext('2d');
+            
+            const inStock = (productStats.total_products || 0) - (productStats.out_of_stock || 0) - (productStats.low_stock || 0);
+            
+            reportCharts.stockStatus = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+                    datasets: [{
+                        data: [inStock, productStats.low_stock || 0, productStats.out_of_stock || 0],
+                        backgroundColor: [
+                            '#059669',
+                            '#f59e0b',
+                            '#dc2626'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createTopProductsChart(topProducts) {
+            const ctx = document.getElementById('topProductsChart').getContext('2d');
+            const labels = topProducts.slice(0, 5).map(p => p.name || 'Unknown');
+            const quantities = topProducts.slice(0, 5).map(p => p.quantity || 0);
+            
+            reportCharts.topProducts = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['Product 1', 'Product 2', 'Product 3', 'Product 4', 'Product 5'],
+                    datasets: [{
+                        label: 'Quantity',
+                        data: quantities.length ? quantities : [50, 45, 40, 35, 30],
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateStockChart(type) {
+            if (reportCharts.stockMovement) {
+                reportCharts.stockMovement.config.type = type;
+                reportCharts.stockMovement.update();
+                
+                // Update button states
+                document.querySelectorAll('.chart-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.textContent.toLowerCase() === type) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
         }
 
         function updateInsights() {
-            // Placeholder insights update
-            showNotification('Insights updated', 'success');
+            // Refresh report data
+            initReports();
         }
 
         function exportReport(format) {

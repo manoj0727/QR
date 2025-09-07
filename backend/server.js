@@ -418,6 +418,105 @@ app.get('/api/transactions/summary/:productId', (req, res) => {
   });
 });
 
+// Reports API endpoints
+app.get('/api/reports/summary', (req, res) => {
+  const reports = {};
+  
+  // Get total products and their value
+  databases.inventory.db.get(
+    `SELECT 
+      COUNT(*) as total_products,
+      SUM(quantity) as total_items,
+      SUM(quantity * price) as total_value,
+      COUNT(CASE WHEN status = 'inactive' THEN 1 END) as deleted_products,
+      COUNT(CASE WHEN quantity = 0 THEN 1 END) as out_of_stock,
+      COUNT(CASE WHEN quantity > 0 AND quantity <= min_stock_level THEN 1 END) as low_stock
+    FROM products WHERE status = 'active'`,
+    [],
+    (err, productStats) => {
+      if (err) return res.status(500).json({ error: err.message });
+      reports.products = productStats;
+      
+      // Get transaction summary
+      databases.transactions.db.get(
+        `SELECT 
+          COUNT(*) as total_transactions,
+          COUNT(CASE WHEN transaction_type = 'STOCK_IN' THEN 1 END) as stock_in_count,
+          COUNT(CASE WHEN transaction_type = 'STOCK_OUT' THEN 1 END) as stock_out_count,
+          COUNT(CASE WHEN transaction_type = 'SALE' THEN 1 END) as sales_count,
+          SUM(CASE WHEN transaction_type = 'STOCK_IN' THEN quantity ELSE 0 END) as total_stock_in,
+          SUM(CASE WHEN transaction_type = 'STOCK_OUT' THEN quantity ELSE 0 END) as total_stock_out,
+          SUM(CASE WHEN transaction_type = 'SALE' THEN quantity ELSE 0 END) as total_sales
+        FROM transactions 
+        WHERE created_at >= datetime('now', '-30 days')`,
+        [],
+        (err, transactionStats) => {
+          if (err) return res.status(500).json({ error: err.message });
+          reports.transactions = transactionStats;
+          
+          // Get category distribution
+          databases.inventory.db.all(
+            `SELECT 
+              type as category,
+              COUNT(*) as count,
+              SUM(quantity) as total_quantity,
+              SUM(quantity * price) as total_value
+            FROM products 
+            WHERE status = 'active'
+            GROUP BY type
+            ORDER BY total_quantity DESC`,
+            [],
+            (err, categories) => {
+              if (err) return res.status(500).json({ error: err.message });
+              reports.categories = categories;
+              
+              // Get recent activity
+              databases.transactions.db.all(
+                `SELECT 
+                  DATE(created_at) as date,
+                  COUNT(*) as transaction_count,
+                  SUM(CASE WHEN transaction_type = 'STOCK_IN' THEN quantity ELSE 0 END) as stock_in,
+                  SUM(CASE WHEN transaction_type = 'STOCK_OUT' OR transaction_type = 'SALE' THEN quantity ELSE 0 END) as stock_out
+                FROM transactions 
+                WHERE created_at >= datetime('now', '-7 days')
+                GROUP BY DATE(created_at)
+                ORDER BY date DESC`,
+                [],
+                (err, activity) => {
+                  if (err) return res.status(500).json({ error: err.message });
+                  reports.daily_activity = activity;
+                  
+                  // Get top products by quantity
+                  databases.inventory.db.all(
+                    `SELECT 
+                      product_id,
+                      name,
+                      type,
+                      quantity,
+                      price,
+                      (quantity * price) as value
+                    FROM products 
+                    WHERE status = 'active'
+                    ORDER BY quantity DESC
+                    LIMIT 10`,
+                    [],
+                    (err, topProducts) => {
+                      if (err) return res.status(500).json({ error: err.message });
+                      reports.top_products = topProducts;
+                      
+                      res.json(reports);
+                    }
+                  );
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
 app.get('/api/inventory/summary', (req, res) => {
   databases.inventory.db.all(
     `SELECT 
