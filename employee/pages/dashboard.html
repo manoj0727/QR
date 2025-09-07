@@ -363,6 +363,196 @@
             text-align: center;
             color: #999;
         }
+        
+        /* Attendance Section Styles */
+        .attendance-status-card,
+        .attendance-camera-card,
+        .leave-request-card,
+        .attendance-history-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .attendance-status-card h3,
+        .attendance-camera-card h3,
+        .leave-request-card h3,
+        .attendance-history-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+        
+        #attendance-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .status-info i {
+            color: #2563eb;
+            font-size: 20px;
+        }
+        
+        .camera-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .attendance-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn.primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .action-btn.primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .action-btn.success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .action-btn.success:hover {
+            background: #059669;
+        }
+        
+        .action-btn.danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .action-btn.danger:hover {
+            background: #dc2626;
+        }
+        
+        .action-btn.secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .history-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .history-filters select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .attendance-record {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .attendance-record:last-child {
+            border-bottom: none;
+        }
+        
+        .record-date {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .record-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .record-status.present {
+            background: #d4edda;
+            color: #27ae60;
+        }
+        
+        .record-status.late {
+            background: #fff3cd;
+            color: #f39c12;
+        }
+        
+        .record-status.absent {
+            background: #f8d7da;
+            color: #e74c3c;
+        }
+        
+        .record-status.leave {
+            background: #d1ecf1;
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -399,6 +589,9 @@
             </button>
             <button class="tab-btn" onclick="showSection('activities')">
                 <i class="fas fa-history"></i> Activities
+            </button>
+            <button class="tab-btn" onclick="showSection('attendance')">
+                <i class="fas fa-user-clock"></i> Attendance
             </button>
         </div>
 
@@ -556,6 +749,114 @@
                 </div>
             </div>
         </div>
+
+        <!-- Attendance Section -->
+        <div id="attendance-section" class="content-section">
+            <h2 class="mb-20">Attendance Management</h2>
+            
+            <!-- Attendance Status -->
+            <div class="attendance-status-card">
+                <h3>Today's Status</h3>
+                <div id="attendance-status">
+                    <div class="status-info">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                    <div class="status-info">
+                        <i class="fas fa-calendar-day"></i>
+                        <span id="current-date"></span>
+                    </div>
+                    <div class="status-info" id="check-in-status">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Not checked in</span>
+                    </div>
+                    <div class="status-info" id="check-out-status" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Not checked out</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera Section for Face Recognition -->
+            <div class="attendance-camera-card">
+                <h3>Mark Attendance</h3>
+                <div class="camera-container">
+                    <video id="attendance-video" style="width: 100%; max-width: 500px; border-radius: 10px; display: none;"></video>
+                    <canvas id="attendance-canvas" style="display: none;"></canvas>
+                    <div id="camera-placeholder" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-camera" style="font-size: 48px; color: #ccc; margin-bottom: 15px;"></i>
+                        <p>Click below to start camera</p>
+                    </div>
+                </div>
+                <div class="attendance-actions">
+                    <button id="start-camera-btn" class="action-btn primary" onclick="startAttendanceCamera()">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button id="capture-btn" class="action-btn success" style="display: none;" onclick="captureAttendance()">
+                        <i class="fas fa-camera"></i> Capture & Mark Attendance
+                    </button>
+                    <button id="stop-camera-btn" class="action-btn danger" style="display: none;" onclick="stopAttendanceCamera()">
+                        <i class="fas fa-stop"></i> Stop Camera
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leave Request -->
+            <div class="leave-request-card">
+                <h3>Request Leave</h3>
+                <form id="leave-request-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Leave Type</label>
+                            <select id="leave-type" required>
+                                <option value="">Select Type</option>
+                                <option value="sick">Sick Leave</option>
+                                <option value="casual">Casual Leave</option>
+                                <option value="emergency">Emergency Leave</option>
+                                <option value="vacation">Vacation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" id="leave-from" required>
+                        </div>
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <input type="date" id="leave-to" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <textarea id="leave-reason" rows="3" placeholder="Enter reason for leave..." required></textarea>
+                    </div>
+                    <button type="submit" class="action-btn primary">
+                        <i class="fas fa-paper-plane"></i> Submit Request
+                    </button>
+                </form>
+            </div>
+
+            <!-- Attendance History -->
+            <div class="attendance-history-card">
+                <h3>My Attendance History</h3>
+                <div class="history-filters">
+                    <select id="history-month">
+                        <option value="">Current Month</option>
+                    </select>
+                    <button onclick="loadAttendanceHistory()" class="action-btn secondary">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+                <div id="attendance-history-list">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check" style="font-size: 48px; margin-bottom: 10px;"></i>
+                        <p>No attendance records found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -587,6 +888,7 @@
             loadDashboardStats();
             loadInventory();
             loadActivities();
+            initializeAttendance();
         });
 
         // Load employee info
@@ -735,6 +1037,307 @@
                 // Also update recent activities on dashboard
                 document.getElementById('recent-activities').innerHTML = container.innerHTML;
             }
+        }
+
+        // Attendance Management Functions
+        let videoStream = null;
+        
+        function initializeAttendance() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadAttendanceStatus();
+            setupLeaveForm();
+            populateMonthDropdown();
+        }
+        
+        function updateDateTime() {
+            const now = new Date();
+            const timeElement = document.getElementById('current-time');
+            const dateElement = document.getElementById('current-date');
+            
+            if (timeElement) {
+                timeElement.textContent = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            }
+            
+            if (dateElement) {
+                dateElement.textContent = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+        }
+        
+        async function loadAttendanceStatus() {
+            const userId = sessionStorage.getItem('currentUser') || 'employee1';
+            
+            try {
+                const response = await fetch(`/api/attendance/status/${userId}`);
+                const data = await response.json();
+                
+                const checkInStatus = document.getElementById('check-in-status');
+                const checkOutStatus = document.getElementById('check-out-status');
+                
+                if (data.hasCheckedIn) {
+                    checkInStatus.innerHTML = `
+                        <i class="fas fa-sign-in-alt" style="color: #10b981;"></i>
+                        <span>Checked in at ${formatTime(data.record.check_in_time)}</span>
+                    `;
+                    checkOutStatus.style.display = 'flex';
+                    
+                    if (data.hasCheckedOut) {
+                        checkOutStatus.innerHTML = `
+                            <i class="fas fa-sign-out-alt" style="color: #10b981;"></i>
+                            <span>Checked out at ${formatTime(data.record.check_out_time)}</span>
+                        `;
+                        document.getElementById('capture-btn').style.display = 'none';
+                    } else {
+                        checkOutStatus.innerHTML = `
+                            <i class="fas fa-sign-out-alt" style="color: #f59e0b;"></i>
+                            <span>Not checked out</span>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading attendance status:', error);
+            }
+        }
+        
+        async function startAttendanceCamera() {
+            const video = document.getElementById('attendance-video');
+            const placeholder = document.getElementById('camera-placeholder');
+            const startBtn = document.getElementById('start-camera-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            const stopBtn = document.getElementById('stop-camera-btn');
+            
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' } 
+                });
+                
+                video.srcObject = videoStream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                startBtn.style.display = 'none';
+                captureBtn.style.display = 'inline-flex';
+                stopBtn.style.display = 'inline-flex';
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Unable to access camera. Please check permissions.');
+            }
+        }
+        
+        function stopAttendanceCamera() {
+            const video = document.getElementById('attendance-video');
+            const placeholder = document.getElementById('camera-placeholder');
+            const startBtn = document.getElementById('start-camera-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            const stopBtn = document.getElementById('stop-camera-btn');
+            
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
+            video.style.display = 'none';
+            placeholder.style.display = 'block';
+            startBtn.style.display = 'inline-flex';
+            captureBtn.style.display = 'none';
+            stopBtn.style.display = 'none';
+        }
+        
+        async function captureAttendance() {
+            const video = document.getElementById('attendance-video');
+            const canvas = document.getElementById('attendance-canvas');
+            const context = canvas.getContext('2d');
+            
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0);
+            
+            // Convert canvas to blob
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('face_photo', blob, 'attendance.jpg');
+                formData.append('location', 'Office');
+                
+                try {
+                    const response = await fetch('/api/attendance/mark-attendance', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const action = result.action === 'check_in' ? 'Checked in' : 'Checked out';
+                        alert(`${action} successfully!`);
+                        stopAttendanceCamera();
+                        loadAttendanceStatus();
+                        loadAttendanceHistory();
+                    } else {
+                        alert(result.error || 'Failed to mark attendance');
+                    }
+                } catch (error) {
+                    console.error('Error marking attendance:', error);
+                    alert('Failed to mark attendance. Please try again.');
+                }
+            }, 'image/jpeg');
+        }
+        
+        function setupLeaveForm() {
+            const form = document.getElementById('leave-request-form');
+            if (!form) return;
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const userId = sessionStorage.getItem('currentUser') || 'employee1';
+                const employeeData = JSON.parse(localStorage.getItem('employeeData') || '{}');
+                
+                const leaveData = {
+                    user_id: userId,
+                    user_type: 'employee',
+                    leave_type: document.getElementById('leave-type').value,
+                    from_date: document.getElementById('leave-from').value,
+                    to_date: document.getElementById('leave-to').value,
+                    reason: document.getElementById('leave-reason').value
+                };
+                
+                try {
+                    const response = await fetch('/api/attendance/leave-request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(leaveData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Leave request submitted successfully!');
+                        form.reset();
+                    } else {
+                        alert('Failed to submit leave request');
+                    }
+                } catch (error) {
+                    console.error('Error submitting leave request:', error);
+                    alert('Failed to submit leave request');
+                }
+            });
+        }
+        
+        function populateMonthDropdown() {
+            const select = document.getElementById('history-month');
+            if (!select) return;
+            
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            // Add last 6 months
+            for (let i = 0; i < 6; i++) {
+                let month = currentMonth - i;
+                let year = currentYear;
+                
+                if (month < 0) {
+                    month += 12;
+                    year--;
+                }
+                
+                const option = document.createElement('option');
+                option.value = `${year}-${(month + 1).toString().padStart(2, '0')}`;
+                option.textContent = `${months[month]} ${year}`;
+                select.appendChild(option);
+            }
+        }
+        
+        async function loadAttendanceHistory() {
+            const userId = sessionStorage.getItem('currentUser') || 'employee1';
+            const monthSelect = document.getElementById('history-month');
+            
+            let month, year;
+            if (monthSelect && monthSelect.value) {
+                [year, month] = monthSelect.value.split('-');
+            } else {
+                const now = new Date();
+                month = now.getMonth() + 1;
+                year = now.getFullYear();
+            }
+            
+            try {
+                const response = await fetch(`/api/attendance/records?user_id=${userId}&month=${month}&year=${year}`);
+                const records = await response.json();
+                
+                displayAttendanceHistory(records);
+            } catch (error) {
+                console.error('Error loading attendance history:', error);
+            }
+        }
+        
+        function displayAttendanceHistory(records) {
+            const container = document.getElementById('attendance-history-list');
+            if (!container) return;
+            
+            if (!records || records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-check" style="font-size: 48px; margin-bottom: 10px;"></i>
+                        <p>No attendance records found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = records.map(record => `
+                <div class="attendance-record">
+                    <div>
+                        <div class="record-date">${formatDate(record.date)}</div>
+                        <div style="font-size: 13px; color: #666; margin-top: 5px;">
+                            In: ${formatTime(record.check_in_time)} | 
+                            Out: ${record.check_out_time ? formatTime(record.check_out_time) : '-'} | 
+                            Hours: ${record.total_hours || '-'}
+                        </div>
+                    </div>
+                    <span class="record-status ${record.status}">${record.status}</span>
+                </div>
+            `).join('');
+        }
+        
+        function formatTime(datetime) {
+            if (!datetime) return '-';
+            const date = new Date(datetime);
+            return date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
         }
 
         // Logout

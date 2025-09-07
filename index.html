@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="assets/css/transaction-enhanced.css">
     <link rel="stylesheet" href="assets/css/tailor-management.css">
     <link rel="stylesheet" href="assets/css/employee-management.css">
+    <link rel="stylesheet" href="assets/css/attendance-management.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Tailor Management Module -->
@@ -99,6 +100,11 @@
                     <li><a href="#" onclick="showSection('employee-management', event)" class="nav-item" data-section="employee-management" data-tooltip="Employee Mgmt">
                         <i class="fas fa-user-tie"></i>
                         <span>Employee Management</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('attendance-management', event)" class="nav-item" data-section="attendance-management" data-tooltip="Attendance">
+                        <i class="fas fa-user-clock"></i>
+                        <span>Attendance System</span>
                     </a></li>
                     
                     <li><a href="#" onclick="showSection('reports', event)" class="nav-item" data-section="reports" data-tooltip="Reports">
@@ -1006,6 +1012,257 @@
                 </div>
             </div>
             
+            <!-- Attendance Management Section -->
+            <div id="attendance-management" class="section">
+                <div class="attendance-container">
+                    <div class="attendance-header">
+                        <div class="header-content">
+                            <h2>Attendance Management System</h2>
+                            <p class="header-subtitle">Face recognition based attendance tracking and reporting</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-export" onclick="exportAttendanceReport()">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                            <button class="btn-settings" onclick="showAttendanceSettings()">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Tabs -->
+                    <div class="attendance-tabs">
+                        <button class="tab-btn active" onclick="showAttendanceTab('registration')">
+                            <i class="fas fa-user-plus"></i> Face Registration
+                        </button>
+                        <button class="tab-btn" onclick="showAttendanceTab('today')">
+                            <i class="fas fa-calendar-day"></i> Today's Attendance
+                        </button>
+                        <button class="tab-btn" onclick="showAttendanceTab('reports')">
+                            <i class="fas fa-chart-line"></i> Reports
+                        </button>
+                        <button class="tab-btn" onclick="showAttendanceTab('leaves')">
+                            <i class="fas fa-calendar-times"></i> Leave Management
+                        </button>
+                    </div>
+
+                    <!-- Face Registration Tab -->
+                    <div id="registration-tab" class="tab-content active">
+                        <div class="registration-container">
+                            <div class="registration-form">
+                                <h3>Register New Face</h3>
+                                <form id="face-registration-form" enctype="multipart/form-data">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>User ID *</label>
+                                            <input type="text" id="reg-user-id" required placeholder="e.g., EMP001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Full Name *</label>
+                                            <input type="text" id="reg-user-name" required placeholder="Enter full name">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>User Type *</label>
+                                            <select id="reg-user-type" required>
+                                                <option value="">Select Type</option>
+                                                <option value="employee">Employee</option>
+                                                <option value="tailor">Tailor</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Department</label>
+                                            <input type="text" id="reg-department" placeholder="e.g., Production">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Upload Face Photo *</label>
+                                        <div class="photo-upload-area">
+                                            <input type="file" id="face-photo" accept="image/*" required onchange="previewFacePhoto(event)">
+                                            <div class="upload-placeholder" id="photo-preview">
+                                                <i class="fas fa-camera"></i>
+                                                <p>Click to upload photo or drag and drop</p>
+                                                <span>JPG, PNG (Max 5MB)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="button" class="btn-secondary" onclick="resetRegistrationForm()">
+                                            <i class="fas fa-redo"></i> Reset
+                                        </button>
+                                        <button type="submit" class="btn-primary">
+                                            <i class="fas fa-save"></i> Register Face
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="registered-faces">
+                                <h3>Registered Faces</h3>
+                                <div class="search-bar">
+                                    <input type="text" placeholder="Search by name or ID..." onkeyup="searchRegisteredFaces(this.value)">
+                                </div>
+                                <div class="faces-grid" id="registered-faces-grid">
+                                    <!-- Registered faces will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Attendance Tab -->
+                    <div id="today-tab" class="tab-content">
+                        <div class="today-attendance">
+                            <div class="attendance-stats">
+                                <div class="stat-card">
+                                    <div class="stat-icon present">
+                                        <i class="fas fa-user-check"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h4>Present</h4>
+                                        <p class="stat-value" id="present-count">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon absent">
+                                        <i class="fas fa-user-times"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h4>Absent</h4>
+                                        <p class="stat-value" id="absent-count">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon late">
+                                        <i class="fas fa-user-clock"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h4>Late</h4>
+                                        <p class="stat-value" id="late-count">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon leave">
+                                        <i class="fas fa-calendar-times"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <h4>On Leave</h4>
+                                        <p class="stat-value" id="leave-count">0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="attendance-table-container">
+                                <table class="attendance-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Check In</th>
+                                            <th>Check Out</th>
+                                            <th>Total Hours</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="today-attendance-tbody">
+                                        <!-- Today's attendance records will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div id="reports-tab" class="tab-content">
+                        <div class="attendance-reports">
+                            <div class="report-filters">
+                                <div class="filter-group">
+                                    <label>From Date</label>
+                                    <input type="date" id="report-from-date">
+                                </div>
+                                <div class="filter-group">
+                                    <label>To Date</label>
+                                    <input type="date" id="report-to-date">
+                                </div>
+                                <div class="filter-group">
+                                    <label>User Type</label>
+                                    <select id="report-user-type">
+                                        <option value="">All</option>
+                                        <option value="employee">Employees</option>
+                                        <option value="tailor">Tailors</option>
+                                    </select>
+                                </div>
+                                <button class="btn-primary" onclick="generateAttendanceReport()">
+                                    <i class="fas fa-search"></i> Generate Report
+                                </button>
+                            </div>
+
+                            <div class="report-summary" id="report-summary">
+                                <!-- Report summary will be displayed here -->
+                            </div>
+
+                            <div class="report-table-container">
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>User ID</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Check In</th>
+                                            <th>Check Out</th>
+                                            <th>Hours</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-tbody">
+                                        <!-- Report data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Management Tab -->
+                    <div id="leaves-tab" class="tab-content">
+                        <div class="leave-management">
+                            <div class="pending-leaves">
+                                <h3>Pending Leave Requests</h3>
+                                <div class="leave-requests" id="pending-leave-requests">
+                                    <!-- Pending leave requests will be loaded here -->
+                                </div>
+                            </div>
+
+                            <div class="leave-history">
+                                <h3>Leave History</h3>
+                                <div class="leave-table-container">
+                                    <table class="leave-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee</th>
+                                                <th>Type</th>
+                                                <th>From</th>
+                                                <th>To</th>
+                                                <th>Days</th>
+                                                <th>Reason</th>
+                                                <th>Status</th>
+                                                <th>Approved By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="leave-history-tbody">
+                                            <!-- Leave history will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Reports Section -->
             <div id="reports" class="section">
                 <div class="reports-container">
@@ -1204,6 +1461,7 @@
                 'transactions': 'Transaction History',
                 'tailor-management': 'Tailor Management',
                 'employee-management': 'Employee Management',
+                'attendance-management': 'Attendance System',
                 'reports': 'Reports & Analytics'
             };
             
@@ -2528,6 +2786,449 @@
 
         function importTailors() {
             showNotification('Import functionality coming soon', 'info');
+        }
+
+        // Attendance Management functions
+        let registeredFaces = [];
+        let todayAttendance = [];
+        let currentAttendanceTab = 'registration';
+
+        // Tab switching
+        function showAttendanceTab(tabName) {
+            currentAttendanceTab = tabName;
+            
+            // Update tab buttons
+            document.querySelectorAll('.attendance-tabs .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Load data for the selected tab
+            switch(tabName) {
+                case 'registration':
+                    loadRegisteredFaces();
+                    break;
+                case 'today':
+                    loadTodayAttendance();
+                    break;
+                case 'reports':
+                    // Reports loaded on demand
+                    break;
+                case 'leaves':
+                    loadLeaveRequests();
+                    break;
+            }
+        }
+
+        // Face Registration
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('face-registration-form');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await registerFace();
+                });
+            }
+        });
+
+        async function registerFace() {
+            const formData = new FormData();
+            const fileInput = document.getElementById('face-photo');
+            const userId = document.getElementById('reg-user-id').value;
+            const userName = document.getElementById('reg-user-name').value;
+            const userType = document.getElementById('reg-user-type').value;
+            
+            if (!fileInput.files[0]) {
+                showNotification('Please select a photo', 'error');
+                return;
+            }
+            
+            formData.append('face_photo', fileInput.files[0]);
+            formData.append('user_id', userId);
+            formData.append('user_name', userName);
+            formData.append('user_type', userType);
+            
+            try {
+                const response = await fetch('/api/attendance/register-face', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Face registered successfully!', 'success');
+                    resetRegistrationForm();
+                    loadRegisteredFaces();
+                } else {
+                    showNotification(result.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showNotification('Failed to register face', 'error');
+            }
+        }
+
+        function previewFacePhoto(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('photo-preview');
+            
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="photo-preview-img" alt="Preview">`;
+                    preview.classList.add('has-preview');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetRegistrationForm() {
+            document.getElementById('face-registration-form').reset();
+            const preview = document.getElementById('photo-preview');
+            preview.innerHTML = `
+                <i class="fas fa-camera"></i>
+                <p>Click to upload photo or drag and drop</p>
+                <span>JPG, PNG (Max 5MB)</span>
+            `;
+            preview.classList.remove('has-preview');
+        }
+
+        async function loadRegisteredFaces() {
+            try {
+                const response = await fetch('/api/attendance/registered-faces');
+                const faces = await response.json();
+                registeredFaces = faces;
+                displayRegisteredFaces();
+            } catch (error) {
+                console.error('Error loading registered faces:', error);
+            }
+        }
+
+        function displayRegisteredFaces() {
+            const grid = document.getElementById('registered-faces-grid');
+            if (!grid) return;
+            
+            if (registeredFaces.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #999;">No registered faces yet</p>';
+                return;
+            }
+            
+            grid.innerHTML = registeredFaces.map(face => `
+                <div class="face-card">
+                    <img src="${face.photo_path || '/assets/images/default-avatar.png'}" alt="${face.user_name}">
+                    <div class="name">${face.user_name}</div>
+                    <div class="id">${face.user_id}</div>
+                </div>
+            `).join('');
+        }
+
+        function searchRegisteredFaces(query) {
+            const filtered = registeredFaces.filter(face => 
+                face.user_name.toLowerCase().includes(query.toLowerCase()) ||
+                face.user_id.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const grid = document.getElementById('registered-faces-grid');
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #999;">No matching faces found</p>';
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(face => `
+                <div class="face-card">
+                    <img src="${face.photo_path || '/assets/images/default-avatar.png'}" alt="${face.user_name}">
+                    <div class="name">${face.user_name}</div>
+                    <div class="id">${face.user_id}</div>
+                </div>
+            `).join('');
+        }
+
+        // Today's Attendance
+        async function loadTodayAttendance() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const response = await fetch(`/api/attendance/records?start_date=${today}&end_date=${today}`);
+                const records = await response.json();
+                todayAttendance = records;
+                displayTodayAttendance();
+                updateAttendanceStats();
+            } catch (error) {
+                console.error('Error loading today attendance:', error);
+            }
+        }
+
+        function displayTodayAttendance() {
+            const tbody = document.getElementById('today-attendance-tbody');
+            if (!tbody) return;
+            
+            if (todayAttendance.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">No attendance records for today</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = todayAttendance.map(record => `
+                <tr>
+                    <td>${record.user_id}</td>
+                    <td>${record.user_name}</td>
+                    <td>${record.user_type}</td>
+                    <td>${formatTime(record.check_in_time)}</td>
+                    <td>${record.check_out_time ? formatTime(record.check_out_time) : '-'}</td>
+                    <td>${record.total_hours || '-'}</td>
+                    <td><span class="status-badge ${record.status}">${record.status}</span></td>
+                    <td>
+                        ${!record.check_out_time ? 
+                            `<button class="btn-sm btn-primary" onclick="markCheckOut('${record.user_id}')">
+                                <i class="fas fa-sign-out-alt"></i> Check Out
+                            </button>` : 
+                            '<span style="color: #999;">Completed</span>'
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateAttendanceStats() {
+            const stats = {
+                present: 0,
+                absent: 0,
+                late: 0,
+                leave: 0
+            };
+            
+            todayAttendance.forEach(record => {
+                if (record.status === 'present') stats.present++;
+                else if (record.status === 'late') stats.late++;
+                else if (record.status === 'leave') stats.leave++;
+            });
+            
+            // Calculate absent (registered faces - present - late - leave)
+            stats.absent = registeredFaces.length - stats.present - stats.late - stats.leave;
+            
+            document.getElementById('present-count').textContent = stats.present;
+            document.getElementById('absent-count').textContent = stats.absent;
+            document.getElementById('late-count').textContent = stats.late;
+            document.getElementById('leave-count').textContent = stats.leave;
+        }
+
+        // Attendance Reports
+        async function generateAttendanceReport() {
+            const fromDate = document.getElementById('report-from-date').value;
+            const toDate = document.getElementById('report-to-date').value;
+            const userType = document.getElementById('report-user-type').value;
+            
+            if (!fromDate || !toDate) {
+                showNotification('Please select date range', 'error');
+                return;
+            }
+            
+            try {
+                let url = `/api/attendance/records?start_date=${fromDate}&end_date=${toDate}`;
+                if (userType) url += `&user_type=${userType}`;
+                
+                const response = await fetch(url);
+                const records = await response.json();
+                displayAttendanceReport(records);
+                generateReportSummary(records);
+            } catch (error) {
+                console.error('Error generating report:', error);
+                showNotification('Failed to generate report', 'error');
+            }
+        }
+
+        function displayAttendanceReport(records) {
+            const tbody = document.getElementById('report-tbody');
+            if (!tbody) return;
+            
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">No records found for the selected period</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = records.map(record => `
+                <tr>
+                    <td>${formatDate(record.date)}</td>
+                    <td>${record.user_id}</td>
+                    <td>${record.user_name}</td>
+                    <td>${record.user_type}</td>
+                    <td>${formatTime(record.check_in_time)}</td>
+                    <td>${record.check_out_time ? formatTime(record.check_out_time) : '-'}</td>
+                    <td>${record.total_hours || '-'}</td>
+                    <td><span class="status-badge ${record.status}">${record.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function generateReportSummary(records) {
+            const summary = document.getElementById('report-summary');
+            if (!summary) return;
+            
+            const stats = {
+                totalDays: new Set(records.map(r => r.date)).size,
+                totalRecords: records.length,
+                present: records.filter(r => r.status === 'present').length,
+                late: records.filter(r => r.status === 'late').length,
+                halfDay: records.filter(r => r.status === 'half-day').length,
+                totalHours: records.reduce((sum, r) => sum + (r.total_hours || 0), 0)
+            };
+            
+            summary.innerHTML = `
+                <div class="report-summary-content">
+                    <h4>Report Summary</h4>
+                    <div class="summary-stats">
+                        <div class="summary-stat">
+                            <span>Total Days:</span>
+                            <strong>${stats.totalDays}</strong>
+                        </div>
+                        <div class="summary-stat">
+                            <span>Total Records:</span>
+                            <strong>${stats.totalRecords}</strong>
+                        </div>
+                        <div class="summary-stat">
+                            <span>Present:</span>
+                            <strong>${stats.present}</strong>
+                        </div>
+                        <div class="summary-stat">
+                            <span>Late:</span>
+                            <strong>${stats.late}</strong>
+                        </div>
+                        <div class="summary-stat">
+                            <span>Half Day:</span>
+                            <strong>${stats.halfDay}</strong>
+                        </div>
+                        <div class="summary-stat">
+                            <span>Total Hours:</span>
+                            <strong>${stats.totalHours.toFixed(2)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function exportAttendanceReport() {
+            const fromDate = document.getElementById('report-from-date')?.value || '';
+            const toDate = document.getElementById('report-to-date')?.value || '';
+            const userType = document.getElementById('report-user-type')?.value || '';
+            
+            if (!fromDate || !toDate) {
+                // Use current month if no dates selected
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                
+                window.location.href = `/api/attendance/export?start_date=${firstDay}&end_date=${lastDay}&user_type=${userType}`;
+            } else {
+                window.location.href = `/api/attendance/export?start_date=${fromDate}&end_date=${toDate}&user_type=${userType}`;
+            }
+        }
+
+        // Leave Management
+        async function loadLeaveRequests() {
+            try {
+                const response = await fetch('/api/attendance/leave-requests/pending');
+                const requests = await response.json();
+                displayPendingLeaves(requests);
+                loadLeaveHistory();
+            } catch (error) {
+                console.error('Error loading leave requests:', error);
+            }
+        }
+
+        function displayPendingLeaves(requests) {
+            const container = document.getElementById('pending-leave-requests');
+            if (!container) return;
+            
+            if (requests.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">No pending leave requests</p>';
+                return;
+            }
+            
+            container.innerHTML = requests.map(request => `
+                <div class="leave-request-card">
+                    <div class="leave-request-header">
+                        <div class="leave-request-info">
+                            <h4>${request.user_name || request.user_id}</h4>
+                            <p>${request.leave_type} - ${formatDate(request.from_date)} to ${formatDate(request.to_date)}</p>
+                            <p style="margin-top: 10px;">${request.reason || 'No reason provided'}</p>
+                        </div>
+                        <div class="leave-request-actions">
+                            <button class="btn-approve" onclick="handleLeaveRequest(${request.id}, 'approved')">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button class="btn-reject" onclick="handleLeaveRequest(${request.id}, 'rejected')">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleLeaveRequest(leaveId, status) {
+            const currentUser = SessionManager.getCurrentUser();
+            const approvedBy = currentUser ? currentUser.name : 'Admin';
+            
+            try {
+                const response = await fetch(`/api/attendance/leave-request/${leaveId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: status,
+                        approved_by: approvedBy
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(`Leave request ${status}`, 'success');
+                    loadLeaveRequests();
+                } else {
+                    showNotification('Failed to update leave request', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating leave request:', error);
+                showNotification('Failed to update leave request', 'error');
+            }
+        }
+
+        async function loadLeaveHistory() {
+            // This would load approved/rejected leave history
+            // Implementation depends on backend API
+        }
+
+        function showAttendanceSettings() {
+            // Open attendance settings modal
+            showNotification('Settings functionality coming soon', 'info');
+        }
+
+        // Utility functions for attendance
+        function formatTime(datetime) {
+            if (!datetime) return '-';
+            const date = new Date(datetime);
+            return date.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
         // Employee Management functions
