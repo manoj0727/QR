@@ -404,14 +404,14 @@
                                 <div class="nav-filter-item">
                                     <label class="nav-filter-label">
                                         <i class="fas fa-exchange-alt"></i>
-                                        <span>Action</span>
+                                        <span>Status</span>
                                     </label>
                                     <select id="type-filter" class="nav-select" onchange="filterTransactions()">
-                                        <option value="all">All Actions</option>
+                                        <option value="all">All Status</option>
                                         <option value="STOCK_IN">Stock In</option>
                                         <option value="STOCK_OUT">Stock Out</option>
-                                        <option value="SALE">Sale</option>
-                                        <option value="INITIAL_STOCK">Initial Stock</option>
+                                        <option value="SALE">Removed</option>
+                                        <option value="INITIAL_STOCK">Updated</option>
                                     </select>
                                 </div>
                             </div>
@@ -441,7 +441,7 @@
                                     <th width="10%">PRODUCT ID</th>
                                     <th width="18%">Date & Time</th>
                                     <th width="22%">Product Name</th>
-                                    <th width="12%">Type</th>
+                                    <th width="12%">Status</th>
                                     <th width="10%">Size</th>
                                     <th width="10%">Qty</th>
                                     <th width="12%">User</th>
@@ -1238,6 +1238,19 @@
                 });
         }
 
+        // Function to map transaction type to status label
+        function getTransactionStatus(transactionType) {
+            const statusMap = {
+                'STOCK_IN': 'Stock In',
+                'STOCK_OUT': 'Stock Out',
+                'SALE': 'Removed',
+                'INITIAL_STOCK': 'Updated',
+                'UPDATE': 'Updated',
+                'ADJUSTMENT': 'Updated'
+            };
+            return statusMap[transactionType] || transactionType;
+        }
+
         function updateTransactionsSummary() {
             const total = filteredTransactions.length;
             const stockIn = filteredTransactions.filter(t => t.transaction_type === 'STOCK_IN' || t.transaction_type === 'INITIAL_STOCK').length;
@@ -1298,7 +1311,7 @@
                         </td>
                         <td class="trans-type">
                             <span class="type-badge ${typeClass}">
-                                ${actionType === 'STOCK_IN' ? 'Stock In' : actionType === 'STOCK_OUT' ? 'Stock Out' : actionType === 'SALE' ? 'Sale' : actionType === 'INITIAL_STOCK' ? 'Initial Stock' : actionType}
+                                ${getTransactionStatus(actionType)}
                             </span>
                         </td>
                         <td class="size">${transaction.size || '-'}</td>

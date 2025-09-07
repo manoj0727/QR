@@ -911,28 +911,48 @@ async function deleteProduct(productId) {
     try {
         let deletedFromDB = false;
         
-        // Try to delete from database first
+        // Try to delete from database first (soft delete - sets status to inactive)
         if (window.apiService) {
             try {
-                await window.apiService.deleteProduct(productId);
-                deletedFromDB = true;
-                showToast('Product deleted from database', 'success');
+                const response = await window.apiService.deleteProduct(productId);
+                if (response && response.success) {
+                    deletedFromDB = true;
+                    // Remove from localStorage as well to keep UI in sync
+                    const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+                    const updatedProducts = products.filter((p) => p.id !== productId);
+                    localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
+                    
+                    showToast('Product removed from inventory', 'success');
+                    // Refresh the page to show updated list
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    throw new Error('Failed to delete product');
+                }
             } catch (error) {
                 console.error('Database deletion failed:', error);
-                showToast('Deleting from local storage only', 'info');
+                // Fallback to localStorage deletion
+                const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+                const updatedProducts = products.filter((p) => p.id !== productId);
+                localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
+                
+                showToast('Product removed from local storage', 'info');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             }
+        } else {
+            // No API service, delete from localStorage only
+            const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
+            const updatedProducts = products.filter((p) => p.id !== productId);
+            localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
+            
+            showToast('Product removed from inventory', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
         }
-        
-        // Also delete from localStorage for consistency
-        const products = JSON.parse(localStorage.getItem('inventory_products') || '[]');
-        const updatedProducts = products.filter((p) => p.id !== productId);
-        localStorage.setItem('inventory_products', JSON.stringify(updatedProducts));
-        
-        // Refresh the page
-        showToast('Product deleted successfully', 'success');
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
     }
     catch (error) {
         console.error('Error deleting product:', error);

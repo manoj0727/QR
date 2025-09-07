@@ -79,7 +79,7 @@
                     <th>Transaction ID</th>
                     <th>Product ID</th>
                     <th>Product Name</th>
-                    <th>Type</th>
+                    <th>Status</th>
                     <th>Quantity</th>
                     <th>Previous Stock</th>
                     <th>New Stock</th>
@@ -130,6 +130,19 @@
                 statusDiv.className = 'status success';
                 
                 // Display formatted transactions
+                // Function to map transaction type to status label
+                function getTransactionStatus(transactionType) {
+                    const statusMap = {
+                        'STOCK_IN': 'Stock In',
+                        'STOCK_OUT': 'Stock Out',
+                        'SALE': 'Removed',
+                        'INITIAL_STOCK': 'Updated',
+                        'UPDATE': 'Updated',
+                        'ADJUSTMENT': 'Updated'
+                    };
+                    return statusMap[transactionType] || transactionType;
+                }
+                
                 tbody.innerHTML = transactions.map(t => {
                     const date = new Date(t.created_at);
                     const typeClass = t.transaction_type === 'STOCK_IN' ? 'type-in' :
@@ -142,7 +155,7 @@
                             <td>${t.transaction_id || 'N/A'}</td>
                             <td>${t.product_id || 'N/A'}</td>
                             <td>${t.product_name || 'Unknown'}</td>
-                            <td><span class="type-badge ${typeClass}">${t.transaction_type || 'N/A'}</span></td>
+                            <td><span class="type-badge ${typeClass}">${getTransactionStatus(t.transaction_type) || 'N/A'}</span></td>
                             <td>${t.quantity || 0}</td>
                             <td>${t.previous_stock || 0}</td>
                             <td>${t.new_stock || 0}</td>

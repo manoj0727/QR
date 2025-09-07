@@ -244,7 +244,8 @@ app.post('/api/inventory/scan', (req, res) => {
 });
 
 app.get('/api/products', (req, res) => {
-  databases.inventory.db.all('SELECT * FROM products ORDER BY created_at DESC', [], (err, rows) => {
+  // Only get active products (not deleted)
+  databases.inventory.db.all('SELECT * FROM products WHERE status = "active" ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -255,7 +256,7 @@ app.get('/api/products', (req, res) => {
 app.get('/api/products/:product_id', (req, res) => {
   const { product_id } = req.params;
   
-  databases.inventory.db.get('SELECT * FROM products WHERE product_id = ?', [product_id], (err, product) => {
+  databases.inventory.db.get('SELECT * FROM products WHERE product_id = ? AND status = "active"', [product_id], (err, product) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -286,6 +287,60 @@ app.get('/api/products/:product_id', (req, res) => {
       );
     });
   });
+});
+
+// Soft delete product (set status to inactive)
+app.delete('/api/products/:product_id', (req, res) => {
+  const { product_id } = req.params;
+  
+  // First check if product exists
+  databases.inventory.db.get(
+    'SELECT * FROM products WHERE product_id = ? AND status = "active"',
+    [product_id],
+    (err, product) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found or already deleted' });
+      }
+      
+      // Soft delete: set status to inactive
+      databases.inventory.db.run(
+        'UPDATE products SET status = "inactive", updated_at = CURRENT_TIMESTAMP WHERE product_id = ?',
+        [product_id],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+          
+          // Record the deletion in transactions
+          databases.transactions.recordTransaction({
+            product_id: product_id,
+            product_name: product.name,
+            transaction_type: 'SALE',  // Using SALE as it will show as "Removed" in the UI
+            quantity: product.quantity,
+            previous_stock: product.quantity,
+            new_stock: 0,
+            performed_by: 'System',
+            location: product.location || 'Unknown',
+            notes: 'Product deleted from inventory'
+          }, (err) => {
+            if (err) {
+              console.error('Error recording deletion transaction:', err);
+            }
+          });
+          
+          res.json({ 
+            success: true, 
+            message: 'Product deleted successfully',
+            product_id: product_id
+          });
+        }
+      );
+    }
+  );
 });
 
 app.get('/api/qr/:product_id', (req, res) => {
