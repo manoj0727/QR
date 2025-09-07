@@ -175,7 +175,15 @@ class InventoryManager {
             this.currentFilters.search = e.target.value;
             this.debounceSearch();
         });
-        // Sort listeners removed - no longer needed
+        // Sort listeners for Price and Stock columns only
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.column;
+                if (column === 'price' || column === 'quantity') {
+                    this.handleSort(column);
+                }
+            });
+        });
         // Pagination listeners
         (_d = document.getElementById('per-page')) === null || _d === void 0 ? void 0 : _d.addEventListener('change', (e) => {
             this.pagination.perPage = parseInt(e.target.value);
