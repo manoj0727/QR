@@ -164,49 +164,107 @@
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .nav-entries-label,
 .nav-entries-text {
-    color: white;
-    font-size: 13px;
+    color: #374151;
+    font-size: 14px;
     font-weight: 500;
 }
 
 .nav-select-entries {
-    padding: 4px 24px 4px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 28px 6px 10px;
+    border: 1px solid #d1d5db;
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 13px;
-    font-weight: 600;
+    background: white;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='white' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23374151' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 6px center;
-    backdrop-filter: blur(10px);
+    background-position: right 8px center;
 }
 
 .nav-select-entries:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.4);
+    background: #f9fafb;
+    border-color: #9ca3af;
 }
 
 .nav-select-entries:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.35);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .nav-select-entries option {
+    background: white;
+    color: #374151;
+}
+
+/* Transaction Pagination Styling */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 20px;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pagination {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.pagination .page-btn,
+.pagination .page-number {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-btn:hover:not(:disabled),
+.pagination .page-number:hover:not(.active) {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.pagination .page-number.active {
     background: #667eea;
     color: white;
+    border-color: #667eea;
+}
+
+.pagination .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination .page-dots {
+    padding: 0 8px;
+    color: #9ca3af;
 }
 
 /* Responsive Navigation */
@@ -261,6 +319,14 @@
     .nav-entries-wrapper {
         justify-content: center;
     }
+}
+
+/* Transaction Table Wrapper */
+.trans-table-wrapper {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Summary Cards */
@@ -321,38 +387,43 @@
 /* Enhanced Table */
 .trans-table-enhanced {
     background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .trans-table-enhanced thead {
-    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .trans-table-enhanced th {
-    padding: 15px;
+    padding: 12px 16px;
     font-weight: 600;
-    color: #495057;
+    color: #374151;
+    text-align: left;
+    font-size: 13px;
     text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
+    letter-spacing: 0.05em;
 }
 
 .trans-table-enhanced tbody tr {
-    border-bottom: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
 }
 
 .trans-table-enhanced tbody tr:hover {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: #f9fafb;
+}
+
+.trans-table-enhanced tbody tr:last-child {
+    border-bottom: none;
 }
 
 .trans-table-enhanced tbody td {
-    padding: 12px 15px;
-    color: #495057;
+    padding: 14px 16px;
+    color: #1f2937;
+    font-size: 14px;
+    vertical-align: middle;
 }
 
 /* Transaction ID Link */
@@ -387,27 +458,33 @@
 
 /* Type Badges */
 .type-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.025em;
 }
 
 .type-badge.type-in {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    color: white;
+    background: #dcfce7;
+    color: #14532d;
 }
 
 .type-badge.type-out {
-    background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
-    color: white;
+    background: #fee2e2;
+    color: #7f1d1d;
 }
 
 .type-badge.type-sale {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #fef3c7;
+    color: #78350f;
+}
+
+.type-badge.type-initial {
+    background: #e0e7ff;
+    color: #312e81;
 }
 
 /* Quantity Changes */
@@ -417,7 +494,7 @@
 }
 
 .qty-change.positive {
-    color: #28a745;
+    color: #059669;
 }
 
 .qty-change.positive::before {
@@ -425,16 +502,54 @@
 }
 
 .qty-change.negative {
-    color: #dc3545;
+    color: #dc2626;
+}
+
+/* Product Info Cell */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.product-info .name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.product-info .sub-info {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Date Time Cell */
+.date-time {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.date-time .date {
+    font-weight: 500;
+    color: #374151;
+    font-size: 13px;
+}
+
+.date-time .time {
+    font-size: 12px;
+    color: #9ca3af;
 }
 
 /* Location Badge */
 .location-badge {
-    padding: 4px 10px;
-    background: #f0f0f0;
+    display: inline-block;
+    padding: 4px 8px;
+    background: #f3f4f6;
     border-radius: 4px;
     font-size: 12px;
-    color: #666;
+    color: #4b5563;
+    font-weight: 500;
 }
 
 /* Timestamp */

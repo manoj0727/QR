@@ -890,7 +890,7 @@
         // Global variables
         let html5QrCode;
         let currentTransactionsPage = 1;
-        let transactionsPerPage = 10;
+        let transactionsPerPage = 50; // Default to 50 to match HTML select default
         let allTransactions = [];
         let filteredTransactions = [];
 
@@ -1356,14 +1356,55 @@
             if (prevBtn) prevBtn.disabled = currentTransactionsPage <= 1;
             if (nextBtn) nextBtn.disabled = currentTransactionsPage >= totalPages;
             
-            // Update page numbers
-            const pageNumbers = document.querySelectorAll('#transactions .page-number');
-            pageNumbers.forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.textContent) === currentTransactionsPage) {
-                    btn.classList.add('active');
+            // Generate and update page numbers dynamically
+            const paginationDiv = document.querySelector('#transactions .pagination');
+            if (paginationDiv && totalPages > 0) {
+                // Keep prev button
+                const prevBtn = paginationDiv.querySelector('#prev-btn');
+                const nextBtn = paginationDiv.querySelector('#next-btn');
+                
+                // Clear existing page numbers
+                const existingPageNumbers = paginationDiv.querySelectorAll('.page-number, .page-dots');
+                existingPageNumbers.forEach(el => el.remove());
+                
+                // Generate new page numbers
+                let pageButtonsHTML = '';
+                
+                if (totalPages <= 7) {
+                    // Show all pages if 7 or less
+                    for (let i = 1; i <= totalPages; i++) {
+                        pageButtonsHTML += `<button class="page-number ${i === currentTransactionsPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                    }
+                } else {
+                    // Show first, last, and pages around current
+                    if (currentTransactionsPage <= 3) {
+                        for (let i = 1; i <= 5; i++) {
+                            pageButtonsHTML += `<button class="page-number ${i === currentTransactionsPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                        }
+                        pageButtonsHTML += `<span class="page-dots">...</span>`;
+                        pageButtonsHTML += `<button class="page-number" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+                    } else if (currentTransactionsPage >= totalPages - 2) {
+                        pageButtonsHTML += `<button class="page-number" onclick="goToPage(1)">1</button>`;
+                        pageButtonsHTML += `<span class="page-dots">...</span>`;
+                        for (let i = totalPages - 4; i <= totalPages; i++) {
+                            pageButtonsHTML += `<button class="page-number ${i === currentTransactionsPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                        }
+                    } else {
+                        pageButtonsHTML += `<button class="page-number" onclick="goToPage(1)">1</button>`;
+                        pageButtonsHTML += `<span class="page-dots">...</span>`;
+                        for (let i = currentTransactionsPage - 1; i <= currentTransactionsPage + 1; i++) {
+                            pageButtonsHTML += `<button class="page-number ${i === currentTransactionsPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                        }
+                        pageButtonsHTML += `<span class="page-dots">...</span>`;
+                        pageButtonsHTML += `<button class="page-number" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+                    }
                 }
-            });
+                
+                // Insert page numbers between prev and next buttons
+                if (nextBtn) {
+                    nextBtn.insertAdjacentHTML('beforebegin', pageButtonsHTML);
+                }
+            }
             
             // Old pagination compatibility
             const currentPage = document.getElementById('current-page');
@@ -1383,6 +1424,14 @@
             const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
             if (currentTransactionsPage < totalPages) {
                 currentTransactionsPage++;
+                displayTransactions();
+            }
+        }
+        
+        function goToPage(pageNumber) {
+            const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                currentTransactionsPage = pageNumber;
                 displayTransactions();
             }
         }
@@ -1474,8 +1523,15 @@
             const perPageSelect = document.getElementById('per-page-trans');
             if (perPageSelect) {
                 transactionsPerPage = parseInt(perPageSelect.value);
-                currentTransactionsPage = 1;
+                currentTransactionsPage = 1; // Reset to first page
                 displayTransactions();
+                updatePagination(); // Ensure pagination is updated
+                
+                // Optional: Add visual feedback
+                perPageSelect.style.borderColor = '#667eea';
+                setTimeout(() => {
+                    perPageSelect.style.borderColor = '';
+                }, 300);
             }
         }
 
