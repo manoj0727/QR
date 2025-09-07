@@ -98,179 +98,17 @@
             <table class="inventory-table">
                 <thead>
                     <tr>
-                        <th class="checkbox-col">
-                            <input type="checkbox" id="select-all-header">
-                        </th>
-                        <th class="sortable" data-column="product_id">
-                            Product ID
-                            <i class="fas fa-sort"></i>
-                        </th>
+                        <th>Product ID</th>
                         <th>Image</th>
-                        <th class="sortable active desc" data-column="name">
-                            Product Name
-                            <i class="fas fa-sort-down"></i>
-                        </th>
-                        <th class="sortable" data-column="quantity">
-                            Stock
-                            <i class="fas fa-sort"></i>
-                        </th>
-                        <th class="sortable" data-column="price">
-                            Price (₹)
-                            <i class="fas fa-sort"></i>
-                        </th>
-                        <th class="sortable" data-column="status">
-                            Status
-                            <i class="fas fa-sort"></i>
-                        </th>
+                        <th>Product Name</th>
+                        <th>Stock</th>
+                        <th>Price (₹)</th>
+                        <th>Status</th>
                         <th class="actions-col">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="inventory-tbody">
-                    <!-- Sample rows - will be populated dynamically -->
-                    <tr>
-                        <td class="checkbox-col">
-                            <input type="checkbox" class="row-checkbox">
-                        </td>
-                        <td class="product-id">
-                            <a href="#" class="link">PRD-001</a>
-                        </td>
-                        <td class="image-col">
-                            <div class="product-image">
-                                <img src="https://via.placeholder.com/40" alt="Product">
-                            </div>
-                        </td>
-                        <td class="product-name">
-                            <div class="name-cell">
-                                <span class="name">Blue Cotton Shirt</span>
-                                <span class="sub-info">Premium Collection</span>
-                            </div>
-                        </td>
-                        <td class="sku">BCS-M-001</td>
-                        <td class="category">
-                            <span class="category-badge">Shirt</span>
-                        </td>
-                        <td class="size">M</td>
-                        <td class="color">
-                            <div class="color-display">
-                                <span class="color-dot" style="background: #2196f3;"></span>
-                                Blue
-                            </div>
-                        </td>
-                        <td class="quantity">
-                            <div class="stock-info">
-                                <span class="stock-number">145</span>
-                                <div class="stock-bar">
-                                    <div class="stock-level" style="width: 72%;"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="status">
-                            <span class="status-badge in-stock">In Stock</span>
-                        </td>
-                        <td class="price">$45.00</td>
-                        <td class="last-updated">
-                            <span class="date">Dec 26, 2024</span>
-                            <span class="time">10:30 AM</span>
-                        </td>
-                        <td class="actions-col">
-                            <div class="actions">
-                                <button class="action-btn" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="action-btn" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn" title="QR Code">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <div class="dropdown">
-                                    <button class="action-btn" title="More">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        <a href="#">Duplicate</a>
-                                        <a href="#">Print Label</a>
-                                        <a href="#">View History</a>
-                                        <div class="divider"></div>
-                                        <a href="#" class="danger">Delete</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    
-                    <!-- More sample rows -->
-                    <tr>
-                        <td class="checkbox-col">
-                            <input type="checkbox" class="row-checkbox">
-                        </td>
-                        <td class="product-id">
-                            <a href="#" class="link">PRD-002</a>
-                        </td>
-                        <td class="image-col">
-                            <div class="product-image">
-                                <img src="https://via.placeholder.com/40" alt="Product">
-                            </div>
-                        </td>
-                        <td class="product-name">
-                            <div class="name-cell">
-                                <span class="name">Black Denim Jeans</span>
-                                <span class="sub-info">Casual Wear</span>
-                            </div>
-                        </td>
-                        <td class="sku">BDJ-L-002</td>
-                        <td class="category">
-                            <span class="category-badge">Pants</span>
-                        </td>
-                        <td class="size">L</td>
-                        <td class="color">
-                            <div class="color-display">
-                                <span class="color-dot" style="background: #000;"></span>
-                                Black
-                            </div>
-                        </td>
-                        <td class="quantity">
-                            <div class="stock-info">
-                                <span class="stock-number low">12</span>
-                                <div class="stock-bar">
-                                    <div class="stock-level low" style="width: 15%;"></div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="status">
-                            <span class="status-badge low-stock">Low Stock</span>
-                        </td>
-                        <td class="price">$65.00</td>
-                        <td class="last-updated">
-                            <span class="date">Dec 26, 2024</span>
-                            <span class="time">09:15 AM</span>
-                        </td>
-                        <td class="actions-col">
-                            <div class="actions">
-                                <button class="action-btn" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="action-btn" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="action-btn" title="QR Code">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <div class="dropdown">
-                                    <button class="action-btn" title="More">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div class="dropdown-menu">
-                                        <a href="#">Duplicate</a>
-                                        <a href="#">Print Label</a>
-                                        <a href="#">View History</a>
-                                        <div class="divider"></div>
-                                        <a href="#" class="danger">Delete</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    <!-- Products will be loaded dynamically -->
                 </tbody>
             </table>
             
@@ -441,6 +279,536 @@
         // Check on load and resize
         window.addEventListener('load', toggleMobileView);
         window.addEventListener('resize', toggleMobileView);
+    </script>
+
+    <!-- View Product Modal -->
+    <div id="viewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Product Details</h2>
+                <span class="close" onclick="closeViewModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <!-- Product details will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Product</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <input type="hidden" id="editProductId">
+                    
+                    <div class="form-group">
+                        <label for="editName">Product Name:</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editQuantity">Quantity:</label>
+                        <input type="number" id="editQuantity" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editPrice">Price (₹):</label>
+                        <input type="number" id="editPrice" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editCategory">Category:</label>
+                        <select id="editCategory" required>
+                            <option value="Shirt">Shirt</option>
+                            <option value="Pants">Pants</option>
+                            <option value="Jacket">Jacket</option>
+                            <option value="T-Shirt">T-Shirt</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editSize">Size:</label>
+                        <input type="text" id="editSize">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editColor">Color:</label>
+                        <input type="text" id="editColor">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>QR Code</h2>
+                <span class="close" onclick="closeQRModal()">&times;</span>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div id="qrCodeDisplay"></div>
+                <p id="qrProductInfo" style="margin-top: 20px;"></p>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="downloadQR()">Download QR</button>
+                    <button class="btn btn-secondary" onclick="closeQRModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 500px;
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .action-btn.warning {
+            background: #ffc107;
+            color: #000;
+        }
+    </style>
+
+    <script>
+        // Product Management Functions
+        let currentProduct = null;
+        let currentQRCode = null;
+
+        // View Product Function
+        function viewProduct(productId) {
+            const product = window.inventoryManager ? 
+                window.inventoryManager.products.find(p => p.id === productId) :
+                null;
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
+            }
+
+            const modalBody = document.getElementById('viewModalBody');
+            modalBody.innerHTML = `
+                <div class="product-details">
+                    <h3>${product.name}</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <label>Product ID:</label>
+                            <span>${product.id}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>SKU:</label>
+                            <span>${product.sku || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Category:</label>
+                            <span>${product.category}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Size:</label>
+                            <span>${product.size || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Color:</label>
+                            <span>${product.color || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Quantity:</label>
+                            <span class="quantity-badge">${product.quantity} units</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Price:</label>
+                            <span>₹${product.price}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Status:</label>
+                            <span class="status-badge ${product.status}">${product.status.replace('-', ' ')}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Location:</label>
+                            <span>${product.location || 'Main Warehouse'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Last Updated:</label>
+                            <span>${new Date(product.lastUpdated).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('viewModal').style.display = 'block';
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').style.display = 'none';
+        }
+
+        // Edit Product Function
+        function editProduct(productId) {
+            const product = window.inventoryManager ? 
+                window.inventoryManager.products.find(p => p.id === productId) :
+                null;
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
+            }
+
+            currentProduct = product;
+            
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editName').value = product.name;
+            document.getElementById('editQuantity').value = product.quantity;
+            document.getElementById('editPrice').value = product.price;
+            document.getElementById('editCategory').value = product.category;
+            document.getElementById('editSize').value = product.size || '';
+            document.getElementById('editColor').value = product.color || '';
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentProduct = null;
+        }
+
+        // QR Code Function
+        async function showQRCode(productId) {
+            const product = window.inventoryManager ? 
+                window.inventoryManager.products.find(p => p.id === productId) :
+                null;
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
+            }
+
+            try {
+                // Check if product has QR code in database
+                const response = await fetch(`/api/qr/${productId}`);
+                const data = await response.json();
+                
+                if (data.qr_image) {
+                    currentQRCode = data.qr_image;
+                    document.getElementById('qrCodeDisplay').innerHTML = `
+                        <img src="${data.qr_image}" alt="QR Code" style="max-width: 300px;">
+                    `;
+                } else {
+                    // Generate QR code locally if not available
+                    document.getElementById('qrCodeDisplay').innerHTML = `
+                        <div style="padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                            <p>QR Code for Product ID: ${product.id}</p>
+                            <p style="font-family: monospace; font-size: 12px;">${JSON.stringify({
+                                product_id: product.id,
+                                name: product.name,
+                                category: product.category
+                            })}</p>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('qrProductInfo').innerHTML = `
+                    <strong>${product.name}</strong><br>
+                    ID: ${product.id}
+                `;
+                
+                document.getElementById('qrModal').style.display = 'block';
+            } catch (error) {
+                console.error('Error fetching QR code:', error);
+                showToast('Error loading QR code', 'error');
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+            currentQRCode = null;
+        }
+
+        function downloadQR() {
+            if (currentQRCode) {
+                const link = document.createElement('a');
+                link.href = currentQRCode;
+                link.download = 'qr-code.png';
+                link.click();
+            } else {
+                showToast('No QR code to download', 'error');
+            }
+        }
+
+        // Delete Product Function
+        async function deleteProduct(productId) {
+            const product = window.inventoryManager ? 
+                window.inventoryManager.products.find(p => p.id === productId) :
+                null;
+            
+            if (!product) {
+                showToast('Product not found', 'error');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete "${product.name}"? This action cannot be undone.`)) {
+                try {
+                    // Try to delete from database
+                    const response = await fetch(`/api/products/${productId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        // Remove from local array
+                        const index = window.inventoryManager.products.findIndex(p => p.id === productId);
+                        if (index > -1) {
+                            window.inventoryManager.products.splice(index, 1);
+                        }
+                        
+                        // Update localStorage
+                        localStorage.setItem('inventory_products', JSON.stringify(window.inventoryManager.products));
+                        
+                        // Refresh display
+                        window.inventoryManager.applyFilters();
+                        
+                        showToast('Product deleted successfully', 'success');
+                    } else {
+                        throw new Error('Failed to delete from database');
+                    }
+                } catch (error) {
+                    console.error('Error deleting product:', error);
+                    
+                    // If API fails, just remove locally
+                    const index = window.inventoryManager.products.findIndex(p => p.id === productId);
+                    if (index > -1) {
+                        window.inventoryManager.products.splice(index, 1);
+                        localStorage.setItem('inventory_products', JSON.stringify(window.inventoryManager.products));
+                        window.inventoryManager.applyFilters();
+                        showToast('Product removed locally', 'info');
+                    }
+                }
+            }
+        }
+
+        // Handle edit form submission
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const productId = document.getElementById('editProductId').value;
+            const updatedData = {
+                name: document.getElementById('editName').value,
+                quantity: parseInt(document.getElementById('editQuantity').value),
+                price: parseFloat(document.getElementById('editPrice').value),
+                category: document.getElementById('editCategory').value,
+                size: document.getElementById('editSize').value,
+                color: document.getElementById('editColor').value
+            };
+            
+            try {
+                // Try to update in database
+                const response = await fetch(`/api/products/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                
+                if (response.ok) {
+                    // Update local product
+                    const product = window.inventoryManager.products.find(p => p.id === productId);
+                    if (product) {
+                        Object.assign(product, updatedData);
+                        product.lastUpdated = new Date();
+                        
+                        // Update status based on quantity
+                        if (product.quantity === 0) {
+                            product.status = 'out-of-stock';
+                        } else if (product.quantity < 10) {
+                            product.status = 'low-stock';
+                        } else {
+                            product.status = 'in-stock';
+                        }
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('inventory_products', JSON.stringify(window.inventoryManager.products));
+                    
+                    // Refresh display
+                    window.inventoryManager.render();
+                    
+                    showToast('Product updated successfully', 'success');
+                    closeEditModal();
+                } else {
+                    throw new Error('Failed to update in database');
+                }
+            } catch (error) {
+                console.error('Error updating product:', error);
+                showToast('Error updating product', 'error');
+            }
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Additional styles for modals
+        const style = document.createElement('style');
+        style.textContent = `
+            .product-details {
+                padding: 10px;
+            }
+            
+            .detail-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-top: 20px;
+            }
+            
+            .detail-item {
+                padding: 10px;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+            
+            .detail-item label {
+                font-weight: bold;
+                color: #666;
+                display: block;
+                margin-bottom: 5px;
+            }
+            
+            .detail-item span {
+                color: #333;
+                font-size: 14px;
+            }
+            
+            .quantity-badge {
+                background: #28a745;
+                color: white;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

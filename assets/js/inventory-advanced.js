@@ -15,47 +15,54 @@ class InventoryManager {
             perPage: 25,
             total: 0
         };
-        this.selectedRows = new Set();
         this.debounceSearch = this.debounce(() => {
             this.applyFilters();
         }, 300);
         this.init();
     }
-    init() {
-        this.loadProducts();
+    async init() {
         this.attachEventListeners();
-        this.render();
+        await this.loadProducts();
+        // render() is already called at the end of loadProducts through applyFilters
     }
     async loadProducts() {
         try {
             // Try to load from database first
             if (window.apiService) {
-                showToast('Loading products from database...', 'info');
+                console.log('Loading products from database...');
                 const dbProducts = await window.apiService.getProducts();
                 
                 if (dbProducts && dbProducts.length > 0) {
                     // Convert backend format to frontend format
-                    this.products = dbProducts.map(p => window.apiService.formatProductForFrontend(p));
+                    this.products = dbProducts.map(p => {
+                        // Ensure price has a default value
+                        const product = window.apiService.formatProductForFrontend(p);
+                        product.price = product.price || 0;
+                        return product;
+                    });
                     
                     // Sort by creation date - newest first
                     this.products.sort((a, b) => {
-                        const dateA = new Date(a.createdAt).getTime();
-                        const dateB = new Date(b.createdAt).getTime();
+                        const dateA = new Date(a.createdAt || a.lastUpdated).getTime();
+                        const dateB = new Date(b.createdAt || b.lastUpdated).getTime();
                         return dateB - dateA;
                     });
                     
-                    showToast(`Loaded ${this.products.length} products from database`, 'success');
+                    console.log(`Loaded ${this.products.length} products from database`);
+                    
+                    // Also save to localStorage for offline access
+                    localStorage.setItem('inventory_products', JSON.stringify(this.products));
                 } else {
-                    // No products in database, check localStorage
+                    console.log('No products in database, checking localStorage');
                     this.loadFromLocalStorage();
                 }
             } else {
-                // API service not available, use localStorage
+                console.log('API service not available, using localStorage');
                 this.loadFromLocalStorage();
             }
         } catch (error) {
             console.error('Error loading from database:', error);
-            showToast('Using local storage (database unavailable)', 'info');
+            console.log('Falling back to localStorage');
             this.loadFromLocalStorage();
         }
         
@@ -67,28 +74,34 @@ class InventoryManager {
         if (savedProducts) {
             try {
                 const products = JSON.parse(savedProducts);
-                this.products = products.map((p) => (Object.assign(Object.assign({}, p), { 
-                    lastUpdated: p.updatedAt ? new Date(p.updatedAt) : new Date(), 
-                    createdAt: p.createdAt ? new Date(p.createdAt) : new Date(), 
-                    material: p.material || 'Not specified', 
-                    brand: p.brand || '', 
-                    location: p.location || '', 
-                    minStock: p.minStock || 10, 
-                    price: p.price || 0 
-                })));
+                this.products = products.map((p) => ({
+                    ...p,
+                    lastUpdated: p.updatedAt ? new Date(p.updatedAt) : new Date(),
+                    createdAt: p.createdAt ? new Date(p.createdAt) : new Date(),
+                    material: p.material || 'Not specified',
+                    brand: p.brand || '',
+                    location: p.location || '',
+                    minStock: p.minStock || 10,
+                    price: p.price !== undefined ? p.price : 0,
+                    quantity: p.quantity || 0,
+                    status: p.status || 'in-stock'
+                }));
                 // Sort by creation date - newest first
                 this.products.sort((a, b) => {
                     const dateA = a.createdAt ? a.createdAt.getTime() : 0;
                     const dateB = b.createdAt ? b.createdAt.getTime() : 0;
                     return dateB - dateA;
                 });
+                console.log(`Loaded ${this.products.length} products from localStorage`);
             } catch (error) {
                 console.error('Error loading products from localStorage:', error);
-                this.loadSampleData();
+                // Don't load sample data, just use empty array
+                this.products = [];
             }
         } else {
-            // Load sample data if no saved products
-            this.loadSampleData();
+            console.log('No saved products found');
+            // Don't load sample data automatically
+            this.products = [];
         }
     }
     loadSampleData() {
@@ -148,7 +161,7 @@ class InventoryManager {
         ];
     }
     attachEventListeners() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _f;
         // Filter listeners
         (_a = document.getElementById('status-filter')) === null || _a === void 0 ? void 0 : _a.addEventListener('change', (e) => {
             this.currentFilters.status = e.target.value;
@@ -162,23 +175,12 @@ class InventoryManager {
             this.currentFilters.search = e.target.value;
             this.debounceSearch();
         });
-        // Sort listeners
-        document.querySelectorAll('.sortable').forEach(header => {
-            header.addEventListener('click', (e) => {
-                const column = e.currentTarget.dataset.column;
-                this.handleSort(column);
-            });
-        });
+        // Sort listeners removed - no longer needed
         // Pagination listeners
         (_d = document.getElementById('per-page')) === null || _d === void 0 ? void 0 : _d.addEventListener('change', (e) => {
             this.pagination.perPage = parseInt(e.target.value);
             this.pagination.page = 1;
             this.render();
-        });
-        // Select all checkbox
-        (_e = document.getElementById('select-all-header')) === null || _e === void 0 ? void 0 : _e.addEventListener('change', (e) => {
-            const checked = e.target.checked;
-            this.handleSelectAll(checked);
         });
         // Clear filters
         (_f = document.querySelector('.clear-filter')) === null || _f === void 0 ? void 0 : _f.addEventListener('click', () => {
@@ -221,7 +223,7 @@ class InventoryManager {
         });
         this.pagination.total = this.filteredProducts.length;
         this.pagination.page = 1;
-        this.applySort();
+        this.render();
     }
     handleSort(column) {
         if (this.currentSort.column === column) {
@@ -279,42 +281,6 @@ class InventoryManager {
             }
         }
     }
-    handleSelectAll(checked) {
-        const currentPageProducts = this.getCurrentPageProducts();
-        if (checked) {
-            currentPageProducts.forEach(product => {
-                this.selectedRows.add(product.id);
-            });
-        }
-        else {
-            currentPageProducts.forEach(product => {
-                this.selectedRows.delete(product.id);
-            });
-        }
-        this.updateRowCheckboxes();
-        this.updateBulkActions();
-    }
-    updateRowCheckboxes() {
-        document.querySelectorAll('.row-checkbox').forEach((checkbox, index) => {
-            const products = this.getCurrentPageProducts();
-            if (products[index]) {
-                checkbox.checked = this.selectedRows.has(products[index].id);
-            }
-        });
-    }
-    updateBulkActions() {
-        const bulkActions = document.querySelector('.bulk-actions');
-        const selectedCount = document.querySelector('.selected-count');
-        if (this.selectedRows.size > 0) {
-            bulkActions.style.display = 'flex';
-            if (selectedCount) {
-                selectedCount.textContent = `${this.selectedRows.size} selected`;
-            }
-        }
-        else {
-            bulkActions.style.display = 'none';
-        }
-    }
     clearFilters() {
         this.currentFilters = {
             status: 'all',
@@ -354,17 +320,13 @@ class InventoryManager {
     }
     renderTableRow(product) {
         const stockPercentage = Math.min((product.quantity / 200) * 100, 100);
-        const isChecked = this.selectedRows.has(product.id) ? 'checked' : '';
         // Show "No Image" text if no image is available
         const imageDisplay = product.image
             ? `<img src="${product.image}" alt="${product.name}" onerror="this.parentElement.innerHTML='<span style=\\'color: #999; font-size: 11px;\\'>No Image</span>'">`
             : '<span style="color: #999; font-size: 11px;">No Image</span>';
-        // Show only important columns: ID, Image, Name, Category, Quantity, Price, Status, Actions
+        // Show only important columns: ID, Image, Name, Quantity, Price, Status, Actions
         return `
             <tr data-id="${product.id}">
-                <td class="checkbox-col">
-                    <input type="checkbox" class="row-checkbox" ${isChecked}>
-                </td>
                 <td class="product-id">
                     <a href="#" class="link">${product.id}</a>
                 </td>
@@ -387,13 +349,13 @@ class InventoryManager {
                         </div>
                     </div>
                 </td>
-                <td class="price">₹${product.price.toFixed(0)}</td>
+                <td class="price">₹${(product.price || 0).toFixed(0)}</td>
                 <td class="status">
                     <span class="status-badge ${product.status}">${this.formatStatus(product.status)}</span>
                 </td>
                 <td class="actions-col">
                     <div class="actions">
-                        <button class="action-btn" title="View All Details" onclick="viewProduct('${product.id}')">
+                        <button class="action-btn" title="View Details" onclick="viewProduct('${product.id}')">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="action-btn" title="Edit" onclick="editProduct('${product.id}')">
@@ -411,21 +373,7 @@ class InventoryManager {
         `;
     }
     attachRowEventListeners() {
-        document.querySelectorAll('.row-checkbox').forEach((checkbox, index) => {
-            checkbox.addEventListener('change', (e) => {
-                const products = this.getCurrentPageProducts();
-                const product = products[index];
-                if (product) {
-                    if (e.target.checked) {
-                        this.selectedRows.add(product.id);
-                    }
-                    else {
-                        this.selectedRows.delete(product.id);
-                    }
-                    this.updateBulkActions();
-                }
-            });
-        });
+        // Row event listeners will be added here if needed
     }
     renderPagination() {
         const totalPages = Math.ceil(this.pagination.total / this.pagination.perPage);
