@@ -414,6 +414,12 @@
                                         <option value="INITIAL_STOCK">Updated</option>
                                     </select>
                                 </div>
+                                
+                                <!-- Clear Filters Button -->
+                                <button class="clear-filters-btn" onclick="clearAllFilters()" title="Clear all filters">
+                                    <i class="fas fa-times-circle"></i>
+                                    Clear
+                                </button>
                             </div>
                             
                             <!-- Entries Section -->
@@ -1439,42 +1445,57 @@
         function filterTransactions() {
             const dateFilter = document.getElementById('date-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
-            const statusFilter = document.getElementById('status-filter').value;
+            const searchTerm = document.getElementById('search-transactions').value.toLowerCase();
 
             filteredTransactions = allTransactions.filter(transaction => {
                 // Date filtering
                 if (dateFilter !== 'all') {
-                    const transactionDate = new Date(transaction.created_at);
+                    const transactionDate = new Date(transaction.created_at || Date.now());
                     const today = new Date();
-                    const daysDiff = (today - transactionDate) / (1000 * 60 * 60 * 24);
-
+                    today.setHours(23, 59, 59, 999);
+                    
                     switch (dateFilter) {
                         case 'today':
-                            if (daysDiff > 1) return false;
+                            const todayStart = new Date();
+                            todayStart.setHours(0, 0, 0, 0);
+                            if (transactionDate < todayStart || transactionDate > today) return false;
                             break;
                         case 'week':
-                            if (daysDiff > 7) return false;
+                            const weekAgo = new Date();
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            weekAgo.setHours(0, 0, 0, 0);
+                            if (transactionDate < weekAgo) return false;
                             break;
                         case 'month':
-                            if (daysDiff > 30) return false;
-                            break;
-                        case 'quarter':
-                            if (daysDiff > 90) return false;
+                            const monthAgo = new Date();
+                            monthAgo.setMonth(monthAgo.getMonth() - 1);
+                            monthAgo.setHours(0, 0, 0, 0);
+                            if (transactionDate < monthAgo) return false;
                             break;
                         case 'year':
-                            if (daysDiff > 365) return false;
+                            const yearAgo = new Date();
+                            yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+                            yearAgo.setHours(0, 0, 0, 0);
+                            if (transactionDate < yearAgo) return false;
                             break;
                     }
                 }
 
-                // Type filtering
+                // Type/Status filtering
                 if (typeFilter !== 'all' && transaction.transaction_type !== typeFilter) {
                     return false;
                 }
-
-                // Status filtering (placeholder since we don't have status field)
-                if (statusFilter !== 'all' && statusFilter !== 'completed') {
-                    return false;
+                
+                // Search filtering
+                if (searchTerm && searchTerm !== '') {
+                    const searchMatch = 
+                        (transaction.product_name || '').toLowerCase().includes(searchTerm) ||
+                        (transaction.product_id || '').toLowerCase().includes(searchTerm) ||
+                        (transaction.performed_by || '').toLowerCase().includes(searchTerm) ||
+                        (transaction.location || '').toLowerCase().includes(searchTerm) ||
+                        (transaction.size || '').toLowerCase().includes(searchTerm);
+                    
+                    if (!searchMatch) return false;
                 }
 
                 return true;
@@ -1483,25 +1504,78 @@
             currentTransactionsPage = 1;
             updateTransactionsSummary();
             displayTransactions();
+            updateFilterIndicators();
         }
 
         function searchTransactions() {
-            const searchTerm = document.getElementById('search-transactions').value.toLowerCase();
+            // Call the main filter function which now includes search
+            filterTransactions();
+        }
+        
+        function clearAllFilters() {
+            // Reset all filter values
+            document.getElementById('date-filter').value = 'all';
+            document.getElementById('type-filter').value = 'all';
+            document.getElementById('search-transactions').value = '';
             
-            if (searchTerm === '') {
-                filteredTransactions = [...allTransactions];
-            } else {
-                filteredTransactions = allTransactions.filter(transaction => 
-                    (transaction.product_name || '').toLowerCase().includes(searchTerm) ||
-                    (transaction.product_id || '').toLowerCase().includes(searchTerm) ||
-                    (transaction.performed_by || '').toLowerCase().includes(searchTerm) ||
-                    (transaction.location || '').toLowerCase().includes(searchTerm)
-                );
-            }
-
+            // Reset to show all transactions
+            filteredTransactions = [...allTransactions];
             currentTransactionsPage = 1;
+            
+            // Update display
             updateTransactionsSummary();
             displayTransactions();
+            updateFilterIndicators();
+            
+            // Visual feedback
+            const btn = document.querySelector('.clear-filters-btn');
+            if (btn) {
+                btn.style.background = '#667eea';
+                btn.style.color = 'white';
+                setTimeout(() => {
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 300);
+            }
+        }
+        
+        function updateFilterIndicators() {
+            const dateFilter = document.getElementById('date-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const searchTerm = document.getElementById('search-transactions').value;
+            const clearBtn = document.querySelector('.clear-filters-btn');
+            
+            // Check if any filters are active
+            const hasActiveFilters = dateFilter !== 'all' || typeFilter !== 'all' || searchTerm !== '';
+            
+            // Show/hide clear button based on active filters
+            if (clearBtn) {
+                clearBtn.style.display = hasActiveFilters ? 'flex' : 'none';
+            }
+            
+            // Add active class to filter selects
+            const dateSelect = document.getElementById('date-filter');
+            const typeSelect = document.getElementById('type-filter');
+            
+            if (dateSelect) {
+                if (dateFilter !== 'all') {
+                    dateSelect.style.borderColor = '#667eea';
+                    dateSelect.style.background = '#f0f4ff';
+                } else {
+                    dateSelect.style.borderColor = '';
+                    dateSelect.style.background = '';
+                }
+            }
+            
+            if (typeSelect) {
+                if (typeFilter !== 'all') {
+                    typeSelect.style.borderColor = '#667eea';
+                    typeSelect.style.background = '#f0f4ff';
+                } else {
+                    typeSelect.style.borderColor = '';
+                    typeSelect.style.background = '';
+                }
+            }
         }
 
         function refreshTransactions() {
@@ -1868,6 +1942,11 @@
             
             // Load transactions on page load
             loadTransactions();
+            
+            // Initialize filter indicators
+            setTimeout(() => {
+                updateFilterIndicators();
+            }, 100);
             
             // Restore sidebar collapsed state
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';

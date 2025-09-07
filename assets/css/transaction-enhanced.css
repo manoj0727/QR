@@ -209,6 +209,32 @@
     color: #374151;
 }
 
+/* Clear Filters Button */
+.clear-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.clear-filters-btn i {
+    font-size: 14px;
+}
+
 /* Transaction Pagination Styling */
 .pagination-wrapper {
     display: flex;
@@ -495,10 +521,6 @@
 
 .qty-change.positive {
     color: #059669;
-}
-
-.qty-change.positive::before {
-    content: '+';
 }
 
 .qty-change.negative {
