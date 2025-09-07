@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tailor Dashboard - QR Inventory System</title>
     
+    <!-- Login Check -->
+    <script>
+        // Check if user is logged in
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        const userType = sessionStorage.getItem('userType');
+        
+        if (!isLoggedIn) {
+            // Redirect to unified login page if not logged in
+            window.location.href = '../../unified-login.html';
+        }
+    </script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/tailor-styles.css">
     

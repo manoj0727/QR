@@ -30,6 +30,25 @@
             });
         }
     </script>
+    
+    <!-- Login Check -->
+    <script>
+        // Check if user is logged in
+        const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+        const userType = sessionStorage.getItem('userType');
+        
+        if (!isLoggedIn) {
+            // Redirect to unified login page if not logged in
+            window.location.href = './unified-login.html';
+        } else if (userType !== 'admin') {
+            // If logged in but not admin, redirect to appropriate dashboard
+            if (userType === 'employee') {
+                window.location.href = './employee/pages/dashboard.html';
+            } else if (userType === 'tailor') {
+                window.location.href = './tailor/pages/dashboard.html';
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="dashboard-container">

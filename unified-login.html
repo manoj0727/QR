@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - QR System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo svg {
+            width: 35px;
+            height: 35px;
+            fill: white;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #ffffff;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .remember-me label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            margin: 25px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            color: #999;
+            font-size: 13px;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .signup-link a:hover {
+            color: #764ba2;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+        }
+    </style>
+    <!-- CryptoJS for encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M3 3h6v6H3zm12 0h6v6h-6zm-6 12h6v6H9zm-6-6h6v6H3zm12 0h6v6h-6z"/>
+                </svg>
+            </div>
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Sign in to your account to continue</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="remember-forgot">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+            </div>
+
+            <button type="submit" class="login-button">Sign In</button>
+        </form>
+
+        <div class="divider">
+            <span>NOTICE</span>
+        </div>
+
+        <div class="signup-link" style="color: #666; font-size: 13px; line-height: 1.5;">
+            If you forgot your password or need account access,<br>
+            please contact your manager or administrator.
+        </div>
+    </div>
+
+    <script>
+        // Encryption configuration
+        const ENCRYPTION_KEY = 'QR-SYSTEM-2024-SECURE-KEY-256BIT';
+        const IV_LENGTH = 16;
+        
+        // Generate random IV for each encryption
+        function generateIV() {
+            const array = new Uint8Array(IV_LENGTH);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => ('0' + byte.toString(16)).slice(-2)).join('');
+        }
+        
+        // Encrypt data using AES-256
+        function encryptData(text, key = ENCRYPTION_KEY) {
+            try {
+                const iv = generateIV();
+                const encrypted = CryptoJS.AES.encrypt(text, CryptoJS.enc.Utf8.parse(key), {
+                    iv: CryptoJS.enc.Hex.parse(iv),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                return iv + ':' + encrypted.toString();
+            } catch (error) {
+                console.error('Encryption error:', error);
+                return null;
+            }
+        }
+        
+        // Decrypt data using AES-256
+        function decryptData(encryptedData, key = ENCRYPTION_KEY) {
+            try {
+                const parts = encryptedData.split(':');
+                if (parts.length !== 2) return null;
+                
+                const iv = parts[0];
+                const encrypted = parts[1];
+                
+                const decrypted = CryptoJS.AES.decrypt(encrypted, CryptoJS.enc.Utf8.parse(key), {
+                    iv: CryptoJS.enc.Hex.parse(iv),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                
+                return decrypted.toString(CryptoJS.enc.Utf8);
+            } catch (error) {
+                console.error('Decryption error:', error);
+                return null;
+            }
+        }
+        
+        // Hash password using SHA-256
+        function hashPassword(password, salt) {
+            return CryptoJS.SHA256(password + salt).toString();
+        }
+        
+        // Generate secure session token
+        function generateSessionToken() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            return Array.from(array, byte => ('0' + byte.toString(16)).slice(-2)).join('');
+        }
+        
+        // Secure session storage with encryption
+        function setSecureSession(key, value) {
+            const encrypted = encryptData(JSON.stringify(value));
+            sessionStorage.setItem(key, encrypted);
+        }
+        
+        function getSecureSession(key) {
+            const encrypted = sessionStorage.getItem(key);
+            if (!encrypted) return null;
+            
+            const decrypted = decryptData(encrypted);
+            try {
+                return JSON.parse(decrypted);
+            } catch {
+                return null;
+            }
+        }
+        
+        // User role detection based on username patterns or predefined mappings
+        function detectUserRole(username) {
+            // Convert username to lowercase for case-insensitive comparison
+            const user = username.toLowerCase();
+            
+            // Predefined user mappings (can be replaced with API call)
+            const userRoles = {
+                // Admin users
+                'admin': 'admin',
+                'administrator': 'admin',
+                'manager': 'admin',
+                
+                // Employee users
+                'employee': 'employee',
+                'emp': 'employee',
+                'staff': 'employee',
+                
+                // Tailor users
+                'tailor': 'tailor',
+                'designer': 'tailor',
+                'craftsman': 'tailor'
+            };
+            
+            // Check direct mapping
+            if (userRoles[user]) {
+                return userRoles[user];
+            }
+            
+            // Check patterns
+            if (user.includes('admin') || user.includes('mgr')) {
+                return 'admin';
+            } else if (user.includes('emp') || user.includes('staff')) {
+                return 'employee';
+            } else if (user.includes('tailor') || user.includes('design')) {
+                return 'tailor';
+            }
+            
+            // Default role for unrecognized users
+            return 'employee'; // Default to employee role
+        }
+        
+        // Enhanced login form handler with encryption
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Hide any existing messages
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // Basic validation
+            if (!username || !password) {
+                errorMessage.textContent = 'Please enter both username and password';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Auto-detect user role based on username
+            const userType = detectUserRole(username);
+            
+            // Generate salt for password hashing
+            const salt = generateIV();
+            const hashedPassword = hashPassword(password, salt);
+            
+            // Create secure session token
+            const sessionToken = generateSessionToken();
+            const timestamp = Date.now();
+            
+            // Prepare encrypted user data
+            const userData = {
+                username: username,
+                userType: userType,
+                hashedPassword: hashedPassword,
+                salt: salt,
+                sessionToken: sessionToken,
+                timestamp: timestamp,
+                expiresAt: timestamp + (24 * 60 * 60 * 1000) // 24 hours
+            };
+            
+            // Show success message
+            successMessage.textContent = 'Authenticating securely...';
+            successMessage.style.display = 'block';
+            
+            // Store encrypted login info if remember me is checked
+            if (remember) {
+                const encryptedUser = encryptData(username);
+                localStorage.setItem('rememberedUser', encryptedUser);
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+            
+            // Store encrypted session data
+            setSecureSession('userData', userData);
+            setSecureSession('sessionToken', sessionToken);
+            
+            // Store basic session flags (not sensitive)
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userType', userType);
+            sessionStorage.setItem('currentUser', username);
+            
+            successMessage.textContent = `Login successful! Welcome ${username} (${userType})`;
+            
+            // Redirect based on detected user type
+            setTimeout(() => {
+                switch(userType) {
+                    case 'admin':
+                        window.location.href = './index.html';
+                        break;
+                    case 'employee':
+                        window.location.href = './employee/pages/dashboard.html';
+                        break;
+                    case 'tailor':
+                        window.location.href = './tailor/pages/dashboard.html';
+                        break;
+                    default:
+                        window.location.href = './employee/pages/dashboard.html';
+                }
+            }, 1500);
+        });
+        
+        // Load remembered user on page load with decryption
+        window.addEventListener('DOMContentLoaded', function() {
+            const encryptedUser = localStorage.getItem('rememberedUser');
+            
+            if (encryptedUser) {
+                const rememberedUser = decryptData(encryptedUser);
+                
+                if (rememberedUser) {
+                    document.getElementById('username').value = rememberedUser;
+                    document.getElementById('remember').checked = true;
+                }
+            }
+        });
+        
+    </script>
+</body>
+</html>
