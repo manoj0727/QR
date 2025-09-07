@@ -97,15 +97,20 @@ class TailorAuth {
 
     // Logout tailor
     logout() {
+        // Clear all session data
+        sessionStorage.clear();
         localStorage.removeItem('tailorSession');
-        window.location.href = '/login.html';
+        localStorage.removeItem('rememberedUser');
+        
+        // Redirect to unified login page
+        window.location.href = '../../unified-login.html';
     }
 
     // Require authentication for protected pages
     requireAuth() {
         const tailor = this.isAuthenticated();
         if (!tailor) {
-            window.location.href = '/login.html';
+            window.location.href = '../../unified-login.html';
             return null;
         }
         return tailor;

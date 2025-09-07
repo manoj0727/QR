@@ -723,8 +723,13 @@
         // Logout
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
+                // Clear all session data
+                sessionStorage.clear();
                 localStorage.removeItem('employeeAuth');
-                window.location.href = '../login.html';
+                localStorage.removeItem('rememberedUser');
+                
+                // Redirect to unified login page
+                window.location.href = '../../unified-login.html';
             }
         }
     </script>
