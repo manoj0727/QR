@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar Component</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="../styles/sidebar.css">
+</head>
+<body>
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-qrcode"></i>
+                <span>QR Inventory</span>
+            </div>
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <!-- User Profile Section -->
+        <div class="sidebar-profile">
+            <div class="profile-wrapper">
+                <div class="profile-avatar" id="profile-avatar">A</div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profile-name">Admin User</div>
+                    <div class="profile-role" id="profile-role">Manager</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="sidebar-search">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="sidebar-search" 
+                       class="search-input" 
+                       placeholder="Search menu..." 
+                       onkeyup="searchMenu(this.value)">
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" onclick="quickScan()" title="Quick Scan">
+                <i class="fas fa-qrcode"></i>
+                <span>Scan</span>
+            </button>
+            <button class="quick-action-btn" onclick="quickAdd()" title="Add Product">
+                <i class="fas fa-plus"></i>
+                <span>Add</span>
+            </button>
+            <button class="quick-action-btn" onclick="refreshData()" title="Refresh">
+                <i class="fas fa-sync-alt"></i>
+                <span>Sync</span>
+            </button>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a href="#" onclick="navigateTo('dashboard', event)" 
+                       class="nav-item active" 
+                       data-section="dashboard" 
+                       data-tooltip="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                        <span class="nav-badge">NEW</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('create-product', event)" 
+                       class="nav-item" 
+                       data-section="create-product" 
+                       data-tooltip="Create Product">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Product</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('scan-qr', event)" 
+                       class="nav-item" 
+                       data-section="scan-qr" 
+                       data-tooltip="Scan QR Code">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Scan QR Code</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('inventory', event)" 
+                       class="nav-item" 
+                       data-section="inventory" 
+                       data-tooltip="Inventory">
+                        <i class="fas fa-boxes"></i>
+                        <span>Inventory</span>
+                        <span class="nav-counter inventory-counter">0</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('transactions', event)" 
+                       class="nav-item" 
+                       data-section="transactions" 
+                       data-tooltip="Transactions">
+                        <i class="fas fa-receipt"></i>
+                        <span>Transactions</span>
+                        <span class="nav-counter transactions-counter">0</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('tailor-management', event)" 
+                       class="nav-item" 
+                       data-section="tailor-management" 
+                       data-tooltip="Tailor Management">
+                        <i class="fas fa-users"></i>
+                        <span>Tailor Management</span>
+                        <span class="nav-counter tailor-counter">0</span>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="#" onclick="navigateTo('reports', event)" 
+                       class="nav-item" 
+                       data-section="reports" 
+                       data-tooltip="Reports">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="footer-actions">
+                <button class="footer-btn" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="footer-btn danger" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- JavaScript -->
+    <script>
+        // Toggle sidebar collapse
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+            
+            // Save state
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        }
+
+        // Search menu items
+        function searchMenu(searchTerm) {
+            const menuItems = document.querySelectorAll('.nav-item');
+            searchTerm = searchTerm.toLowerCase();
+            
+            menuItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const parent = item.closest('li');
+                if (text.includes(searchTerm)) {
+                    parent.style.display = '';
+                } else {
+                    parent.style.display = 'none';
+                }
+            });
+        }
+
+        // Navigate to section
+        function navigateTo(section, event) {
+            if (event) event.preventDefault();
+            
+            // Update active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === section) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Call parent window function if exists
+            if (window.parent && window.parent.showSection) {
+                window.parent.showSection(section);
+            } else if (window.showSection) {
+                window.showSection(section);
+            }
+            
+            // Close mobile sidebar
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        // Quick actions
+        function quickScan() {
+            navigateTo('scan-qr');
+            showNotification('Quick scan activated', 'success');
+        }
+
+        function quickAdd() {
+            navigateTo('create-product');
+            showNotification('Opening product creation', 'success');
+        }
+
+        function refreshData() {
+            showNotification('Refreshing data...', 'info');
+            updateCounters();
+            setTimeout(() => {
+                showNotification('Data refreshed!', 'success');
+            }, 1000);
+        }
+
+        // Settings and logout
+        function showSettings() {
+            showNotification('Settings coming soon', 'info');
+        }
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...', 'info');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            if (window.parent && window.parent.showNotification) {
+                window.parent.showNotification(message, type);
+            } else {
+                console.log(`[${type}] ${message}`);
+            }
+        }
+
+        // Update counters
+        function updateCounters() {
+            // Update inventory counter
+            fetch('/api/products')
+                .then(response => response.json())
+                .then(data => {
+                    const counter = document.querySelector('.inventory-counter');
+                    if (counter && Array.isArray(data)) {
+                        counter.textContent = data.length;
+                    }
+                })
+                .catch(console.error);
+
+            // Update transactions counter  
+            fetch('/api/transactions?limit=10')
+                .then(response => response.json())
+                .then(data => {
+                    const counter = document.querySelector('.transactions-counter');
+                    if (counter && Array.isArray(data)) {
+                        counter.textContent = data.length;
+                    }
+                })
+                .catch(console.error);
+
+            // Update tailor counter
+            fetch('/api/tailor')
+                .then(response => response.json())
+                .then(data => {
+                    const counter = document.querySelector('.tailor-counter');
+                    if (counter && Array.isArray(data)) {
+                        counter.textContent = data.length;
+                    }
+                })
+                .catch(console.error);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved state
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+            }
+            
+            // Update counters
+            updateCounters();
+            
+            // Auto-update counters every 30 seconds
+            setInterval(updateCounters, 30000);
+        });
+    </script>
+</body>
+</html>

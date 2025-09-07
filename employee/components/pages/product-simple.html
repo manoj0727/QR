@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - QR Inventory</title>
+    <link rel="stylesheet" href="../../assets/css/product-simple.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="product-container">
+        <!-- Header -->
+        <div class="product-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1>Add New Product</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-outline" onclick="clearForm()">
+                    <i class="fas fa-redo"></i>
+                    Reset Form
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Form -->
+        <form id="product-form" class="product-form">
+            <!-- Hidden SKU field for auto-generation -->
+            <input type="hidden" id="product-sku" name="sku" value="">
+            <div class="form-container">
+                <!-- Basic Information Card -->
+                <div class="form-card">
+                    <div class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Basic Information
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Product Name *</label>
+                            <input type="text" id="product-name" name="name" required 
+                                   placeholder="e.g., Blue Cotton Shirt">
+                        </div>
+                        <div class="form-field">
+                            <label>Price (₹)</label>
+                            <input type="number" id="product-price" name="price" 
+                                   placeholder="e.g., 299" step="1" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Category *</label>
+                            <select id="product-category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Shirt">Shirt</option>
+                                <option value="T-Shirt">T-Shirt</option>
+                                <option value="Pants">Pants</option>
+                                <option value="Jacket">Jacket</option>
+                                <option value="Dress">Dress</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Size *</label>
+                            <select id="product-size" name="size" required>
+                                <option value="">Select Size</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                                <option value="XXXL">XXXL</option>
+                                <option value="Free">Free Size</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Color *</label>
+                            <input type="text" id="product-color" name="color" required 
+                                   placeholder="e.g., Blue">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field full-width">
+                            <label>Description (Optional)</label>
+                            <textarea id="product-description" name="description" rows="3" 
+                                      placeholder="Brief product description..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Information Card -->
+                <div class="form-card">
+                    <div class="card-title">
+                        <i class="fas fa-boxes"></i>
+                        Stock Information
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Initial Quantity *</label>
+                            <input type="number" id="initial-quantity" name="quantity" 
+                                   min="0" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Minimum Stock Level</label>
+                            <input type="number" id="min-stock" name="minStock" 
+                                   min="0" value="10" placeholder="Alert level">
+                        </div>
+                        <div class="form-field">
+                            <label>Location</label>
+                            <input type="text" id="location" name="location" 
+                                   placeholder="e.g., Rack A-12">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details Card -->
+                <div class="form-card">
+                    <div class="card-title">
+                        <i class="fas fa-tags"></i>
+                        Additional Details
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>Material/Fabric *</label>
+                            <select id="product-material" name="material" required>
+                                <option value="">Select Material</option>
+                                <option value="Cotton">Cotton</option>
+                                <option value="Polyester">Polyester</option>
+                                <option value="Silk">Silk</option>
+                                <option value="Wool">Wool</option>
+                                <option value="Linen">Linen</option>
+                                <option value="Denim">Denim</option>
+                                <option value="Mixed">Mixed</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label>Brand</label>
+                            <input type="text" id="product-brand" name="brand" 
+                                   placeholder="Brand name">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Upload Card -->
+                <div class="form-card">
+                    <div class="card-title">
+                        <i class="fas fa-camera"></i>
+                        Product Image (Optional)
+                    </div>
+                    <div class="image-upload">
+                        <input type="file" id="product-image" accept="image/*" style="display: none;">
+                        <div class="upload-area" onclick="document.getElementById('product-image').click()">
+                            <div id="image-preview" class="preview-container">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload image</p>
+                                <span>JPG, PNG, GIF - Max 5MB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i>
+                        Create Product & Generate QR
+                    </button>
+                </div>
+
+                <!-- QR Code Preview (Hidden initially, appears after submit) -->
+                <div class="form-card" id="qr-section" style="display: none;">
+                    <div class="card-title">
+                        <i class="fas fa-qrcode"></i>
+                        Generated QR Code
+                    </div>
+                    <div class="qr-preview">
+                        <div id="qr-container">
+                            <div id="qr-display"></div>
+                            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                                <button id="download-qr" class="btn-outline">
+                                    <i class="fas fa-download"></i>
+                                    Download QR Code
+                                </button>
+                                <button id="create-another" class="btn-primary" onclick="createAnother()">
+                                    <i class="fas fa-plus"></i>
+                                    Create Another Product
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-toast" class="toast">
+        <i class="fas fa-check-circle"></i>
+        <span>Product saved successfully!</span>
+    </div>
+
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="../../assets/js/product-simple.js"></script>
+</body>
+</html>

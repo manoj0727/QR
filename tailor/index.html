@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailor System - QR Inventory</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .redirect-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+        .redirect-container h1 {
+            color: #1a1d23;
+            margin-bottom: 20px;
+        }
+        .redirect-container p {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .countdown {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <h1>🧵 Tailor System</h1>
+        <p>Welcome to the Tailor Management System. You will be redirected to the login page.</p>
+        <a href="login.html" class="btn">Go to Login</a>
+        <div class="countdown">Redirecting in <span id="countdown">3</span> seconds...</div>
+    </div>
+
+    <script>
+        let countdown = 3;
+        const countdownEl = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(timer);
+                window.location.href = 'login.html';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

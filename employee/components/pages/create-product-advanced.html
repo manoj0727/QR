@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Product - QR Inventory System</title>
+    <link rel="stylesheet" href="create-product-advanced.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="create-product-container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-left">
+                <button class="back-btn" onclick="history.back()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Create New Product</h1>
+                    <p class="subtitle">Add a new product to your inventory</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button class="btn-secondary" onclick="saveDraft()">
+                    <i class="fas fa-save"></i>
+                    Save Draft
+                </button>
+                <button class="btn-primary" onclick="saveAndContinue()">
+                    Save & Add Another
+                </button>
+                <button class="btn-success" onclick="saveProduct()">
+                    <i class="fas fa-check"></i>
+                    Save Product
+                </button>
+            </div>
+        </div>
+        
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                    <span class="step-title">Basic Info</span>
+                    <span class="step-desc">Product details</span>
+                </div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                    <span class="step-title">Inventory</span>
+                    <span class="step-desc">Stock & SKU</span>
+                </div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-info">
+                    <span class="step-title">Pricing</span>
+                    <span class="step-desc">Cost & pricing</span>
+                </div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-info">
+                    <span class="step-title">Images</span>
+                    <span class="step-desc">Product photos</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Form -->
+        <form id="product-form" class="product-form">
+            <!-- Step 1: Basic Information -->
+            <div class="form-step active" data-step="1">
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Basic Information</h2>
+                        <span class="required-note">* Required fields</span>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group col-2">
+                            <label for="product-name">Product Name *</label>
+                            <input type="text" id="product-name" name="productName" required 
+                                   placeholder="e.g., Premium Cotton Shirt">
+                            <span class="field-hint">Enter a descriptive product name</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-category">Category *</label>
+                            <select id="product-category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Shirt">Shirts</option>
+                                <option value="T-Shirt">T-Shirts</option>
+                                <option value="Pants">Pants</option>
+                                <option value="Jacket">Jackets</option>
+                                <option value="Dress">Dresses</option>
+                                <option value="Skirt">Skirts</option>
+                                <option value="Suit">Suits</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-brand">Brand</label>
+                            <input type="text" id="product-brand" name="brand" 
+                                   placeholder="e.g., Nike, Adidas">
+                        </div>
+                        
+                        <div class="form-group col-2">
+                            <label for="product-description">Description</label>
+                            <textarea id="product-description" name="description" rows="4" 
+                                      placeholder="Enter detailed product description..."></textarea>
+                            <span class="char-count">0 / 500 characters</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Product Attributes</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-size">Size *</label>
+                            <div class="size-selector">
+                                <button type="button" class="size-btn" data-size="XS">XS</button>
+                                <button type="button" class="size-btn" data-size="S">S</button>
+                                <button type="button" class="size-btn active" data-size="M">M</button>
+                                <button type="button" class="size-btn" data-size="L">L</button>
+                                <button type="button" class="size-btn" data-size="XL">XL</button>
+                                <button type="button" class="size-btn" data-size="XXL">XXL</button>
+                                <button type="button" class="size-btn" data-size="XXXL">XXXL</button>
+                            </div>
+                            <input type="hidden" id="product-size" name="size" value="M" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-color">Color *</label>
+                            <div class="color-input-group">
+                                <input type="text" id="product-color" name="color" required 
+                                       placeholder="e.g., Navy Blue">
+                                <input type="color" id="color-picker" class="color-picker" value="#2196f3">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-material">Material/Fabric</label>
+                            <select id="product-material" name="material">
+                                <option value="">Select Material</option>
+                                <option value="Cotton">Cotton</option>
+                                <option value="Polyester">Polyester</option>
+                                <option value="Silk">Silk</option>
+                                <option value="Wool">Wool</option>
+                                <option value="Linen">Linen</option>
+                                <option value="Denim">Denim</option>
+                                <option value="Leather">Leather</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-gender">Gender</label>
+                            <select id="product-gender" name="gender">
+                                <option value="Unisex">Unisex</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Kids">Kids</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-season">Season</label>
+                            <select id="product-season" name="season">
+                                <option value="All Season">All Season</option>
+                                <option value="Spring">Spring</option>
+                                <option value="Summer">Summer</option>
+                                <option value="Fall">Fall</option>
+                                <option value="Winter">Winter</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-tags">Tags</label>
+                            <input type="text" id="product-tags" name="tags" 
+                                   placeholder="e.g., casual, formal, premium">
+                            <span class="field-hint">Separate tags with commas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Inventory & SKU -->
+            <div class="form-step" data-step="2">
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Inventory Management</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-sku">SKU (Stock Keeping Unit) *</label>
+                            <div class="sku-input-group">
+                                <input type="text" id="product-sku" name="sku" required 
+                                       placeholder="e.g., SHI-COT-BLU-M-001">
+                                <button type="button" class="btn-generate" onclick="generateSKU()">
+                                    <i class="fas fa-magic"></i> Auto Generate
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-barcode">Barcode</label>
+                            <input type="text" id="product-barcode" name="barcode" 
+                                   placeholder="Enter or scan barcode">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="initial-stock">Initial Stock Quantity *</label>
+                            <input type="number" id="initial-stock" name="initialStock" 
+                                   min="0" value="0" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="min-stock">Minimum Stock Level</label>
+                            <input type="number" id="min-stock" name="minStock" 
+                                   min="0" value="10" placeholder="Alert when stock falls below">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="max-stock">Maximum Stock Level</label>
+                            <input type="number" id="max-stock" name="maxStock" 
+                                   min="0" placeholder="Maximum inventory capacity">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reorder-point">Reorder Point</label>
+                            <input type="number" id="reorder-point" name="reorderPoint" 
+                                   min="0" value="20" placeholder="Auto-reorder trigger">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Location & Storage</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="warehouse">Warehouse/Store</label>
+                            <select id="warehouse" name="warehouse">
+                                <option value="Main">Main Warehouse</option>
+                                <option value="Store-1">Store 1</option>
+                                <option value="Store-2">Store 2</option>
+                                <option value="Online">Online Only</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="location-rack">Rack/Shelf Location</label>
+                            <input type="text" id="location-rack" name="locationRack" 
+                                   placeholder="e.g., A-12-3">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="bin-location">Bin Location</label>
+                            <input type="text" id="bin-location" name="binLocation" 
+                                   placeholder="e.g., BIN-045">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Pricing -->
+            <div class="form-step" data-step="3">
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Pricing Information</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="cost-price">Cost Price *</label>
+                            <div class="price-input">
+                                <span class="currency">$</span>
+                                <input type="number" id="cost-price" name="costPrice" 
+                                       min="0" step="0.01" required placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="selling-price">Selling Price *</label>
+                            <div class="price-input">
+                                <span class="currency">$</span>
+                                <input type="number" id="selling-price" name="sellingPrice" 
+                                       min="0" step="0.01" required placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discount-price">Discount Price</label>
+                            <div class="price-input">
+                                <span class="currency">$</span>
+                                <input type="number" id="discount-price" name="discountPrice" 
+                                       min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profit-margin">Profit Margin</label>
+                            <div class="readonly-field">
+                                <span id="profit-margin">0%</span>
+                                <span class="profit-amount">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tax-rate">Tax Rate (%)</label>
+                            <input type="number" id="tax-rate" name="taxRate" 
+                                   min="0" max="100" step="0.01" placeholder="0.00">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="wholesale-price">Wholesale Price</label>
+                            <div class="price-input">
+                                <span class="currency">$</span>
+                                <input type="number" id="wholesale-price" name="wholesalePrice" 
+                                       min="0" step="0.01" placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Supplier Information</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="supplier-name">Supplier Name</label>
+                            <input type="text" id="supplier-name" name="supplierName" 
+                                   placeholder="Enter supplier name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="supplier-code">Supplier Product Code</label>
+                            <input type="text" id="supplier-code" name="supplierCode" 
+                                   placeholder="Supplier's product code">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="supplier-contact">Supplier Contact</label>
+                            <input type="text" id="supplier-contact" name="supplierContact" 
+                                   placeholder="Phone or email">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Images -->
+            <div class="form-step" data-step="4">
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>Product Images</h2>
+                    </div>
+                    
+                    <div class="image-upload-section">
+                        <div class="primary-image">
+                            <label>Primary Image *</label>
+                            <div class="image-upload-box" id="primary-image-box">
+                                <input type="file" id="primary-image" name="primaryImage" 
+                                       accept="image/*" style="display: none;">
+                                <div class="upload-placeholder" onclick="document.getElementById('primary-image').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Click to upload primary image</p>
+                                    <span>or drag and drop</span>
+                                </div>
+                                <div class="image-preview" style="display: none;">
+                                    <img src="" alt="Preview">
+                                    <button type="button" class="remove-image" onclick="removeImage('primary')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="additional-images">
+                            <label>Additional Images</label>
+                            <div class="images-grid">
+                                <div class="image-upload-box small" data-index="1">
+                                    <input type="file" id="additional-image-1" accept="image/*" style="display: none;">
+                                    <div class="upload-placeholder" onclick="document.getElementById('additional-image-1').click()">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="image-preview" style="display: none;">
+                                        <img src="" alt="Preview">
+                                        <button type="button" class="remove-image" onclick="removeImage('additional-1')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="image-upload-box small" data-index="2">
+                                    <input type="file" id="additional-image-2" accept="image/*" style="display: none;">
+                                    <div class="upload-placeholder" onclick="document.getElementById('additional-image-2').click()">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="image-preview" style="display: none;">
+                                        <img src="" alt="Preview">
+                                        <button type="button" class="remove-image" onclick="removeImage('additional-2')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="image-upload-box small" data-index="3">
+                                    <input type="file" id="additional-image-3" accept="image/*" style="display: none;">
+                                    <div class="upload-placeholder" onclick="document.getElementById('additional-image-3').click()">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="image-preview" style="display: none;">
+                                        <img src="" alt="Preview">
+                                        <button type="button" class="remove-image" onclick="removeImage('additional-3')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="image-upload-box small" data-index="4">
+                                    <input type="file" id="additional-image-4" accept="image/*" style="display: none;">
+                                    <div class="upload-placeholder" onclick="document.getElementById('additional-image-4').click()">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div class="image-preview" style="display: none;">
+                                        <img src="" alt="Preview">
+                                        <button type="button" class="remove-image" onclick="removeImage('additional-4')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-card">
+                    <div class="card-header">
+                        <h2>QR Code Generation</h2>
+                    </div>
+                    
+                    <div class="qr-section">
+                        <div class="qr-preview">
+                            <div id="qr-code-preview"></div>
+                            <p>QR Code will be generated automatically</p>
+                        </div>
+                        
+                        <div class="qr-options">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="print-qr" name="printQR" checked>
+                                    Print QR code after saving
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="attach-qr" name="attachQR" checked>
+                                    Attach QR code to product
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Navigation -->
+            <div class="form-navigation">
+                <button type="button" class="btn-nav prev" onclick="previousStep()" style="display: none;">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button type="button" class="btn-nav next" onclick="nextStep()">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-icon success">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2>Product Created Successfully!</h2>
+            <p>Product has been added to your inventory</p>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="viewProduct()">View Product</button>
+                <button class="btn-secondary" onclick="createAnother()">Create Another</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="create-product-advanced.js"></script>
+</body>
+</html>

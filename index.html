@@ -13,7 +13,12 @@
     <link rel="stylesheet" href="assets/css/top-header.css">
     <link rel="stylesheet" href="assets/css/sidebar-collapse.css">
     <link rel="stylesheet" href="assets/css/transaction-enhanced.css">
+    <link rel="stylesheet" href="assets/css/tailor-management.css">
+    <link rel="stylesheet" href="assets/css/employee-management.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailor Management Module -->
+    <script src="tailor/assets/js/tailor-management.js"></script>
     
     <!-- Service Worker Registration -->
     <script>
@@ -67,6 +72,11 @@
                     <li><a href="#" onclick="showSection('tailor-management', event)" class="nav-item" data-section="tailor-management" data-tooltip="Tailor Mgmt">
                         <i class="fas fa-users"></i>
                         <span>Tailor Management</span>
+                    </a></li>
+                    
+                    <li><a href="#" onclick="showSection('employee-management', event)" class="nav-item" data-section="employee-management" data-tooltip="Employee Mgmt">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Employee Management</span>
                     </a></li>
                     
                     <li><a href="#" onclick="showSection('reports', event)" class="nav-item" data-section="reports" data-tooltip="Reports">
@@ -526,21 +536,17 @@
 
                     <div class="modern-tab-nav">
                         <div class="tab-buttons">
-                            <button class="modern-tab-btn active" data-tab="tailors" onclick="switchTab('tailors')">
+                            <button class="modern-tab-btn active" data-tab="tailors" onclick="tailorManager.switchTab('tailors')">
                                 <i class="fas fa-users"></i>
                                 <span>Tailors</span>
                             </button>
-                            <button class="modern-tab-btn" data-tab="orders" onclick="switchTab('orders')">
-                                <i class="fas fa-shopping-bag"></i>
-                                <span>Orders</span>
+                            <button class="modern-tab-btn" data-tab="assignments" onclick="tailorManager.switchTab('assignments')">
+                                <i class="fas fa-tasks"></i>
+                                <span>Assignments</span>
                             </button>
-                            <button class="modern-tab-btn" data-tab="performance" onclick="switchTab('performance')">
-                                <i class="fas fa-chart-bar"></i>
-                                <span>Performance</span>
-                            </button>
-                            <button class="modern-tab-btn" data-tab="settings" onclick="switchTab('settings')">
-                                <i class="fas fa-cog"></i>
-                                <span>Settings</span>
+                            <button class="modern-tab-btn" data-tab="notifications" onclick="tailorManager.switchTab('notifications')">
+                                <i class="fas fa-bell"></i>
+                                <span>Notifications</span>
                             </button>
                         </div>
                     </div>
@@ -559,11 +565,27 @@
                                 </div>
                             </div>
                             
-                            <form class="modern-form" id="add-tailor-form" onsubmit="addTailor(event)">
+                            <form class="modern-form" id="add-tailor-form" onsubmit="tailorManager.addTailor(event)">
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="tailor-name"><i class="fas fa-user"></i> Full Name</label>
                                         <input type="text" id="tailor-name" name="name" required placeholder="Enter tailor's full name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="tailor-username"><i class="fas fa-user-circle"></i> Username</label>
+                                        <input type="text" id="tailor-username" name="username" required placeholder="Username for login">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tailor-password"><i class="fas fa-lock"></i> Password</label>
+                                        <div class="password-field">
+                                            <input type="text" id="tailor-password" name="password" required placeholder="Password">
+                                            <button type="button" class="btn btn-sm" onclick="tailorManager.generatePassword()">
+                                                <i class="fas fa-sync"></i> Generate
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="tailor-phone"><i class="fas fa-phone"></i> Phone Number</label>
@@ -657,6 +679,295 @@
                                         <!-- Tailors will be loaded here -->
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Tab -->
+                    <div id="assignments-tab" class="modern-tab-content">
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-plus-circle"></i> Create Assignment</h3>
+                                    <p>Assign work to tailors</p>
+                                </div>
+                            </div>
+                            
+                            <form class="modern-form" id="assignment-form" onsubmit="tailorManager.createAssignment(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="assignment-tailor"><i class="fas fa-user"></i> Select Tailor</label>
+                                        <select id="assignment-tailor" name="tailor_id" required>
+                                            <option value="">Choose a tailor...</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="assignment-priority"><i class="fas fa-flag"></i> Priority</label>
+                                        <select id="assignment-priority" name="priority">
+                                            <option value="normal">Normal</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                            <option value="low">Low</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="assignment-title"><i class="fas fa-tag"></i> Assignment Title</label>
+                                        <input type="text" id="assignment-title" name="title" required placeholder="e.g., Stitch 10 shirts">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="assignment-quantity"><i class="fas fa-sort-numeric-up"></i> Quantity</label>
+                                        <input type="number" id="assignment-quantity" name="quantity" min="1" required placeholder="10">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="assignment-deadline"><i class="fas fa-calendar"></i> Deadline</label>
+                                        <input type="datetime-local" id="assignment-deadline" name="deadline" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="assignment-order"><i class="fas fa-receipt"></i> Order Number</label>
+                                        <input type="text" id="assignment-order" name="order_number" placeholder="Optional">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="assignment-description"><i class="fas fa-info-circle"></i> Description</label>
+                                    <textarea id="assignment-description" name="description" rows="3" placeholder="Detailed instructions for the tailor..."></textarea>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Assign Work
+                                    </button>
+                                    <button type="reset" class="btn btn-outline">
+                                        <i class="fas fa-undo"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-list-alt"></i> Active Assignments</h3>
+                                    <p>Track ongoing work assignments</p>
+                                </div>
+                                <div class="section-actions">
+                                    <select id="assignment-filter" onchange="filterAssignments()">
+                                        <option value="">All Status</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="accepted">Accepted</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="assignments-grid" id="assignments-list">
+                                <!-- Assignments will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Tab -->
+                    <div id="notifications-tab" class="modern-tab-content">
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-bell"></i> Send Notification</h3>
+                                    <p>Send updates and alerts to tailors</p>
+                                </div>
+                            </div>
+                            
+                            <form class="modern-form" id="notification-form" onsubmit="tailorManager.sendNotification(event)">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="notification-tailor"><i class="fas fa-user"></i> Select Tailor</label>
+                                        <select id="notification-tailor" name="tailor_id" required>
+                                            <option value="">Choose a tailor...</option>
+                                            <option value="all">All Tailors</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="notification-type"><i class="fas fa-tag"></i> Type</label>
+                                        <select id="notification-type" name="type">
+                                            <option value="info">Information</option>
+                                            <option value="assignment">Assignment</option>
+                                            <option value="reminder">Reminder</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="notification-title"><i class="fas fa-heading"></i> Title</label>
+                                    <input type="text" id="notification-title" name="title" required placeholder="Notification title">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="notification-message"><i class="fas fa-comment"></i> Message</label>
+                                    <textarea id="notification-message" name="message" rows="4" required placeholder="Type your message here..."></textarea>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i> Send Notification
+                                    </button>
+                                    <button type="reset" class="btn btn-outline">
+                                        <i class="fas fa-undo"></i> Clear
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="tab-section">
+                            <div class="section-header">
+                                <div class="header-text">
+                                    <h3><i class="fas fa-history"></i> Recent Notifications</h3>
+                                    <p>View sent notifications</p>
+                                </div>
+                            </div>
+                            
+                            <div class="notifications-list" id="notifications-history">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Employee Management Section -->
+            <div id="employee-management" class="section">
+                <div class="employee-management-container">
+                    <div class="employee-header">
+                        <div class="header-content">
+                            <h2>Employee Management</h2>
+                            <p class="header-subtitle">Manage employees, track performance, and handle notifications</p>
+                        </div>
+                        <div class="employee-stats">
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="total-employees">0</span>
+                                    <span class="stat-label">Active Employees</span>
+                                </div>
+                            </div>
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-qrcode"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="employee-qr-today">0</span>
+                                    <span class="stat-label">QR Operations Today</span>
+                                </div>
+                            </div>
+                            <div class="stat-card mini">
+                                <div class="stat-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="pending-notifications">0</span>
+                                    <span class="stat-label">Unread Notifications</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Employee Actions -->
+                    <div class="employee-actions">
+                        <div class="action-buttons">
+                            <button onclick="showEmployeeRegistration()" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Register Employee
+                            </button>
+                            <button onclick="showNotificationModal()" class="btn btn-secondary">
+                                <i class="fas fa-paper-plane"></i> Send Notification
+                            </button>
+                            <button onclick="refreshEmployeeData()" class="btn btn-outline">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Employee Tabs -->
+                    <div class="employee-tabs">
+                        <div class="tab-buttons">
+                            <button class="tab-button active" onclick="showEmployeeTab('list')" data-tab="list">
+                                <i class="fas fa-list"></i> Employee List
+                            </button>
+                            <button class="tab-button" onclick="showEmployeeTab('performance')" data-tab="performance">
+                                <i class="fas fa-chart-line"></i> Performance
+                            </button>
+                            <button class="tab-button" onclick="showEmployeeTab('activities')" data-tab="activities">
+                                <i class="fas fa-history"></i> Activities
+                            </button>
+                        </div>
+                        
+                        <!-- Employee List Tab -->
+                        <div id="employee-list-tab" class="tab-content active">
+                            <div class="employees-table-container">
+                                <table class="employees-table" id="employees-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee ID</th>
+                                            <th>Name</th>
+                                            <th>Department</th>
+                                            <th>Phone</th>
+                                            <th>Status</th>
+                                            <th>QR Operations</th>
+                                            <th>Last Login</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="employees-tbody">
+                                        <!-- Employee rows will be inserted here -->
+                                    </tbody>
+                                </table>
+                                <div class="no-employees" id="no-employees" style="display: none;">
+                                    <i class="fas fa-user-tie"></i>
+                                    <p>No employees registered yet</p>
+                                    <button onclick="showEmployeeRegistration()" class="btn btn-primary">Register First Employee</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Tab -->
+                        <div id="employee-performance-tab" class="tab-content">
+                            <div class="performance-grid">
+                                <div class="performance-card">
+                                    <h4>Top Performers</h4>
+                                    <div class="top-performers" id="top-performers">
+                                        <!-- Top performers will be loaded here -->
+                                    </div>
+                                </div>
+                                <div class="performance-card">
+                                    <h4>QR Operations Summary</h4>
+                                    <canvas id="employee-performance-chart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activities Tab -->
+                        <div id="employee-activities-tab" class="tab-content">
+                            <div class="activities-filters">
+                                <select id="employee-filter" onchange="filterEmployeeActivities()">
+                                    <option value="">All Employees</option>
+                                </select>
+                                <select id="activity-type-filter" onchange="filterEmployeeActivities()">
+                                    <option value="">All Activities</option>
+                                    <option value="qr_create">QR Create</option>
+                                    <option value="qr_scan">QR Scan</option>
+                                    <option value="inventory_view">Inventory View</option>
+                                    <option value="login">Login</option>
+                                </select>
+                            </div>
+                            <div class="activities-list" id="employee-activities-list">
+                                <!-- Activities will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -860,6 +1171,7 @@
                 'inventory': 'Inventory Management',
                 'transactions': 'Transaction History',
                 'tailor-management': 'Tailor Management',
+                'employee-management': 'Employee Management',
                 'reports': 'Reports & Analytics'
             };
             
@@ -886,7 +1198,12 @@
                     displayTransactions();
                 }
             } else if (sectionId === 'tailor-management') {
-                loadTailors();
+                if (typeof tailorManager === 'undefined') {
+                    window.tailorManager = new TailorManagement();
+                }
+                tailorManager.init();
+            } else if (sectionId === 'employee-management') {
+                loadEmployees();
             } else if (sectionId === 'reports') {
                 initReports();
             }
@@ -1517,7 +1834,7 @@
         let tailors = [];
 
         function loadTailors() {
-            fetch('/api/tailor')
+            fetch('/api/tailor/all')
                 .then(response => response.json())
                 .then(data => {
                     tailors = Array.isArray(data) ? data : [];
@@ -1581,20 +1898,35 @@
             
             const formData = new FormData(event.target);
             const tailorData = Object.fromEntries(formData);
+            
+            // Map form fields to API expected fields
+            const apiData = {
+                name: tailorData.name,
+                username: tailorData.username,
+                password: tailorData.password,
+                email: tailorData.email,
+                phone: tailorData.phone,
+                address: tailorData.address,
+                specialization: tailorData.specialty,
+                experience_years: parseInt(tailorData.experience) || 0
+            };
 
-            fetch('/api/tailor', {
+            fetch('/api/tailor/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(tailorData)
+                body: JSON.stringify(apiData)
             })
             .then(response => response.json())
             .then(result => {
                 if (result.error) {
                     showNotification('Error: ' + result.error, 'error');
                 } else {
-                    showNotification('Tailor added successfully!', 'success');
+                    showNotification(
+                        `Tailor registered successfully! Login credentials - Username: ${result.credentials.username}, Password: ${result.credentials.password}`, 
+                        'success'
+                    );
                     event.target.reset();
                     loadTailors();
                 }
@@ -1633,13 +1965,253 @@
             document.querySelectorAll('.modern-tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
 
             // Update tab content
             document.querySelectorAll('.modern-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            document.getElementById(`${tabName}-tab`).classList.add('active');
+            const tabContent = document.getElementById(`${tabName}-tab`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+                
+                // Load data based on tab
+                if (tabName === 'assignments') {
+                    loadAssignments();
+                    loadTailorsForSelect();
+                } else if (tabName === 'notifications') {
+                    loadNotifications();
+                    loadTailorsForSelect('notification-tailor');
+                }
+            }
+        }
+
+        // Generate random password
+        function generatePassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
+            let password = '';
+            for (let i = 0; i < 10; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('tailor-password').value = password;
+        }
+
+        // Load tailors for select dropdown
+        function loadTailorsForSelect(selectId = 'assignment-tailor') {
+            fetch('/api/tailor/all')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById(selectId);
+                    const currentValue = select.value;
+                    
+                    // Clear existing options except first
+                    while (select.options.length > (selectId === 'notification-tailor' ? 2 : 1)) {
+                        select.remove(select.options.length - 1);
+                    }
+                    
+                    // Add tailor options
+                    data.forEach(tailor => {
+                        const option = document.createElement('option');
+                        option.value = tailor.tailor_id;
+                        option.textContent = `${tailor.name} - ${tailor.specialization || 'General'}`;
+                        select.appendChild(option);
+                    });
+                    
+                    if (currentValue) select.value = currentValue;
+                })
+                .catch(error => console.error('Error loading tailors:', error));
+        }
+
+        // Create assignment
+        function createAssignment(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const assignmentData = Object.fromEntries(formData);
+
+            fetch('/api/tailor/assignments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(assignmentData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    showNotification('Error: ' + result.error, 'error');
+                } else {
+                    showNotification('Assignment created successfully!', 'success');
+                    event.target.reset();
+                    loadAssignments();
+                }
+            })
+            .catch(error => {
+                showNotification('Network error: ' + error.message, 'error');
+            });
+        }
+
+        // Load assignments
+        function loadAssignments() {
+            fetch('/api/tailor/assignments')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('assignments-list');
+                    
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<p class="no-data">No assignments found</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = data.map(assignment => `
+                        <div class="assignment-card">
+                            <div class="assignment-header">
+                                <h4>${assignment.title || assignment.garment_type}</h4>
+                                <span class="badge badge-${assignment.priority || 'normal'}">${assignment.priority || 'Normal'}</span>
+                            </div>
+                            <div class="assignment-details">
+                                <p><i class="fas fa-user"></i> ${assignment.tailor_name}</p>
+                                <p><i class="fas fa-calendar"></i> Deadline: ${new Date(assignment.expected_date || assignment.deadline).toLocaleDateString()}</p>
+                                <p><i class="fas fa-sort-numeric-up"></i> Quantity: ${assignment.quantity}</p>
+                                <p><i class="fas fa-info-circle"></i> Status: ${assignment.status}</p>
+                            </div>
+                            <div class="assignment-actions">
+                                <button class="btn btn-sm" onclick="updateAssignmentStatus('${assignment.assignment_id}', 'completed')">
+                                    <i class="fas fa-check"></i> Complete
+                                </button>
+                                <button class="btn btn-sm btn-outline" onclick="viewAssignment('${assignment.assignment_id}')">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading assignments:', error);
+                    document.getElementById('assignments-list').innerHTML = '<p class="error">Error loading assignments</p>';
+                });
+        }
+
+        // Filter assignments
+        function filterAssignments() {
+            const status = document.getElementById('assignment-filter').value;
+            const url = status ? `/api/tailor/assignments?status=${status}` : '/api/tailor/assignments';
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('assignments-list');
+                    // Reuse the display logic from loadAssignments
+                    if (!data || data.length === 0) {
+                        container.innerHTML = '<p class="no-data">No assignments found</p>';
+                        return;
+                    }
+                    // ... display assignments
+                })
+                .catch(error => console.error('Error filtering assignments:', error));
+        }
+
+        // Send notification
+        function sendNotification(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const notificationData = Object.fromEntries(formData);
+            
+            if (notificationData.tailor_id === 'all') {
+                // Send to all tailors
+                fetch('/api/tailor')
+                    .then(response => response.json())
+                    .then(tailors => {
+                        const promises = tailors.map(tailor => 
+                            fetch('/api/tailor/notifications', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    ...notificationData,
+                                    tailor_id: tailor.tailor_id
+                                })
+                            })
+                        );
+                        return Promise.all(promises);
+                    })
+                    .then(() => {
+                        showNotification('Notification sent to all tailors!', 'success');
+                        event.target.reset();
+                        loadNotifications();
+                    })
+                    .catch(error => {
+                        showNotification('Error sending notifications: ' + error.message, 'error');
+                    });
+            } else {
+                fetch('/api/tailor/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(notificationData)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        showNotification('Error: ' + result.error, 'error');
+                    } else {
+                        showNotification('Notification sent successfully!', 'success');
+                        event.target.reset();
+                        loadNotifications();
+                    }
+                })
+                .catch(error => {
+                    showNotification('Network error: ' + error.message, 'error');
+                });
+            }
+        }
+
+        // Load recent notifications
+        function loadNotifications() {
+            // This would typically fetch all notifications, but for now we'll show a placeholder
+            const container = document.getElementById('notifications-history');
+            container.innerHTML = `
+                <div class="notification-item">
+                    <div class="notification-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h5>System Update</h5>
+                        <p>New features have been added to the tailor management system.</p>
+                        <span class="notification-time">5 minutes ago</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update assignment status
+        function updateAssignmentStatus(assignmentId, status) {
+            fetch(`/api/tailor/assignments/${assignmentId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification('Assignment updated successfully!', 'success');
+                    loadAssignments();
+                } else {
+                    showNotification('Error updating assignment', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Network error: ' + error.message, 'error');
+            });
+        }
+
+        // View assignment details
+        function viewAssignment(assignmentId) {
+            showNotification('Opening assignment details...', 'info');
+            // This could open a modal or navigate to a detail page
         }
 
         function searchTailors() {
@@ -1667,6 +2239,349 @@
 
         function importTailors() {
             showNotification('Import functionality coming soon', 'info');
+        }
+
+        // Employee Management functions
+        let employees = [];
+        
+        function loadEmployees() {
+            fetch('/api/employee/all')
+                .then(response => response.json())
+                .then(data => {
+                    employees = Array.isArray(data) ? data : [];
+                    updateEmployeeStats();
+                    displayEmployees();
+                    populateEmployeeFilters();
+                })
+                .catch(error => {
+                    console.error('Error loading employees:', error);
+                    showNotification('Error loading employees', 'error');
+                });
+        }
+        
+        function updateEmployeeStats() {
+            const totalEmployees = employees.length;
+            const activeEmployees = employees.filter(emp => emp.status === 'active').length;
+            
+            document.getElementById('total-employees').textContent = activeEmployees;
+            
+            // Get today's QR operations count (this would need to be calculated from activities)
+            document.getElementById('employee-qr-today').textContent = '0'; // Placeholder
+            document.getElementById('pending-notifications').textContent = '0'; // Placeholder
+        }
+        
+        function displayEmployees() {
+            const tbody = document.getElementById('employees-tbody');
+            const noEmployees = document.getElementById('no-employees');
+            
+            if (employees.length === 0) {
+                document.getElementById('employees-table').style.display = 'none';
+                noEmployees.style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('employees-table').style.display = 'table';
+            noEmployees.style.display = 'none';
+            
+            tbody.innerHTML = employees.map(employee => `
+                <tr>
+                    <td><span class="employee-id">${employee.employee_id}</span></td>
+                    <td>
+                        <div class="employee-info">
+                            <div class="employee-name">${employee.name}</div>
+                            <div class="employee-email">${employee.email || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td>${employee.department || 'N/A'}</td>
+                    <td>${employee.phone || 'N/A'}</td>
+                    <td>
+                        <span class="status-badge ${employee.status}">${employee.status}</span>
+                    </td>
+                    <td>
+                        <div class="qr-operations">
+                            <span class="qr-count">0</span> operations
+                        </div>
+                    </td>
+                    <td>${employee.last_login ? new Date(employee.last_login).toLocaleDateString() : 'Never'}</td>
+                    <td>
+                        <div class="employee-actions">
+                            <button onclick="viewEmployeeDetails('${employee.employee_id}')" class="btn-icon" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="sendNotificationToEmployee('${employee.employee_id}')" class="btn-icon" title="Send Notification">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button onclick="toggleEmployeeStatus('${employee.employee_id}')" class="btn-icon" title="Toggle Status">
+                                <i class="fas fa-toggle-${employee.status === 'active' ? 'on' : 'off'}"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function showEmployeeRegistration() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h3>Register New Employee</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form onsubmit="registerEmployee(event)" class="employee-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" name="name" required placeholder="Enter employee name">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" placeholder="employee@company.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" name="phone" placeholder="Enter phone number">
+                            </div>
+                            <div class="form-group">
+                                <label>Department</label>
+                                <select name="department">
+                                    <option value="">Select Department</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Inventory">Inventory</option>
+                                    <option value="Quality Control">Quality Control</option>
+                                    <option value="Shipping">Shipping</option>
+                                    <option value="Administration">Administration</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" name="username" required placeholder="Unique username">
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <div class="password-input">
+                                    <input type="password" name="password" required id="employee-password" placeholder="Auto-generated">
+                                    <button type="button" onclick="generateEmployeePassword()" class="btn-generate">
+                                        <i class="fas fa-sync"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Register Employee
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            generateEmployeePassword(); // Auto-generate initial password
+        }
+        
+        function generateEmployeePassword() {
+            const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+            let password = '';
+            for (let i = 0; i < 8; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('employee-password').value = password;
+        }
+        
+        function registerEmployee(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const employeeData = Object.fromEntries(formData);
+            
+            fetch('/api/employee/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(employeeData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showNotification(`Employee registered successfully! Employee ID: ${result.employee_id}`, 'success');
+                    event.target.closest('.modal-overlay').remove();
+                    loadEmployees();
+                } else {
+                    showNotification('Error: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Network error: ' + error.message, 'error');
+            });
+        }
+        
+        function showNotificationModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <h3>Send Notification</h3>
+                        <button onclick="this.closest('.modal-overlay').remove()" class="modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form onsubmit="sendNotification(event)" class="notification-form">
+                        <div class="form-group">
+                            <label>Send To</label>
+                            <select name="employee_id" id="notification-employee">
+                                <option value="">All Employees</option>
+                                ${employees.map(emp => `<option value="${emp.employee_id}">${emp.name} (${emp.employee_id})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select name="type">
+                                <option value="info">Information</option>
+                                <option value="task">Task</option>
+                                <option value="reminder">Reminder</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="system">System</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Title *</label>
+                            <input type="text" name="title" required placeholder="Notification title">
+                        </div>
+                        <div class="form-group">
+                            <label>Message *</label>
+                            <textarea name="message" required placeholder="Enter your message here..." rows="4"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Notification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function sendNotification(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const notificationData = Object.fromEntries(formData);
+            
+            fetch('/api/employee/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(notificationData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const target = notificationData.employee_id ? 'employee' : 'all employees';
+                    showNotification(`Notification sent to ${target} successfully!`, 'success');
+                    event.target.closest('.modal-overlay').remove();
+                } else {
+                    showNotification('Error: ' + result.error, 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Network error: ' + error.message, 'error');
+            });
+        }
+        
+        function showEmployeeTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`employee-${tabName}-tab`).classList.add('active');
+            
+            // Load data based on tab
+            if (tabName === 'activities') {
+                loadEmployeeActivities();
+            } else if (tabName === 'performance') {
+                loadEmployeePerformance();
+            }
+        }
+        
+        function loadEmployeeActivities() {
+            // This would load recent employee activities
+            const activitiesList = document.getElementById('employee-activities-list');
+            activitiesList.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                    <i class="fas fa-history" style="font-size: 48px; margin-bottom: 16px;"></i>
+                    <p>Employee activities will be loaded here</p>
+                </div>
+            `;
+        }
+        
+        function loadEmployeePerformance() {
+            // This would load employee performance data
+            const topPerformers = document.getElementById('top-performers');
+            topPerformers.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                    <p>Performance data will be loaded here</p>
+                </div>
+            `;
+        }
+        
+        function populateEmployeeFilters() {
+            const employeeFilter = document.getElementById('employee-filter');
+            employeeFilter.innerHTML = '<option value="">All Employees</option>' + 
+                employees.map(emp => `<option value="${emp.employee_id}">${emp.name}</option>`).join('');
+        }
+        
+        function refreshEmployeeData() {
+            showNotification('Refreshing employee data...', 'info');
+            loadEmployees();
+        }
+        
+        function viewEmployeeDetails(employeeId) {
+            const employee = employees.find(emp => emp.employee_id === employeeId);
+            if (!employee) return;
+            
+            showNotification(`Employee details for ${employee.name} - Feature coming soon!`, 'info');
+        }
+        
+        function sendNotificationToEmployee(employeeId) {
+            // Pre-fill the notification form with this specific employee
+            showNotificationModal();
+            setTimeout(() => {
+                const select = document.getElementById('notification-employee');
+                if (select) select.value = employeeId;
+            }, 100);
+        }
+        
+        function toggleEmployeeStatus(employeeId) {
+            const employee = employees.find(emp => emp.employee_id === employeeId);
+            if (!employee) return;
+            
+            const newStatus = employee.status === 'active' ? 'inactive' : 'active';
+            const action = newStatus === 'active' ? 'activate' : 'deactivate';
+            
+            if (confirm(`Are you sure you want to ${action} ${employee.name}?`)) {
+                // This would call an API to update employee status
+                showNotification(`Employee status toggle - Feature coming soon!`, 'info');
+            }
+        }
+        
+        function filterEmployeeActivities() {
+            // This would filter the activities based on selected filters
+            showNotification('Activity filtering - Feature coming soon!', 'info');
         }
 
         // Reports functions with real data

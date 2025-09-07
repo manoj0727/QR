@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailor Login - QR Inventory System</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/tailor-styles.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">
+                <i class="fas fa-cut"></i>
+            </div>
+            <h1>Tailor Portal</h1>
+            <p>Access your assignments and notifications</p>
+        </div>
+
+        <div class="login-form">
+            <div id="alert" class="alert">
+                <i class="fas fa-info-circle"></i>
+                <span id="alert-message"></span>
+            </div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    <i class="fas fa-user"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    <i class="fas fa-lock"></i>
+                </div>
+
+                <button type="submit" class="login-btn" id="login-btn">
+                    <div class="loading-spinner" id="loading-spinner"></div>
+                    <i class="fas fa-sign-in-alt" id="login-icon"></i>
+                    <span id="login-text">Sign In</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            <p>Need help? Contact your administrator</p>
+            <a href="../index.html">← Back to Main System</a>
+        </div>
+    </div>
+
+    <script src="assets/js/tailor-auth.js"></script>
+    <script>
+        const auth = new TailorAuth();
+
+        // Handle form submission
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            auth.handleLogin(e);
+        });
+
+        // Auto-focus username field
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('username').focus();
+        });
+    </script>
+</body>
+</html>

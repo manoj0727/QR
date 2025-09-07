@@ -1,0 +1,281 @@
+/* Tailor Management Styles */
+
+/* Password field with generate button */
+.password-field {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.password-field input {
+    flex: 1;
+}
+
+.password-field .btn-sm {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.password-field .btn-sm:hover {
+    background: #2563eb;
+}
+
+/* Assignment cards grid */
+.assignments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.assignment-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.assignment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.assignment-header h4 {
+    margin: 0;
+    color: #1a1d23;
+    font-size: 1.1rem;
+}
+
+.assignment-details {
+    margin-bottom: 15px;
+}
+
+.assignment-details p {
+    margin: 8px 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.assignment-details i {
+    width: 16px;
+    color: #9ca3af;
+}
+
+.assignment-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.assignment-actions .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+/* Badge styles */
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-normal {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.badge-high {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge-urgent {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.badge-low {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+/* Notifications list */
+.notifications-list {
+    margin-top: 20px;
+}
+
+.notification-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+    transition: background 0.3s;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    background: #eff6ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon i {
+    color: #3b82f6;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-content h5 {
+    margin: 0 0 5px 0;
+    color: #1a1d23;
+    font-size: 1rem;
+}
+
+.notification-content p {
+    margin: 0 0 8px 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.notification-time {
+    color: #9ca3af;
+    font-size: 0.8rem;
+}
+
+/* No data message */
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+    font-size: 1rem;
+}
+
+/* Error message */
+.error {
+    text-align: center;
+    padding: 20px;
+    color: #dc2626;
+    background: #fee2e2;
+    border-radius: 8px;
+}
+
+/* Form enhancements */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.modern-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.modern-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Tab content visibility */
+.modern-tab-content {
+    display: none;
+}
+
+.modern-tab-content.active {
+    display: block;
+}
+
+/* Button styles */
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-outline {
+    background: white;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+}
+
+.btn-outline:hover {
+    background: #f9fafb;
+    color: #1a1d23;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.875rem;
+}
+
+/* Section actions */
+.section-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.section-actions select {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: white;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.section-actions select:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
