@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #333;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e3f2fd;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .type-in { background: #e8f5e9; color: #2e7d32; }
+        .type-out { background: #ffebee; color: #c62828; }
+        .type-sale { background: #fff3e0; color: #e65100; }
+        .type-initial { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Transaction History Test</h1>
+        <div id="status" class="status">Loading transactions...</div>
+        
+        <h2>Raw API Response:</h2>
+        <pre id="raw-data" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
+        
+        <h2>Formatted Transactions:</h2>
+        <table id="transactions-table">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Product ID</th>
+                    <th>Product Name</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Previous Stock</th>
+                    <th>New Stock</th>
+                    <th>Performed By</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="transactions-tbody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Test transaction loading
+        async function testTransactions() {
+            const statusDiv = document.getElementById('status');
+            const rawDataDiv = document.getElementById('raw-data');
+            const tbody = document.getElementById('transactions-tbody');
+            
+            try {
+                statusDiv.textContent = 'Fetching transactions from API...';
+                statusDiv.className = 'status';
+                
+                const response = await fetch('/api/transactions');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const transactions = await response.json();
+                
+                // Display raw data
+                rawDataDiv.textContent = JSON.stringify(transactions, null, 2);
+                
+                if (!Array.isArray(transactions)) {
+                    throw new Error('Response is not an array');
+                }
+                
+                if (transactions.length === 0) {
+                    statusDiv.textContent = 'No transactions found in database';
+                    statusDiv.className = 'status';
+                    tbody.innerHTML = '<tr><td colspan="10">No transactions to display</td></tr>';
+                    return;
+                }
+                
+                statusDiv.textContent = `Successfully loaded ${transactions.length} transaction(s)`;
+                statusDiv.className = 'status success';
+                
+                // Display formatted transactions
+                tbody.innerHTML = transactions.map(t => {
+                    const date = new Date(t.created_at);
+                    const typeClass = t.transaction_type === 'STOCK_IN' ? 'type-in' :
+                                     t.transaction_type === 'STOCK_OUT' ? 'type-out' :
+                                     t.transaction_type === 'SALE' ? 'type-sale' :
+                                     t.transaction_type === 'INITIAL_STOCK' ? 'type-initial' : '';
+                    
+                    return `
+                        <tr>
+                            <td>${t.transaction_id || 'N/A'}</td>
+                            <td>${t.product_id || 'N/A'}</td>
+                            <td>${t.product_name || 'Unknown'}</td>
+                            <td><span class="type-badge ${typeClass}">${t.transaction_type || 'N/A'}</span></td>
+                            <td>${t.quantity || 0}</td>
+                            <td>${t.previous_stock || 0}</td>
+                            <td>${t.new_stock || 0}</td>
+                            <td>${t.performed_by || 'System'}</td>
+                            <td>${t.location || 'N/A'}</td>
+                            <td>${date.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                statusDiv.textContent = `Error: ${error.message}`;
+                statusDiv.className = 'status error';
+                rawDataDiv.textContent = `Error Details:\n${error.stack}`;
+                console.error('Error loading transactions:', error);
+            }
+        }
+        
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', testTransactions);
+        
+        // Reload every 5 seconds
+        setInterval(testTransactions, 5000);
+    </script>
+</body>
+</html>

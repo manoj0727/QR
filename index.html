@@ -408,8 +408,8 @@
                                     </label>
                                     <select id="type-filter" class="nav-select" onchange="filterTransactions()">
                                         <option value="all">All Actions</option>
-                                        <option value="IN">Stock In</option>
-                                        <option value="OUT">Stock Out</option>
+                                        <option value="STOCK_IN">Stock In</option>
+                                        <option value="STOCK_OUT">Stock Out</option>
                                         <option value="SALE">Sale</option>
                                         <option value="INITIAL_STOCK">Initial Stock</option>
                                     </select>
@@ -1225,48 +1225,28 @@
                 })
                 .then(transactions => {
                     allTransactions = Array.isArray(transactions) ? transactions : [];
-                    if (allTransactions.length === 0) {
-                        // Load sample data if no transactions from API
-                        allTransactions = getSampleTransactions();
-                    }
                     filteredTransactions = [...allTransactions];
                     updateTransactionsSummary();
                     displayTransactions();
                 })
                 .catch(error => {
-                    console.log('Loading sample transactions...');
-                    // Load sample data on error
-                    allTransactions = getSampleTransactions();
-                    filteredTransactions = [...allTransactions];
+                    console.log('Error loading transactions:', error);
+                    allTransactions = [];
+                    filteredTransactions = [];
                     updateTransactionsSummary();
                     displayTransactions();
                 });
         }
-        
-        // Sample transactions data
-        function getSampleTransactions() {
-            return [
-                { id: 1, product_id: 'PRD-001', product_name: 'Blue Cotton Shirt', action: 'IN', quantity: 50, performed_by: 'John Doe', location: 'Warehouse A', size: 'M', created_at: new Date().toISOString() },
-                { id: 2, product_id: 'PRD-002', product_name: 'Black Denim Jeans', action: 'OUT', quantity: 10, performed_by: 'Jane Smith', location: 'Store Front', size: 'L', created_at: new Date(Date.now() - 86400000).toISOString() },
-                { id: 3, product_id: 'PRD-003', product_name: 'White T-Shirt', action: 'IN', quantity: 100, performed_by: 'Admin', location: 'Warehouse B', size: 'S', created_at: new Date(Date.now() - 172800000).toISOString() },
-                { id: 4, product_id: 'PRD-004', product_name: 'Leather Jacket', action: 'SALE', quantity: 2, performed_by: 'Mike Johnson', location: 'Store Front', size: 'XL', created_at: new Date(Date.now() - 259200000).toISOString() },
-                { id: 5, product_id: 'PRD-005', product_name: 'Khaki Pants', action: 'IN', quantity: 30, performed_by: 'Sarah Wilson', location: 'Warehouse A', size: 'M', created_at: new Date(Date.now() - 345600000).toISOString() },
-                { id: 6, product_id: 'PRD-001', product_name: 'Blue Cotton Shirt', action: 'OUT', quantity: 5, performed_by: 'Tom Brown', location: 'Store Front', size: 'M', created_at: new Date(Date.now() - 432000000).toISOString() },
-                { id: 7, product_id: 'PRD-006', product_name: 'Wool Sweater', action: 'INITIAL_STOCK', quantity: 75, performed_by: 'System', location: 'Main Warehouse', size: 'L', created_at: new Date(Date.now() - 518400000).toISOString() },
-                { id: 8, product_id: 'PRD-007', product_name: 'Silk Scarf', action: 'IN', quantity: 25, performed_by: 'Emily Davis', location: 'Warehouse B', size: 'One Size', created_at: new Date(Date.now() - 604800000).toISOString() },
-                { id: 9, product_id: 'PRD-008', product_name: 'Sports Shorts', action: 'OUT', quantity: 15, performed_by: 'Chris Martin', location: 'Store Front', size: 'XL', created_at: new Date(Date.now() - 691200000).toISOString() },
-                { id: 10, product_id: 'PRD-009', product_name: 'Formal Suit', action: 'SALE', quantity: 1, performed_by: 'Alex Turner', location: 'Premium Store', size: '42R', created_at: new Date(Date.now() - 777600000).toISOString() }
-            ];
-        }
 
         function updateTransactionsSummary() {
             const total = filteredTransactions.length;
-            const stockIn = filteredTransactions.filter(t => t.action === 'IN' || t.action === 'INITIAL_STOCK').length;
-            const stockOut = filteredTransactions.filter(t => t.action === 'OUT' || t.action === 'SALE').length;
+            const stockIn = filteredTransactions.filter(t => t.transaction_type === 'STOCK_IN' || t.transaction_type === 'INITIAL_STOCK').length;
+            const stockOut = filteredTransactions.filter(t => t.transaction_type === 'STOCK_OUT' || t.transaction_type === 'SALE').length;
 
-            document.getElementById('total-transactions').textContent = total;
-            document.getElementById('stock-in-count').textContent = stockIn;
-            document.getElementById('stock-out-count').textContent = stockOut;
+            // These elements don't exist in the current UI
+            // document.getElementById('total-transactions').textContent = total;
+            // document.getElementById('stock-in-count').textContent = stockIn;
+            // document.getElementById('stock-out-count').textContent = stockOut;
             
             // Update the record count in header
             const recordCount = document.getElementById('trans-record-count');
@@ -1295,10 +1275,11 @@
             tbody.innerHTML = pageTransactions.map((transaction, index) => {
                 const transactionId = transaction.product_id || `PRD-${String(startIndex + index + 1).padStart(3, '0')}`;
                 const date = new Date(transaction.created_at || Date.now());
-                const actionType = transaction.action || 'IN';
-                const typeClass = actionType === 'IN' ? 'type-in' : actionType === 'OUT' ? 'type-out' : 'type-sale';
-                const qtyClass = actionType === 'OUT' ? 'negative' : 'positive';
-                const qtySign = actionType === 'OUT' ? '-' : '+';
+                const actionType = transaction.transaction_type || 'STOCK_IN';
+                const typeClass = actionType === 'STOCK_IN' || actionType === 'INITIAL_STOCK' ? 'type-in' : 
+                                actionType === 'STOCK_OUT' || actionType === 'SALE' ? 'type-out' : 'type-sale';
+                const qtyClass = actionType === 'STOCK_OUT' || actionType === 'SALE' ? 'negative' : 'positive';
+                const qtySign = actionType === 'STOCK_OUT' || actionType === 'SALE' ? '-' : '+';
                 
                 return `
                     <tr>
@@ -1317,7 +1298,7 @@
                         </td>
                         <td class="trans-type">
                             <span class="type-badge ${typeClass}">
-                                ${actionType === 'IN' ? 'Stock In' : actionType === 'OUT' ? 'Stock Out' : actionType === 'SALE' ? 'Sale' : actionType}
+                                ${actionType === 'STOCK_IN' ? 'Stock In' : actionType === 'STOCK_OUT' ? 'Stock Out' : actionType === 'SALE' ? 'Sale' : actionType === 'INITIAL_STOCK' ? 'Initial Stock' : actionType}
                             </span>
                         </td>
                         <td class="size">${transaction.size || '-'}</td>
@@ -1425,7 +1406,7 @@
                 }
 
                 // Type filtering
-                if (typeFilter !== 'all' && transaction.action !== typeFilter) {
+                if (typeFilter !== 'all' && transaction.transaction_type !== typeFilter) {
                     return false;
                 }
 
