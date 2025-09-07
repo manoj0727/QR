@@ -114,14 +114,21 @@ app.post('/api/products/create', async (req, res) => {
             }
 
             if (initial_quantity > 0) {
-              databases.inventory.db.run(
-                `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
-                 VALUES (?, ?, ?, ?, ?, ?)`,
-                [product_id, 'INITIAL_STOCK', initial_quantity, 'System', 'Manufacturing', 'Initial stock creation'],
-                (err) => {
-                  if (err) console.error('Transaction log error:', err);
-                }
-              );
+              // Record initial stock transaction in the new transactions database
+              databases.transactions.recordTransaction({
+                product_id,
+                product_name: name,
+                category: type,
+                size,
+                color,
+                transaction_type: 'INITIAL_STOCK',
+                quantity: initial_quantity,
+                previous_stock: 0,
+                new_stock: initial_quantity,
+                performed_by: 'System',
+                location: 'Manufacturing',
+                notes: 'Initial stock creation'
+              });
             }
 
             res.json({
@@ -193,32 +200,41 @@ app.post('/api/inventory/scan', (req, res) => {
             return res.status(500).json({ error: err.message });
           }
 
-          databases.inventory.db.run(
-            `INSERT INTO transactions (product_id, action, quantity, performed_by, location, notes)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [product_id, action, quantity, performed_by, location, notes],
-            (err) => {
-              if (err) {
-                console.error('Transaction log error:', err);
-              }
+          // Record transaction in the new transactions database
+          const transactionType = action === 'IN' || action === 'STOCK_IN' ? 'STOCK_IN' : 
+                                 action === 'OUT' || action === 'STOCK_OUT' ? 'STOCK_OUT' : 'SALE';
+          
+          const transactionResult = databases.transactions.recordTransaction({
+            product_id,
+            product_name: product.name,
+            category: product.type,
+            size: product.size,
+            color: product.color,
+            transaction_type: transactionType,
+            quantity,
+            previous_stock: product.quantity,
+            new_stock: newQuantity,
+            performed_by,
+            location,
+            notes
+          });
 
-              res.json({
-                success: true,
-                product: {
-                  ...product,
-                  previous_quantity: product.quantity,
-                  new_quantity: newQuantity
-                },
-                transaction: {
-                  action,
-                  quantity,
-                  performed_by,
-                  location,
-                  timestamp: getISTTime()
-                }
-              });
+          res.json({
+            success: true,
+            product: {
+              ...product,
+              previous_quantity: product.quantity,
+              new_quantity: newQuantity
+            },
+            transaction: {
+              id: transactionResult.transactionId,
+              action: transactionType,
+              quantity,
+              performed_by,
+              location,
+              timestamp: getISTTime()
             }
-          );
+          });
         }
       );
     });
@@ -288,25 +304,62 @@ app.get('/api/qr/:product_id', (req, res) => {
   });
 });
 
+// Transactions API endpoints
 app.get('/api/transactions', (req, res) => {
-  const { product_id, limit = 50 } = req.query;
+  const { product_id, transaction_type, start_date, end_date, limit = 50 } = req.query;
   
-  let query = 'SELECT t.*, p.name, p.type, p.size FROM transactions t JOIN products p ON t.product_id = p.product_id';
-  let params = [];
+  const filters = {
+    product_id,
+    transaction_type,
+    start_date,
+    end_date,
+    limit: parseInt(limit)
+  };
   
-  if (product_id) {
-    query += ' WHERE t.product_id = ?';
-    params.push(product_id);
-  }
-  
-  query += ' ORDER BY t.timestamp DESC LIMIT ?';
-  params.push(parseInt(limit));
-  
-  databases.inventory.db.all(query, params, (err, rows) => {
+  databases.transactions.getAllTransactions(filters, (err, transactions) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows);
+    res.json(transactions);
+  });
+});
+
+app.get('/api/transactions/dashboard/stats', (req, res) => {
+  databases.transactions.getDashboardStats((err, stats) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(stats);
+  });
+});
+
+app.get('/api/transactions/:id', (req, res) => {
+  databases.transactions.getTransactionById(req.params.id, (err, transaction) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+    res.json(transaction);
+  });
+});
+
+app.get('/api/transactions/product/:productId', (req, res) => {
+  databases.transactions.getProductTransactionHistory(req.params.productId, (err, transactions) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(transactions);
+  });
+});
+
+app.get('/api/transactions/summary/:productId', (req, res) => {
+  databases.transactions.getProductTransactionSummary(req.params.productId, (err, summary) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(summary || { product_id: req.params.productId, message: 'No transactions yet' });
   });
 });
 

@@ -1,6 +1,7 @@
-// Main database module - manages both users and inventory databases
+// Main database module - manages users, inventory, and transactions databases
 const usersDB = require('./users-db');
 const inventoryDB = require('./inventory-db');
+const transactionsDB = require('./transactions-db');
 
 // Initialize both databases
 const initializeAllDatabases = () => {
@@ -16,6 +17,10 @@ const initializeAllDatabases = () => {
     console.log('\n📁 Initializing Inventory Database...');
     inventoryDB.initializeDatabase();
     
+    // Initialize transactions database
+    console.log('\n📁 Initializing Transactions Database...');
+    console.log('Transactions database location:', require('path').join(__dirname, 'transactions.db'));
+    
     console.log('\n========================================');
     console.log('✅ Database System Ready');
     console.log('========================================\n');
@@ -28,16 +33,19 @@ const initializeAllDatabases = () => {
     console.log('│   ├── departments');
     console.log('│   ├── permissions');
     console.log('│   └── role_permissions');
-    console.log('└── inventory.db');
-    console.log('    ├── products');
-    console.log('    ├── categories');
-    console.log('    ├── stock_transactions');
-    console.log('    ├── suppliers');
-    console.log('    ├── purchase_orders');
-    console.log('    ├── inventory_adjustments');
-    console.log('    ├── stock_alerts');
-    console.log('    ├── qr_codes');
-    console.log('    └── warehouses');
+    console.log('├── inventory.db');
+    console.log('│   ├── products');
+    console.log('│   ├── categories');
+    console.log('│   ├── stock_transactions');
+    console.log('│   ├── suppliers');
+    console.log('│   ├── purchase_orders');
+    console.log('│   ├── inventory_adjustments');
+    console.log('│   ├── stock_alerts');
+    console.log('│   ├── qr_codes');
+    console.log('│   └── warehouses');
+    console.log('└── transactions.db');
+    console.log('    ├── transactions (all stock movements)');
+    console.log('    └── transaction_summary (product summaries)');
     console.log('\n========================================\n');
 };
 
@@ -98,5 +106,18 @@ module.exports = {
         generatePONumber: inventoryDB.generatePONumber,
         checkStockLevel: inventoryDB.checkStockLevel,
         createStockAlert: inventoryDB.createStockAlert
+    },
+    
+    // Transactions database functions
+    transactions: {
+        db: transactionsDB.db,
+        recordTransaction: transactionsDB.recordTransaction,
+        getAllTransactions: transactionsDB.getAllTransactions,
+        getTransactionById: transactionsDB.getTransactionById,
+        getProductTransactionHistory: transactionsDB.getProductTransactionHistory,
+        getProductTransactionSummary: transactionsDB.getProductTransactionSummary,
+        getDashboardStats: transactionsDB.getDashboardStats,
+        updateTransactionSummary: transactionsDB.updateTransactionSummary,
+        generateTransactionId: transactionsDB.generateTransactionId
     }
 };
